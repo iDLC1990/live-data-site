@@ -2,45 +2,122 @@
 <html lang="ru">
 <head>
   <meta charset="UTF-8">
-  <title>Live Data из Google Таблицы</title>
+  <title>LCDR LIVE DATA 2025</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+  <link rel="stylesheet" href="https://cdn.datatables.net/1.13.4/css/jquery.dataTables.min.css">
   <style>
-    body { font-family: Arial, sans-serif; margin: 20px; }
-    table { border-collapse: collapse; width: 100%; }
-    th, td { border: 1px solid #ccc; padding: 8px; text-align: left; }
-    th { background-color: #f4f4f4; }
+    body {
+      font-family: Arial, sans-serif;
+      background: #121212;
+      color: #fff;
+      padding: 40px;
+    }
+    h1 {
+      text-align: center;
+      margin-bottom: 40px;
+      font-size: 2.5rem;
+      color: #00bcd4; /* Тёмно-голубой */
+    }
+    h4 {
+      margin-top: 40px;
+      font-weight: bold;
+      color: #00bcd4; /* Тёмно-голубой */
+    }
+    .table-container {
+      background-color: #333; /* Тёмный фон */
+      padding: 20px;
+      margin-bottom: 40px;
+      border-radius: 10px;
+    }
+    .table {
+      background-color: #fff; /* Белая таблица */
+      color: #333;
+      border-radius: 10px;
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    }
+    .dataTables_wrapper {
+      font-size: 1rem;
+    }
+    .table thead {
+      background-color: #00bcd4;
+      color: #fff;
+    }
   </style>
 </head>
 <body>
-  <h2>Live Data</h2>
-  <table id="data-table"></table>
+  <div class="container">
+    <h1>LCDR LIVE DATA 2025</h1>
 
+    <div id="fi1-section" class="table-container">
+      <h4>Fi#1</h4>
+      <table id="table-fi1" class="table table-bordered table-striped"></table>
+    </div>
+
+    <div id="fi2-section" class="table-container">
+      <h4>Fi#2</h4>
+      <table id="table-fi2" class="table table-bordered table-striped"></table>
+    </div>
+  </div>
+
+  <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+  <script src="https://cdn.datatables.net/1.13.4/js/jquery.dataTables.min.js"></script>
   <script>
     const sheetID = '10W03bvKlVFlIUcxsHkzP_v_13gtnYRBmnrrO0ujB1bU';
     const sheetName = 'live data';
     const url = `https://docs.google.com/spreadsheets/d/${sheetID}/gviz/tq?sheet=${encodeURIComponent(sheetName)}`;
 
+    function excelDateToJSDate(serial) {
+      const utc_days = Math.floor(serial - 25569);
+      const date = new Date(utc_days * 86400 * 1000);
+      return date.toLocaleDateString('ru-RU', { day: 'numeric', month: 'long', year: 'numeric' });
+    }
+
     fetch(url)
       .then(res => res.text())
       .then(rep => {
         const data = JSON.parse(rep.substr(47).slice(0, -2));
-        const table = document.getElementById('data-table');
+        const headers = data.table.cols.map(c => c.label);
+        const rows = data.table.rows.map(r => r.c.map(c => c ? c.v : ''));
 
-        const thead = table.createTHead();
-        const headRow = thead.insertRow();
-        data.table.cols.forEach(col => {
-          const th = document.createElement('th');
-          th.textContent = col.label || '';
-          headRow.appendChild(th);
-        });
+        const fi1Rows = [];
+        const fi2Rows = [];
 
-        data.table.rows.forEach(rowData => {
-          const row = table.insertRow();
-          rowData.c.forEach(cell => {
-            const td = row.insertCell();
-            td.textContent = cell ? cell.v : '';
+        for (const row of rows) {
+          const section = row[1]; // Теперь используем второй столбец для Fi#1 и Fi#2
+          const trimmedRow = row.slice(2); // Срезаем первые два столбца
+          const formattedRow = trimmedRow.map(cell => {
+            if (typeof cell === 'number' && cell > 40000) {
+              return excelDateToJSDate(cell); // Преобразуем дату
+            }
+            return cell || ''; // Пустые значения заменяем на пустые строки
           });
+
+          if (section && section.includes('FI #1')) {
+            fi1Rows.push(formattedRow);
+          } else if (section && section.includes('FI #2')) {
+            fi2Rows.push(formattedRow);
+          }
+        }
+
+        const tableHeaders = headers.slice(2); // Убираем первые два столбца
+
+        $('#table-fi1').DataTable({
+          data: fi1Rows,
+          columns: tableHeaders.map(h => ({ title: h })),
+          paging: false,
+          searching: false,
+          info: false
         });
-      });
+
+        $('#table-fi2').DataTable({
+          data: fi2Rows,
+          columns: tableHeaders.map(h => ({ title: h })),
+          paging: false,
+          searching: false,
+          info: false
+        });
+      })
+      .catch(error => console.error("Ошибка при загрузке данных:", error));
   </script>
 </body>
 </html>
