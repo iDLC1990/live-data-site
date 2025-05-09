@@ -33,22 +33,13 @@
       background-color: #fff;
       color: #333;
       border-radius: 10px;
-      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
     }
-    .dataTables_wrapper {
-      font-size: 1rem;
+    .totals-table {
+      margin-top: 15px;
     }
-    .table thead {
+    .totals-table thead {
       background-color: #00bcd4;
       color: #fff;
-    }
-    .totals {
-      margin-top: 10px;
-      background-color: #fff;
-      color: #000;
-      padding: 10px 20px;
-      border-radius: 10px;
-      font-weight: bold;
     }
   </style>
 </head>
@@ -59,13 +50,13 @@
     <div id="fi1-section" class="table-container">
       <h4>Fi#1</h4>
       <table id="table-fi1" class="table table-bordered table-striped"></table>
-      <div id="totals-fi1" class="totals"></div>
+      <table id="totals-fi1" class="table table-bordered totals-table"></table>
     </div>
 
     <div id="fi2-section" class="table-container">
       <h4>Fi#2</h4>
       <table id="table-fi2" class="table table-bordered table-striped"></table>
-      <div id="totals-fi2" class="totals"></div>
+      <table id="totals-fi2" class="table table-bordered totals-table"></table>
     </div>
   </div>
 
@@ -73,7 +64,6 @@
   <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
   <script src="https://cdn.datatables.net/1.13.4/js/jquery.dataTables.min.js"></script>
 
-  <!-- Основной JS -->
   <script>
     const sheetID = '10W03bvKlVFlIUcxsHkzP_v_13gtnYRBmnrrO0ujB1bU';
     const sheetName = 'live data';
@@ -92,12 +82,9 @@
         const rows = data.table.rows.map(r => r.c.map(c => c ? c.v : ''));
 
         let section = null;
-        let headersFi1 = [];
-        let headersFi2 = [];
-        const fi1Rows = [];
-        const fi2Rows = [];
-        let fi1Totals = null;
-        let fi2Totals = null;
+        const fi1Rows = [], fi2Rows = [];
+        let fi1Headers = [], fi2Headers = [];
+        let fi1Totals = [], fi2Totals = [];
 
         rows.forEach(row => {
           const marker = row[1];
@@ -117,8 +104,10 @@
             return;
           }
           if (marker === 'COUNTA z Status' || marker === 'Name') {
-            if (section === 'fi1') headersFi1 = trimmed;
-            if (section === 'fi2') headersFi2 = trimmed;
+            // задаём свои названия колонок
+            const headers = ['Name', 'NDF', 'OK', 'SCRAP TTL', 'WAITING', 'Suma całkowita'];
+            if (section === 'fi1') fi1Headers = headers;
+            if (section === 'fi2') fi2Headers = headers;
             return;
           }
           if (marker === 'Suma całkowita') {
@@ -132,26 +121,36 @@
           if (section === 'fi2') fi2Rows.push(trimmed);
         });
 
+        // Основная таблица FI#1
         $('#table-fi1').DataTable({
           data: fi1Rows,
-          columns: headersFi1.map(h => ({ title: h })),
+          columns: fi1Headers.map(h => ({ title: h })),
           paging: false, searching: false, info: false
         });
 
+        // Основная таблица FI#2
         $('#table-fi2').DataTable({
           data: fi2Rows,
-          columns: headersFi2.map(h => ({ title: h })),
+          columns: fi2Headers.map(h => ({ title: h })),
           paging: false, searching: false, info: false
         });
 
-        if (fi1Totals) {
-          const html = headersFi1.map((h, i) => `${h}: ${fi1Totals[i] || '-'}`).join(' | ');
-          $('#totals-fi1').html('Итого: ' + html);
+        // Таблица итогов FI#1
+        if (fi1Totals.length) {
+          const totalHtml = `
+            <thead><tr>${fi1Headers.map(h => `<th>${h}</th>`).join('')}</tr></thead>
+            <tbody><tr>${fi1Totals.map(c => `<td>${c || '-'}</td>`).join('')}</tr></tbody>
+          `;
+          $('#totals-fi1').html(totalHtml);
         }
 
-        if (fi2Totals) {
-          const html = headersFi2.map((h, i) => `${h}: ${fi2Totals[i] || '-'}`).join(' | ');
-          $('#totals-fi2').html('Итого: ' + html);
+        // Таблица итогов FI#2
+        if (fi2Totals.length) {
+          const totalHtml = `
+            <thead><tr>${fi2Headers.map(h => `<th>${h}</th>`).join('')}</tr></thead>
+            <tbody><tr>${fi2Totals.map(c => `<td>${c || '-'}</td>`).join('')}</tr></tbody>
+          `;
+          $('#totals-fi2').html(totalHtml);
         }
       })
       .catch(err => console.error('Ошибка загрузки данных:', err));
