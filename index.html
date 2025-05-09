@@ -42,10 +42,8 @@
     .totals-table {
       margin-top: 5px;
       font-size: 0.9rem;
-    }
-    .totals-table thead {
-      background-color: #00bcd4;
-      color: #fff;
+      background-color: #fff;
+      color: #333;
     }
   </style>
 </head>
@@ -70,7 +68,6 @@
   <script src="https://cdn.datatables.net/1.13.4/js/jquery.dataTables.min.js"></script>
 
   <script>
-    // Устанавливаем текущую дату
     document.getElementById('current-date').textContent =
       new Date().toLocaleDateString('ru-RU');
 
@@ -129,7 +126,6 @@
           if (section === 'fi2') fi2Rows.push(trimmed);
         });
 
-        // Таблицы FI#1 и FI#2
         $('#table-fi1').DataTable({
           data: fi1Rows,
           columns: fi1Headers.map(h => ({ title: h })),
@@ -142,10 +138,8 @@
           paging: false, searching: false, info: false
         });
 
-        // Таблицы итогов
         if (fi1Totals.length) {
           const totalHtml = `
-            <thead><tr>${fi1Headers.map(h => `<th>${h}</th>`).join('')}</tr></thead>
             <tbody><tr>${fi1Totals.map(c => `<td>${c || '-'}</td>`).join('')}</tr></tbody>
           `;
           $('#totals-fi1').html(totalHtml);
@@ -153,7 +147,6 @@
 
         if (fi2Totals.length) {
           const totalHtml = `
-            <thead><tr>${fi2Headers.map(h => `<th>${h}</th>`).join('')}</tr></thead>
             <tbody><tr>${fi2Totals.map(c => `<td>${c || '-'}</td>`).join('')}</tr></tbody>
           `;
           $('#totals-fi2').html(totalHtml);
