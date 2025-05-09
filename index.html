@@ -103,7 +103,7 @@
             };
 
             currentData.forEach(row => {
-              const name = row[1]?.v || "";
+              const name = row[1]?.v || "";  // Название
               const data = {
                 NDF: 0,
                 OK: 0,
@@ -115,7 +115,7 @@
               for (let i = 2; i < row.length; i++) {
                 const category = data.table.cols[i]?.label;
                 if (categories.includes(category)) {
-                  data[category] = row[i]?.v || 0;
+                  data[category] = row[i]?.v || 0;  // Если значение отсутствует, будет 0
                 }
               }
 
