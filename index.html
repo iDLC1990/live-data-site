@@ -2,81 +2,43 @@
 <html lang="ru">
 <head>
   <meta charset="UTF-8">
-  <title>LCDR LIVE DATA 2025</title>
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
-  <link rel="stylesheet" href="https://cdn.datatables.net/1.13.4/css/jquery.dataTables.min.css">
+  <title>Live Data из Google Таблицы</title>
   <style>
-    body { padding: 40px; }
-    h1 { margin-bottom: 30px; }
-    h4 { margin-top: 40px; font-weight: bold; }
+    body { font-family: Arial, sans-serif; margin: 20px; }
+    table { border-collapse: collapse; width: 100%; }
+    th, td { border: 1px solid #ccc; padding: 8px; text-align: left; }
+    th { background-color: #f4f4f4; }
   </style>
 </head>
 <body>
-  <div class="container">
-    <h1>LCDR LIVE DATA 2025</h1>
+  <h2>Live Data</h2>
+  <table id="data-table"></table>
 
-    <div id="fi1-section">
-      <h4>Fi#1</h4>
-      <table id="table-fi1" class="table table-bordered table-striped"></table>
-    </div>
-
-    <div id="fi2-section">
-      <h4>Fi#2</h4>
-      <table id="table-fi2" class="table table-bordered table-striped"></table>
-    </div>
-  </div>
-
-  <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-  <script src="https://cdn.datatables.net/1.13.4/js/jquery.dataTables.min.js"></script>
   <script>
     const sheetID = '10W03bvKlVFlIUcxsHkzP_v_13gtnYRBmnrrO0ujB1bU';
     const sheetName = 'live data';
     const url = `https://docs.google.com/spreadsheets/d/${sheetID}/gviz/tq?sheet=${encodeURIComponent(sheetName)}`;
 
-    function excelDateToJSDate(serial) {
-      const utc_days = Math.floor(serial - 25569);
-      const date = new Date(utc_days * 86400 * 1000);
-      return date.toLocaleDateString('ru-RU', { day: 'numeric', month: 'long', year: 'numeric' });
-    }
-
     fetch(url)
       .then(res => res.text())
       .then(rep => {
         const data = JSON.parse(rep.substr(47).slice(0, -2));
-        const headers = data.table.cols.map(c => c.label);
-        const rows = data.table.rows.map(r => r.c.map(c => c ? c.v : ''));
+        const table = document.getElementById('data-table');
 
-        const fi1Rows = [];
-        const fi2Rows = [];
-
-        for (const row of rows) {
-          const section = row[0];
-          const trimmedRow = row.slice(1); // Убираем первый столбец с "LCDR LIVE DATA 2025"
-          const formattedRow = trimmedRow.map(cell => (typeof cell === 'number' && cell > 40000 ? excelDateToJSDate(cell) : cell));
-
-          if (section === 'Fi#1') {
-            fi1Rows.push(formattedRow);
-          } else if (section === 'Fi#2') {
-            fi2Rows.push(formattedRow);
-          }
-        }
-
-        const tableHeaders = headers.slice(1); // без первой колонки
-
-        $('#table-fi1').DataTable({
-          data: fi1Rows,
-          columns: tableHeaders.map(h => ({ title: h })),
-          paging: false,
-          searching: false,
-          info: false
+        const thead = table.createTHead();
+        const headRow = thead.insertRow();
+        data.table.cols.forEach(col => {
+          const th = document.createElement('th');
+          th.textContent = col.label || '';
+          headRow.appendChild(th);
         });
 
-        $('#table-fi2').DataTable({
-          data: fi2Rows,
-          columns: tableHeaders.map(h => ({ title: h })),
-          paging: false,
-          searching: false,
-          info: false
+        data.table.rows.forEach(rowData => {
+          const row = table.insertRow();
+          rowData.c.forEach(cell => {
+            const td = row.insertCell();
+            td.textContent = cell ? cell.v : '';
+          });
         });
       });
   </script>
