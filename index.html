@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <title>Live Data из Google Таблицы</title>
+  <style>
+    body { font-family: Arial, sans-serif; margin: 20px; }
+    table { border-collapse: collapse; width: 100%; }
+    th, td { border: 1px solid #ccc; padding: 8px; text-align: left; }
+    th { background-color: #f4f4f4; }
+  </style>
+</head>
+<body>
+  <h2>Live Data</h2>
+  <table id="data-table"></table>
+
+  <script>
+    const sheetID = '10W03bvKlVFlIUcxsHkzP_v_13gtnYRBmnrrO0ujB1bU';
+    const sheetName = 'live data';
+    const url = `https://docs.google.com/spreadsheets/d/${sheetID}/gviz/tq?sheet=${encodeURIComponent(sheetName)}`;
+
+    fetch(url)
+      .then(res => res.text())
+      .then(rep => {
+        const data = JSON.parse(rep.substr(47).slice(0, -2));
+        const table = document.getElementById('data-table');
+
+        const thead = table.createTHead();
+        const headRow = thead.insertRow();
+        data.table.cols.forEach(col => {
+          const th = document.createElement('th');
+          th.textContent = col.label || '';
+          headRow.appendChild(th);
+        });
+
+        data.table.rows.forEach(rowData => {
+          const row = table.insertRow();
+          rowData.c.forEach(cell => {
+            const td = row.insertCell();
+            td.textContent = cell ? cell.v : '';
+          });
+        });
+      });
+  </script>
+</body>
+</html>
