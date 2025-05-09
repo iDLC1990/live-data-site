@@ -1,160 +1,155 @@
 <!DOCTYPE html>
-<html lang="ru">
+<html lang="pl">
 <head>
-  <meta charset="UTF-8">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>LCDR LIVE DATA 2025</title>
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
-  <link rel="stylesheet" href="https://cdn.datatables.net/1.13.4/css/jquery.dataTables.min.css">
   <style>
     body {
+      margin: 0;
       font-family: Arial, sans-serif;
-      background: #121212;
+      background: #1e1e1e;
       color: #fff;
-      padding: 10px;
     }
-    .header {
+    header {
       display: flex;
       justify-content: space-between;
       align-items: center;
-      margin-bottom: 20px;
+      background: #111;
+      padding: 10px 20px;
+      font-size: 1.2em;
     }
-    h1 {
-      font-size: 2rem;
-      color: #00bcd4;
-      margin: 0;
+    main {
+      padding: 20px;
     }
-    .date-display {
-      font-size: 1.1rem;
-      color: #ddd;
+    .table-block {
+      background: #fff;
+      color: #000;
+      margin-bottom: 30px;
+      padding: 10px;
+      border-radius: 4px;
+      overflow-x: auto;
     }
-    h4 {
-      margin-top: 20px;
-      margin-bottom: 10px;
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-bottom: 0;
+    }
+    th, td {
+      border: 1px solid #ccc;
+      padding: 6px 8px;
+      text-align: center;
+    }
+    th {
+      background-color: #eee;
       font-weight: bold;
-      color: #00bcd4;
     }
-    .table {
-      background-color: #fff;
-      color: #333;
-      border-radius: 6px;
-      font-size: 0.9rem;
-    }
-    .totals-table {
-      margin-top: 5px;
-      font-size: 0.9rem;
-      background-color: #fff;
-      color: #333;
+    .section-title {
+      font-weight: bold;
+      font-size: 1.1em;
+      margin-bottom: 5px;
     }
   </style>
 </head>
 <body>
-  <div class="container-fluid">
-    <div class="header">
-      <h1>LCDR LIVE DATA 2025</h1>
-      <div class="date-display" id="current-date"></div>
-    </div>
-
-    <h4>Fi#1</h4>
-    <table id="table-fi1" class="table table-bordered table-striped"></table>
-    <table id="totals-fi1" class="table table-bordered totals-table"></table>
-
-    <h4>Fi#2</h4>
-    <table id="table-fi2" class="table table-bordered table-striped"></table>
-    <table id="totals-fi2" class="table table-bordered totals-table"></table>
-  </div>
-
-  <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-  <script src="https://cdn.datatables.net/1.13.4/js/jquery.dataTables.min.js"></script>
+  <header>
+    <div>LCDR LIVE DATA 2025</div>
+    <div id="date"></div>
+  </header>
+  <main id="tables-container">Ładowanie danych...</main>
 
   <script>
-    document.getElementById('current-date').textContent =
-      new Date().toLocaleDateString('ru-RU');
+    document.getElementById('date').textContent = new Date().toLocaleDateString('pl-PL');
 
-    const sheetID = '10W03bvKlVFlIUcxsHkzP_v_13gtnYRBmnrrO0ujB1bU';
-    const sheetName = 'live data';
-    const url = `https://docs.google.com/spreadsheets/d/${sheetID}/gviz/tq?sheet=${encodeURIComponent(sheetName)}`;
+    const sheetId = "10W03bvKlVFlIUcxsHkzP_v_13gtnYRBmnrrO0ujB1bU";
+    const sheetName = "live data";
+    const url = `https://docs.google.com/spreadsheets/d/${sheetId}/gviz/tq?sheet=${sheetName}`;
 
     fetch(url)
       .then(res => res.text())
       .then(rep => {
-        const data = JSON.parse(rep.substr(47).slice(0, -2));
-        const rows = data.table.rows.map(r => r.c.map(c => c ? c.v : ''));
+        const data = JSON.parse(rep.match(/google.visualization.Query.setResponse\(([\s\S\w]+)\)/)[1]);
+        const rows = data.table.rows;
 
-        let section = null;
-        const fi1Data = [], fi2Data = [];
-        const fi1Sums = { NDF: 0, OK: 0, SCRAP: 0, WAITING: 0 };
-        const fi2Sums = { NDF: 0, OK: 0, SCRAP: 0, WAITING: 0 };
+        const tablesContainer = document.getElementById("tables-container");
+        tablesContainer.innerHTML = '';
 
-        rows.forEach(row => {
-          const marker = row[1];
+        let currentSection = null;
+        let currentData = [];
 
-          if (marker === 'FI #1') {
-            section = 'fi1';
-            return;
+        const flushTable = () => {
+          if (!currentSection || currentData.length === 0) return;
+
+          const tableData = {
+            name: [],
+            ndf: [],
+            ok: [],
+            scrap: [],
+            waiting: [],
+            total: []
+          };
+
+          currentData.forEach(row => {
+            const name = row[1]?.v;
+            const columns = row.map(cell => cell?.v);
+
+            const ndf = columns.includes("NDF") ? columns[2] : null;
+            const ok = columns.includes("OK") ? columns[3] : null;
+            const scrap = columns.includes("SCRAP TTL") ? columns[4] : null;
+            const waiting = columns.includes("WAITING") ? columns[5] : null;
+
+            if (typeof name === "string") {
+              tableData.name.push(name);
+              tableData.ndf.push(columns[2] || 0);
+              tableData.ok.push(columns[3] || 0);
+              tableData.scrap.push(columns[4] || 0);
+              tableData.waiting.push(columns[5] || 0);
+              tableData.total.push(columns[6] || 0);
+            }
+          });
+
+          const div = document.createElement('div');
+          div.className = "table-block";
+
+          let html = `<div class="section-title">${currentSection}</div><table><thead><tr>
+            <th>Name</th><th>NDF</th><th>OK</th><th>SCRAP TTL</th><th>WAITING</th><th>Suma całkowita</th>
+          </tr></thead><tbody>`;
+
+          for (let i = 0; i < tableData.name.length; i++) {
+            html += `<tr>
+              <td>${tableData.name[i]}</td>
+              <td>${tableData.ndf[i]}</td>
+              <td>${tableData.ok[i]}</td>
+              <td>${tableData.scrap[i]}</td>
+              <td>${tableData.waiting[i]}</td>
+              <td>${tableData.total[i]}</td>
+            </tr>`;
           }
-          if (marker === 'FI #2') {
-            section = 'fi2';
-            return;
-          }
-          if (['COUNTA z Status', 'Name', 'Suma całkowita', 'LCDR LIVE DATA 2025'].includes(marker)) {
-            return;
-          }
 
-          const name = marker || '';
-          let ndf = 0, ok = 0, scrap = 0, waiting = 0;
-
-          // Обработка по фиксированным индексам
-          if (typeof row[2] === 'number') ndf = row[2];
-          if (typeof row[3] === 'number') ok = row[3];
-          if (typeof row[4] === 'number') scrap = row[4];
-          if (typeof row[5] === 'number') waiting = row[5];
-
-          const rowData = [name, ndf, ok, scrap, waiting, ndf + ok + scrap + waiting];
-
-          if (section === 'fi1') {
-            fi1Data.push(rowData);
-            fi1Sums.NDF += ndf;
-            fi1Sums.OK += ok;
-            fi1Sums.SCRAP += scrap;
-            fi1Sums.WAITING += waiting;
-          } else if (section === 'fi2') {
-            fi2Data.push(rowData);
-            fi2Sums.NDF += ndf;
-            fi2Sums.OK += ok;
-            fi2Sums.SCRAP += scrap;
-            fi2Sums.WAITING += waiting;
-          }
-        });
-
-        const headers = ['Name', 'NDF', 'OK', 'SCRAP TTL', 'WAITING', 'Suma całkowita'];
-
-        $('#table-fi1').DataTable({
-          data: fi1Data,
-          columns: headers.map(h => ({ title: h })),
-          paging: false, searching: false, info: false
-        });
-
-        $('#table-fi2').DataTable({
-          data: fi2Data,
-          columns: headers.map(h => ({ title: h })),
-          paging: false, searching: false, info: false
-        });
-
-        const buildTotalRow = (sums) => {
-          return `<tbody><tr>
-            <td><strong>Suma całkowita</strong></td>
-            <td>${sums.NDF}</td>
-            <td>${sums.OK}</td>
-            <td>${sums.SCRAP}</td>
-            <td>${sums.WAITING}</td>
-            <td>${sums.NDF + sums.OK + sums.SCRAP + sums.WAITING}</td>
-          </tr></tbody>`;
+          html += `</tbody></table></div>`;
+          div.innerHTML = html;
+          tablesContainer.appendChild(div);
         };
 
-        $('#totals-fi1').html(buildTotalRow(fi1Sums));
-        $('#totals-fi2').html(buildTotalRow(fi2Sums));
+        rows.forEach(r => {
+          const val = r.c[1]?.v;
+          if (typeof val === "string" && val.startsWith("FI #")) {
+            flushTable();
+            currentSection = val;
+            currentData = [];
+          } else if (val === "Suma całkowita") {
+            currentData.push(r.c);
+            flushTable();
+            currentData = [];
+          } else if (val && val !== "Name") {
+            currentData.push(r.c);
+          }
+        });
       })
-      .catch(err => console.error('Ошибка загрузки данных:', err));
+      .catch(err => {
+        console.error("Błąd ładowania danych:", err);
+        document.getElementById("tables-container").textContent = "Nie udało się załadować danych.";
+      });
   </script>
 </body>
 </html>
