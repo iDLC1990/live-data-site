@@ -42,6 +42,14 @@
       background-color: #00bcd4;
       color: #fff;
     }
+    .totals {
+      margin-top: 10px;
+      background-color: #fff;
+      color: #000;
+      padding: 10px 20px;
+      border-radius: 10px;
+      font-weight: bold;
+    }
   </style>
 </head>
 <body>
@@ -51,11 +59,13 @@
     <div id="fi1-section" class="table-container">
       <h4>Fi#1</h4>
       <table id="table-fi1" class="table table-bordered table-striped"></table>
+      <div id="totals-fi1" class="totals"></div>
     </div>
 
     <div id="fi2-section" class="table-container">
       <h4>Fi#2</h4>
       <table id="table-fi2" class="table table-bordered table-striped"></table>
+      <div id="totals-fi2" class="totals"></div>
     </div>
   </div>
 
@@ -63,7 +73,7 @@
   <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
   <script src="https://cdn.datatables.net/1.13.4/js/jquery.dataTables.min.js"></script>
 
-  <!-- Основной код -->
+  <!-- Основной JS -->
   <script>
     const sheetID = '10W03bvKlVFlIUcxsHkzP_v_13gtnYRBmnrrO0ujB1bU';
     const sheetName = 'live data';
@@ -79,15 +89,18 @@
       .then(res => res.text())
       .then(rep => {
         const data = JSON.parse(rep.substr(47).slice(0, -2));
-        const headers = data.table.cols.slice(1).map(c => c.label); // теперь с фамилиями
         const rows = data.table.rows.map(r => r.c.map(c => c ? c.v : ''));
 
         let section = null;
+        let headersFi1 = [];
+        let headersFi2 = [];
         const fi1Rows = [];
         const fi2Rows = [];
+        let fi1Totals = null;
+        let fi2Totals = null;
 
         rows.forEach(row => {
-          const marker = row[1]; // фамилия или управляющий текст
+          const marker = row[1];
           const trimmed = row.slice(1).map(cell => {
             if (typeof cell === 'number' && cell > 40000) {
               return excelDateToJSDate(cell);
@@ -103,26 +116,43 @@
             section = 'fi2';
             return;
           }
-          if (marker === 'COUNTA z Status' || marker === 'Name' || marker === 'LCDR LIVE DATA 2025') return;
-
-          if (section === 'fi1') {
-            fi1Rows.push(trimmed);
-          } else if (section === 'fi2') {
-            fi2Rows.push(trimmed);
+          if (marker === 'COUNTA z Status' || marker === 'Name') {
+            if (section === 'fi1') headersFi1 = trimmed;
+            if (section === 'fi2') headersFi2 = trimmed;
+            return;
           }
+          if (marker === 'Suma całkowita') {
+            if (section === 'fi1') fi1Totals = trimmed;
+            if (section === 'fi2') fi2Totals = trimmed;
+            return;
+          }
+          if (marker === 'LCDR LIVE DATA 2025' || marker === '') return;
+
+          if (section === 'fi1') fi1Rows.push(trimmed);
+          if (section === 'fi2') fi2Rows.push(trimmed);
         });
 
         $('#table-fi1').DataTable({
           data: fi1Rows,
-          columns: headers.map(h => ({ title: h })),
+          columns: headersFi1.map(h => ({ title: h })),
           paging: false, searching: false, info: false
         });
 
         $('#table-fi2').DataTable({
           data: fi2Rows,
-          columns: headers.map(h => ({ title: h })),
+          columns: headersFi2.map(h => ({ title: h })),
           paging: false, searching: false, info: false
         });
+
+        if (fi1Totals) {
+          const html = headersFi1.map((h, i) => `${h}: ${fi1Totals[i] || '-'}`).join(' | ');
+          $('#totals-fi1').html('Итого: ' + html);
+        }
+
+        if (fi2Totals) {
+          const html = headersFi2.map((h, i) => `${h}: ${fi2Totals[i] || '-'}`).join(' | ');
+          $('#totals-fi2').html('Итого: ' + html);
+        }
       })
       .catch(err => console.error('Ошибка загрузки данных:', err));
   </script>
