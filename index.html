@@ -68,92 +68,103 @@
     fetch(url)
       .then(res => res.text())
       .then(rep => {
-        const data = JSON.parse(rep.match(/google.visualization.Query.setResponse\(([\s\S\w]+)\)/)[1]);
-        const rows = data.table.rows;
+        try {
+          const data = JSON.parse(rep.match(/google.visualization.Query.setResponse\(([\s\S\w]+)\)/)[1]);
 
-        const tablesContainer = document.getElementById("tables-container");
-        tablesContainer.innerHTML = '';
+          if (!data.table || !data.table.rows) {
+            console.error("Nie znaleziono odpowiednich danych w odpowiedzi.");
+            document.getElementById("tables-container").textContent = "Nie udało się załadować danych.";
+            return;
+          }
 
-        let currentSection = null;
-        let currentData = [];
+          const rows = data.table.rows;
+          const tablesContainer = document.getElementById("tables-container");
+          tablesContainer.innerHTML = '';
 
-        const flushTable = () => {
-          if (!currentSection || currentData.length === 0) return;
+          let currentSection = null;
+          let currentData = [];
 
-          const categories = ["NDF", "OK", "SCRAP TTL", "WAITING"];
-          const tableData = {
-            name: [],
-            ndf: [],
-            ok: [],
-            scrap: [],
-            waiting: [],
-            total: []
-          };
+          const flushTable = () => {
+            if (!currentSection || currentData.length === 0) return;
 
-          currentData.forEach(row => {
-            const name = row[1]?.v || "";
-            const data = {
-              NDF: 0,
-              OK: 0,
-              "SCRAP TTL": 0,
-              WAITING: 0
+            const categories = ["NDF", "OK", "SCRAP TTL", "WAITING"];
+            const tableData = {
+              name: [],
+              ndf: [],
+              ok: [],
+              scrap: [],
+              waiting: [],
+              total: []
             };
 
-            // Заполнение данных для каждой категории
-            for (let i = 2; i < row.length; i++) {
-              const category = data.table.cols[i]?.label;
-              if (categories.includes(category)) {
-                data[category] = row[i]?.v || 0;
+            currentData.forEach(row => {
+              const name = row[1]?.v || "";
+              const data = {
+                NDF: 0,
+                OK: 0,
+                "SCRAP TTL": 0,
+                WAITING: 0
+              };
+
+              // Заполнение данных для каждой категории
+              for (let i = 2; i < row.length; i++) {
+                const category = data.table.cols[i]?.label;
+                if (categories.includes(category)) {
+                  data[category] = row[i]?.v || 0;
+                }
               }
+
+              tableData.name.push(name);
+              tableData.ndf.push(data["NDF"]);
+              tableData.ok.push(data["OK"]);
+              tableData.scrap.push(data["SCRAP TTL"]);
+              tableData.waiting.push(data["WAITING"]);
+              tableData.total.push(
+                data["NDF"] + data["OK"] + data["SCRAP TTL"] + data["WAITING"]
+              );
+            });
+
+            const div = document.createElement('div');
+            div.className = "table-block";
+
+            let html = `<div class="section-title">${currentSection}</div><table><thead><tr>
+              <th>Name</th><th>NDF</th><th>OK</th><th>SCRAP TTL</th><th>WAITING</th><th>Suma całkowita</th>
+            </tr></thead><tbody>`;
+
+            for (let i = 0; i < tableData.name.length; i++) {
+              html += `<tr>
+                <td>${tableData.name[i]}</td>
+                <td>${tableData.ndf[i]}</td>
+                <td>${tableData.ok[i]}</td>
+                <td>${tableData.scrap[i]}</td>
+                <td>${tableData.waiting[i]}</td>
+                <td>${tableData.total[i]}</td>
+              </tr>`;
             }
 
-            tableData.name.push(name);
-            tableData.ndf.push(data["NDF"]);
-            tableData.ok.push(data["OK"]);
-            tableData.scrap.push(data["SCRAP TTL"]);
-            tableData.waiting.push(data["WAITING"]);
-            tableData.total.push(
-              data["NDF"] + data["OK"] + data["SCRAP TTL"] + data["WAITING"]
-            );
+            html += `</tbody></table></div>`;
+            div.innerHTML = html;
+            tablesContainer.appendChild(div);
+          };
+
+          rows.forEach(r => {
+            const val = r.c[1]?.v;
+            if (typeof val === "string" && val.startsWith("FI #")) {
+              flushTable();
+              currentSection = val;
+              currentData = [];
+            } else if (val === "Suma całkowita") {
+              currentData.push(r.c);
+              flushTable();
+              currentData = [];
+            } else if (val && val !== "Name") {
+              currentData.push(r.c);
+            }
           });
-
-          const div = document.createElement('div');
-          div.className = "table-block";
-
-          let html = `<div class="section-title">${currentSection}</div><table><thead><tr>
-            <th>Name</th><th>NDF</th><th>OK</th><th>SCRAP TTL</th><th>WAITING</th><th>Suma całkowita</th>
-          </tr></thead><tbody>`;
-
-          for (let i = 0; i < tableData.name.length; i++) {
-            html += `<tr>
-              <td>${tableData.name[i]}</td>
-              <td>${tableData.ndf[i]}</td>
-              <td>${tableData.ok[i]}</td>
-              <td>${tableData.scrap[i]}</td>
-              <td>${tableData.waiting[i]}</td>
-              <td>${tableData.total[i]}</td>
-            </tr>`;
-          }
-
-          html += `</tbody></table></div>`;
-          div.innerHTML = html;
-          tablesContainer.appendChild(div);
-        };
-
-        rows.forEach(r => {
-          const val = r.c[1]?.v;
-          if (typeof val === "string" && val.startsWith("FI #")) {
-            flushTable();
-            currentSection = val;
-            currentData = [];
-          } else if (val === "Suma całkowita") {
-            currentData.push(r.c);
-            flushTable();
-            currentData = [];
-          } else if (val && val !== "Name") {
-            currentData.push(r.c);
-          }
-        });
+        } catch (error) {
+          console.error("Błąd podczas przetwarzania danych:", error);
+          document.getElementById("tables-container").textContent = "Wystąpił błąd podczas przetwarzania danych.";
+        }
       })
       .catch(err => {
         console.error("Błąd ładowania danych:", err);
