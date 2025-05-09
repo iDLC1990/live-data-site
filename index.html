@@ -74,12 +74,6 @@
     const sheetName = 'live data';
     const url = `https://docs.google.com/spreadsheets/d/${sheetID}/gviz/tq?sheet=${encodeURIComponent(sheetName)}`;
 
-    function excelDateToJSDate(serial) {
-      const utc_days = Math.floor(serial - 25569);
-      const date = new Date(utc_days * 86400 * 1000);
-      return date.toLocaleDateString('ru-RU', { day: 'numeric', month: 'long', year: 'numeric' });
-    }
-
     fetch(url)
       .then(res => res.text())
       .then(rep => {
@@ -93,10 +87,6 @@
 
         rows.forEach(row => {
           const marker = row[1];
-          const valNDF = row[2] || 0;
-          const valOK = row[3] || 0;
-          const valSCRAP = row[4] || 0;
-          const valWAIT = row[5] || 0;
 
           if (marker === 'FI #1') {
             section = 'fi1';
@@ -106,25 +96,33 @@
             section = 'fi2';
             return;
           }
-          if (marker === 'COUNTA z Status' || marker === 'Name' || marker === 'Suma całkowita' || marker === 'LCDR LIVE DATA 2025') {
+          if (['COUNTA z Status', 'Name', 'Suma całkowita', 'LCDR LIVE DATA 2025'].includes(marker)) {
             return;
           }
 
           const name = marker || '';
-          const rowData = [name, valNDF, valOK, valSCRAP, valWAIT, valNDF + valOK + valSCRAP + valWAIT];
+          let ndf = 0, ok = 0, scrap = 0, waiting = 0;
+
+          // Обработка по фиксированным индексам
+          if (typeof row[2] === 'number') ndf = row[2];
+          if (typeof row[3] === 'number') ok = row[3];
+          if (typeof row[4] === 'number') scrap = row[4];
+          if (typeof row[5] === 'number') waiting = row[5];
+
+          const rowData = [name, ndf, ok, scrap, waiting, ndf + ok + scrap + waiting];
 
           if (section === 'fi1') {
             fi1Data.push(rowData);
-            fi1Sums.NDF += valNDF;
-            fi1Sums.OK += valOK;
-            fi1Sums.SCRAP += valSCRAP;
-            fi1Sums.WAITING += valWAIT;
+            fi1Sums.NDF += ndf;
+            fi1Sums.OK += ok;
+            fi1Sums.SCRAP += scrap;
+            fi1Sums.WAITING += waiting;
           } else if (section === 'fi2') {
             fi2Data.push(rowData);
-            fi2Sums.NDF += valNDF;
-            fi2Sums.OK += valOK;
-            fi2Sums.SCRAP += valSCRAP;
-            fi2Sums.WAITING += valWAIT;
+            fi2Sums.NDF += ndf;
+            fi2Sums.OK += ok;
+            fi2Sums.SCRAP += scrap;
+            fi2Sums.WAITING += waiting;
           }
         });
 
