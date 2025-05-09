@@ -79,7 +79,7 @@
       .then(res => res.text())
       .then(rep => {
         const data = JSON.parse(rep.substr(47).slice(0, -2));
-        const headers = data.table.cols.map(c => c.label).slice(2);
+        const headers = data.table.cols.slice(1).map(c => c.label); // теперь с фамилиями
         const rows = data.table.rows.map(r => r.c.map(c => c ? c.v : ''));
 
         let section = null;
@@ -87,8 +87,8 @@
         const fi2Rows = [];
 
         rows.forEach(row => {
-          const marker = row[1]; // 2-й столбец
-          const trimmed = row.slice(2).map(cell => {
+          const marker = row[1]; // фамилия или управляющий текст
+          const trimmed = row.slice(1).map(cell => {
             if (typeof cell === 'number' && cell > 40000) {
               return excelDateToJSDate(cell);
             }
