@@ -69,9 +69,12 @@
       .then(res => res.text())
       .then(rep => {
         try {
+          // Логирование ответа
+          console.log("Response data:", rep);
+          
           const data = JSON.parse(rep.match(/google.visualization.Query.setResponse\(([\s\S\w]+)\)/)[1]);
 
-          if (!data.table || !data.table.rows) {
+          if (!data.table || !data.table.rows || !data.table.cols) {
             console.error("Nie znaleziono odpowiednich danych w odpowiedzi.");
             document.getElementById("tables-container").textContent = "Nie udało się załadować danych.";
             return;
