@@ -80,6 +80,7 @@
         const flushTable = () => {
           if (!currentSection || currentData.length === 0) return;
 
+          const categories = ["NDF", "OK", "SCRAP TTL", "WAITING"];
           const tableData = {
             name: [],
             ndf: [],
@@ -90,22 +91,30 @@
           };
 
           currentData.forEach(row => {
-            const name = row[1]?.v;
-            const columns = row.map(cell => cell?.v);
+            const name = row[1]?.v || "";
+            const data = {
+              NDF: 0,
+              OK: 0,
+              "SCRAP TTL": 0,
+              WAITING: 0
+            };
 
-            const ndf = columns.includes("NDF") ? columns[2] : null;
-            const ok = columns.includes("OK") ? columns[3] : null;
-            const scrap = columns.includes("SCRAP TTL") ? columns[4] : null;
-            const waiting = columns.includes("WAITING") ? columns[5] : null;
-
-            if (typeof name === "string") {
-              tableData.name.push(name);
-              tableData.ndf.push(columns[2] || 0);
-              tableData.ok.push(columns[3] || 0);
-              tableData.scrap.push(columns[4] || 0);
-              tableData.waiting.push(columns[5] || 0);
-              tableData.total.push(columns[6] || 0);
+            // Заполнение данных для каждой категории
+            for (let i = 2; i < row.length; i++) {
+              const category = data.table.cols[i]?.label;
+              if (categories.includes(category)) {
+                data[category] = row[i]?.v || 0;
+              }
             }
+
+            tableData.name.push(name);
+            tableData.ndf.push(data["NDF"]);
+            tableData.ok.push(data["OK"]);
+            tableData.scrap.push(data["SCRAP TTL"]);
+            tableData.waiting.push(data["WAITING"]);
+            tableData.total.push(
+              data["NDF"] + data["OK"] + data["SCRAP TTL"] + data["WAITING"]
+            );
           });
 
           const div = document.createElement('div');
