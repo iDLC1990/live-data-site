@@ -10,32 +10,38 @@
       font-family: Arial, sans-serif;
       background: #121212;
       color: #fff;
-      padding: 40px;
+      padding: 10px;
+    }
+    .header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 20px;
     }
     h1 {
-      text-align: center;
-      margin-bottom: 40px;
-      font-size: 2.5rem;
+      font-size: 2rem;
       color: #00bcd4;
+      margin: 0;
+    }
+    .date-display {
+      font-size: 1.1rem;
+      color: #ddd;
     }
     h4 {
-      margin-top: 40px;
+      margin-top: 20px;
+      margin-bottom: 10px;
       font-weight: bold;
       color: #00bcd4;
-    }
-    .table-container {
-      background-color: #333;
-      padding: 20px;
-      margin-bottom: 40px;
-      border-radius: 10px;
     }
     .table {
       background-color: #fff;
       color: #333;
-      border-radius: 10px;
+      border-radius: 6px;
+      font-size: 0.9rem;
     }
     .totals-table {
-      margin-top: 15px;
+      margin-top: 5px;
+      font-size: 0.9rem;
     }
     .totals-table thead {
       background-color: #00bcd4;
@@ -44,20 +50,19 @@
   </style>
 </head>
 <body>
-  <div class="container">
-    <h1>LCDR LIVE DATA 2025</h1>
-
-    <div id="fi1-section" class="table-container">
-      <h4>Fi#1</h4>
-      <table id="table-fi1" class="table table-bordered table-striped"></table>
-      <table id="totals-fi1" class="table table-bordered totals-table"></table>
+  <div class="container-fluid">
+    <div class="header">
+      <h1>LCDR LIVE DATA 2025</h1>
+      <div class="date-display" id="current-date"></div>
     </div>
 
-    <div id="fi2-section" class="table-container">
-      <h4>Fi#2</h4>
-      <table id="table-fi2" class="table table-bordered table-striped"></table>
-      <table id="totals-fi2" class="table table-bordered totals-table"></table>
-    </div>
+    <h4>Fi#1</h4>
+    <table id="table-fi1" class="table table-bordered table-striped"></table>
+    <table id="totals-fi1" class="table table-bordered totals-table"></table>
+
+    <h4>Fi#2</h4>
+    <table id="table-fi2" class="table table-bordered table-striped"></table>
+    <table id="totals-fi2" class="table table-bordered totals-table"></table>
   </div>
 
   <!-- Подключаем jQuery и DataTables -->
@@ -65,6 +70,10 @@
   <script src="https://cdn.datatables.net/1.13.4/js/jquery.dataTables.min.js"></script>
 
   <script>
+    // Устанавливаем текущую дату
+    document.getElementById('current-date').textContent =
+      new Date().toLocaleDateString('ru-RU');
+
     const sheetID = '10W03bvKlVFlIUcxsHkzP_v_13gtnYRBmnrrO0ujB1bU';
     const sheetName = 'live data';
     const url = `https://docs.google.com/spreadsheets/d/${sheetID}/gviz/tq?sheet=${encodeURIComponent(sheetName)}`;
@@ -104,7 +113,6 @@
             return;
           }
           if (marker === 'COUNTA z Status' || marker === 'Name') {
-            // задаём свои названия колонок
             const headers = ['Name', 'NDF', 'OK', 'SCRAP TTL', 'WAITING', 'Suma całkowita'];
             if (section === 'fi1') fi1Headers = headers;
             if (section === 'fi2') fi2Headers = headers;
@@ -121,21 +129,20 @@
           if (section === 'fi2') fi2Rows.push(trimmed);
         });
 
-        // Основная таблица FI#1
+        // Таблицы FI#1 и FI#2
         $('#table-fi1').DataTable({
           data: fi1Rows,
           columns: fi1Headers.map(h => ({ title: h })),
           paging: false, searching: false, info: false
         });
 
-        // Основная таблица FI#2
         $('#table-fi2').DataTable({
           data: fi2Rows,
           columns: fi2Headers.map(h => ({ title: h })),
           paging: false, searching: false, info: false
         });
 
-        // Таблица итогов FI#1
+        // Таблицы итогов
         if (fi1Totals.length) {
           const totalHtml = `
             <thead><tr>${fi1Headers.map(h => `<th>${h}</th>`).join('')}</tr></thead>
@@ -144,7 +151,6 @@
           $('#totals-fi1').html(totalHtml);
         }
 
-        // Таблица итогов FI#2
         if (fi2Totals.length) {
           const totalHtml = `
             <thead><tr>${fi2Headers.map(h => `<th>${h}</th>`).join('')}</tr></thead>
