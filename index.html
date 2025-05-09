@@ -57,28 +57,37 @@
     <div id="date"></div>
   </header>
   <main id="tables-container">Ładowanie danych...</main>
+
   <script>
     document.getElementById('date').textContent = new Date().toLocaleDateString('pl-PL');
+
     const sheetId = "10W03bvKlVFlIUcxsHkzP_v_13gtnYRBmnrrO0ujB1bU";
     const sheetName = "live data";
     const url = `https://docs.google.com/spreadsheets/d/${sheetId}/gviz/tq?sheet=${sheetName}`;
+
     fetch(url)
       .then(res => res.text())
       .then(rep => {
         try {
           const data = JSON.parse(rep.match(/google.visualization.Query.setResponse\(([\s\S\w]+)\)/)[1]);
+
+          // Проверяем, что все необходимые данные есть
           if (!data.table || !data.table.rows || !data.table.cols) {
             console.error("Nie znaleziono odpowiednich danych w odpowiedzi.");
             document.getElementById("tables-container").textContent = "Nie udało się załadować danych.";
             return;
           }
+
           const rows = data.table.rows;
           const tablesContainer = document.getElementById("tables-container");
           tablesContainer.innerHTML = '';
+
           let currentSection = null;
           let currentData = [];
+
           const flushTable = () => {
             if (!currentSection || currentData.length === 0) return;
+
             const categories = ["NDF", "OK", "SCRAP TTL", "WAITING"];
             const tableData = {
               name: [],
@@ -88,6 +97,7 @@
               waiting: [],
               total: []
             };
+
             currentData.forEach(row => {
               const name = row[1]?.v || "";
               const data = {
@@ -96,6 +106,7 @@
                 "SCRAP TTL": 0,
                 WAITING: 0
               };
+
               // Заполнение данных для каждой категории
               for (let i = 2; i < row.length; i++) {
                 const category = data.table.cols[i]?.label;
@@ -103,6 +114,7 @@
                   data[category] = row[i]?.v || 0;
                 }
               }
+
               tableData.name.push(name);
               tableData.ndf.push(data["NDF"]);
               tableData.ok.push(data["OK"]);
@@ -112,11 +124,14 @@
                 data["NDF"] + data["OK"] + data["SCRAP TTL"] + data["WAITING"]
               );
             });
+
             const div = document.createElement('div');
             div.className = "table-block";
+
             let html = `<div class="section-title">${currentSection}</div><table><thead><tr>
               <th>Name</th><th>NDF</th><th>OK</th><th>SCRAP TTL</th><th>WAITING</th><th>Suma całkowita</th>
             </tr></thead><tbody>`;
+
             for (let i = 0; i < tableData.name.length; i++) {
               html += `<tr>
                 <td>${tableData.name[i]}</td>
@@ -127,6 +142,7 @@
                 <td>${tableData.total[i]}</td>
               </tr>`;
             }
+
             html += `</tbody></table></div>`;
             div.innerHTML = html;
             tablesContainer.appendChild(div);
