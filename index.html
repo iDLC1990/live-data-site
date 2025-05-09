@@ -63,7 +63,6 @@
     <table id="totals-fi2" class="table table-bordered totals-table"></table>
   </div>
 
-  <!-- Подключаем jQuery и DataTables -->
   <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
   <script src="https://cdn.datatables.net/1.13.4/js/jquery.dataTables.min.js"></script>
 
@@ -88,18 +87,16 @@
         const rows = data.table.rows.map(r => r.c.map(c => c ? c.v : ''));
 
         let section = null;
-        const fi1Rows = [], fi2Rows = [];
-        let fi1Headers = [], fi2Headers = [];
-        let fi1Totals = [], fi2Totals = [];
+        const fi1Data = [], fi2Data = [];
+        const fi1Sums = { NDF: 0, OK: 0, SCRAP: 0, WAITING: 0 };
+        const fi2Sums = { NDF: 0, OK: 0, SCRAP: 0, WAITING: 0 };
 
         rows.forEach(row => {
           const marker = row[1];
-          const trimmed = row.slice(1).map(cell => {
-            if (typeof cell === 'number' && cell > 40000) {
-              return excelDateToJSDate(cell);
-            }
-            return cell || '';
-          });
+          const valNDF = row[2] || 0;
+          const valOK = row[3] || 0;
+          const valSCRAP = row[4] || 0;
+          const valWAIT = row[5] || 0;
 
           if (marker === 'FI #1') {
             section = 'fi1';
@@ -109,48 +106,55 @@
             section = 'fi2';
             return;
           }
-          if (marker === 'COUNTA z Status' || marker === 'Name') {
-            const headers = ['Name', 'NDF', 'OK', 'SCRAP TTL', 'WAITING', 'Suma całkowita'];
-            if (section === 'fi1') fi1Headers = headers;
-            if (section === 'fi2') fi2Headers = headers;
+          if (marker === 'COUNTA z Status' || marker === 'Name' || marker === 'Suma całkowita' || marker === 'LCDR LIVE DATA 2025') {
             return;
           }
-          if (marker === 'Suma całkowita') {
-            if (section === 'fi1') fi1Totals = trimmed;
-            if (section === 'fi2') fi2Totals = trimmed;
-            return;
-          }
-          if (marker === 'LCDR LIVE DATA 2025' || marker === '') return;
 
-          if (section === 'fi1') fi1Rows.push(trimmed);
-          if (section === 'fi2') fi2Rows.push(trimmed);
+          const name = marker || '';
+          const rowData = [name, valNDF, valOK, valSCRAP, valWAIT, valNDF + valOK + valSCRAP + valWAIT];
+
+          if (section === 'fi1') {
+            fi1Data.push(rowData);
+            fi1Sums.NDF += valNDF;
+            fi1Sums.OK += valOK;
+            fi1Sums.SCRAP += valSCRAP;
+            fi1Sums.WAITING += valWAIT;
+          } else if (section === 'fi2') {
+            fi2Data.push(rowData);
+            fi2Sums.NDF += valNDF;
+            fi2Sums.OK += valOK;
+            fi2Sums.SCRAP += valSCRAP;
+            fi2Sums.WAITING += valWAIT;
+          }
         });
 
+        const headers = ['Name', 'NDF', 'OK', 'SCRAP TTL', 'WAITING', 'Suma całkowita'];
+
         $('#table-fi1').DataTable({
-          data: fi1Rows,
-          columns: fi1Headers.map(h => ({ title: h })),
+          data: fi1Data,
+          columns: headers.map(h => ({ title: h })),
           paging: false, searching: false, info: false
         });
 
         $('#table-fi2').DataTable({
-          data: fi2Rows,
-          columns: fi2Headers.map(h => ({ title: h })),
+          data: fi2Data,
+          columns: headers.map(h => ({ title: h })),
           paging: false, searching: false, info: false
         });
 
-        if (fi1Totals.length) {
-          const totalHtml = `
-            <tbody><tr>${fi1Totals.map(c => `<td>${c || '-'}</td>`).join('')}</tr></tbody>
-          `;
-          $('#totals-fi1').html(totalHtml);
-        }
+        const buildTotalRow = (sums) => {
+          return `<tbody><tr>
+            <td><strong>Suma całkowita</strong></td>
+            <td>${sums.NDF}</td>
+            <td>${sums.OK}</td>
+            <td>${sums.SCRAP}</td>
+            <td>${sums.WAITING}</td>
+            <td>${sums.NDF + sums.OK + sums.SCRAP + sums.WAITING}</td>
+          </tr></tbody>`;
+        };
 
-        if (fi2Totals.length) {
-          const totalHtml = `
-            <tbody><tr>${fi2Totals.map(c => `<td>${c || '-'}</td>`).join('')}</tr></tbody>
-          `;
-          $('#totals-fi2').html(totalHtml);
-        }
+        $('#totals-fi1').html(buildTotalRow(fi1Sums));
+        $('#totals-fi2').html(buildTotalRow(fi2Sums));
       })
       .catch(err => console.error('Ошибка загрузки данных:', err));
   </script>
