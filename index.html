@@ -69,9 +69,6 @@
       .then(res => res.text())
       .then(rep => {
         try {
-          // Логирование ответа
-          console.log("Response data:", rep);
-          
           const data = JSON.parse(rep.match(/google.visualization.Query.setResponse\(([\s\S\w]+)\)/)[1]);
 
           if (!data.table || !data.table.rows || !data.table.cols) {
