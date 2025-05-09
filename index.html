@@ -69,14 +69,18 @@
       .then(res => res.text())
       .then(rep => {
         try {
+          console.log('Ответ от API Google Sheets:', rep);  // Логируем весь ответ от API
+
           const data = JSON.parse(rep.match(/google.visualization.Query.setResponse\(([\s\S\w]+)\)/)[1]);
 
-          // Проверяем наличие ключевых элементов данных
+          // Проверка на наличие необходимых данных
           if (!data || !data.table || !data.table.rows || !data.table.cols) {
             console.error("Błąd: Brak wymaganych danych w odpowiedzi.");
             document.getElementById("tables-container").textContent = "Nie udało się załadować danych.";
             return;
           }
+
+          console.log('Проверенные данные:', data.table);  // Логируем таблицу данных, чтобы убедиться, что структура верная
 
           const rows = data.table.rows;
           const tablesContainer = document.getElementById("tables-container");
