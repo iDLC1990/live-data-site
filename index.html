@@ -71,9 +71,9 @@
         try {
           const data = JSON.parse(rep.match(/google.visualization.Query.setResponse\(([\s\S\w]+)\)/)[1]);
 
-          // Проверяем, что все необходимые данные есть
-          if (!data.table || !data.table.rows || !data.table.cols) {
-            console.error("Nie znaleziono odpowiednich danych w odpowiedzi.");
+          // Проверяем наличие ключевых элементов данных
+          if (!data || !data.table || !data.table.rows || !data.table.cols) {
+            console.error("Błąd: Brak wymaganych danych w odpowiedzi.");
             document.getElementById("tables-container").textContent = "Nie udało się załadować danych.";
             return;
           }
