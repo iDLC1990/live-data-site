@@ -16,7 +16,7 @@
   <h1>Dane z FI Station — dzisiaj</h1>
 
   <div id="kovzlchyk">
-    <h2>fi station kovzlchyk y.</h2>
+    <h2>fi station kovalchyk y.</h2>
     <table>
       <thead>
         <tr>
@@ -54,8 +54,8 @@
   <script>
     const sheetID = '16MNddQGaidy__FBtRFeiw6HxRDQojBW2_c8Qznt62O8';
     const sheets = [
-      { id: 'kovzlchyk', name: 'fi station kovzlchyk y.' },
-      { id: 'ulanovych', name: 'fi station ulanovych.r' }
+      { id: 'kovalchyk', name: 'FI Station KOVALCHYK Y.' },
+      { id: 'ulanovych', name: 'FI Station 2 ULANOVYCH.R' }
     ];
 
     const today = new Date();
@@ -68,8 +68,12 @@
     }
 
     function fetchSheet(sheet) {
-      const url = `https://docs.google.com/spreadsheets/d/${sheetID}/gviz/tq?sheet=${encodeURIComponent(sheet.name)}`;
+      // Закодируем название листа с пробелами и символами
+      const sheetNameEncoded = encodeURIComponent(sheet.name);
+      const url = `https://docs.google.com/spreadsheets/d/${sheetID}/gviz/tq?sheet=${sheetNameEncoded}`;
+
       console.log(`Fetching data from: ${url}`);
+      
       fetch(url)
         .then(res => res.text())
         .then(text => {
