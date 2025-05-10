@@ -59,11 +59,7 @@
       { divId: 'ULANOVYCH', sheetName: 'FI Station 2 ULANOVYCH.R' }
     ];
 
-    const todayStr = new Date().toISOString().slice(0, 10); // "2025-05-10"
-
-    function parseDate(str) {
-      return str && /^\d{4}-\d{2}-\d{2}$/.test(str) ? str : null;
-    }
+    const todayStr = new Date().toISOString().slice(0, 10); // "YYYY-MM-DD"
 
     function fetchData({ divId, sheetName }) {
       const encodedName = encodeURIComponent(sheetName);
@@ -78,7 +74,14 @@
 
           rows.forEach(row => {
             const cells = row.c.map(c => (c ? c.v : ''));
-            const date = parseDate(cells[0]);
+            let rawDate = cells[0];
+            let date = '';
+            if (rawDate instanceof Date) {
+              date = rawDate.toISOString().slice(0, 10);
+            } else if (typeof rawDate === 'string') {
+              date = rawDate.slice(0, 10);
+            }
+
             const status = cells[4];
             const name = cells[5];
 
@@ -99,7 +102,7 @@
           });
 
           const tbody = document.querySelector(`#${divId} tbody`);
-          tbody.innerHTML = ''; // Очистка
+          tbody.innerHTML = '';
 
           Object.entries(counts).forEach(([name, stat]) => {
             const total = Object.values(stat).reduce((a, b) => a + b, 0);
