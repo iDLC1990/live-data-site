@@ -59,7 +59,8 @@
       { divId: 'ULANOVYCH', sheetName: 'FI Station 2 ULANOVYCH.R' }
     ];
 
-    const todayStr = new Date().toISOString().slice(0, 10); // "YYYY-MM-DD"
+    const today = new Date();
+    const todayStr = today.toISOString().split('T')[0]; // 'YYYY-MM-DD'
 
     function fetchData({ divId, sheetName }) {
       const encodedName = encodeURIComponent(sheetName);
@@ -74,18 +75,23 @@
 
           rows.forEach(row => {
             const cells = row.c.map(c => (c ? c.v : ''));
-            let rawDate = cells[0];
-            let date = '';
-            if (rawDate instanceof Date) {
-              date = rawDate.toISOString().slice(0, 10);
-            } else if (typeof rawDate === 'string') {
-              date = rawDate.slice(0, 10);
+
+            let dateRaw = cells[0];
+            let dateStr = '';
+
+            if (typeof dateRaw === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(dateRaw)) {
+              dateStr = dateRaw;
+            } else if (typeof dateRaw === 'string' && /^\d{2}\.\d{2}\.\d{4}$/.test(dateRaw)) {
+              const [dd, mm, yyyy] = dateRaw.split('.');
+              dateStr = `${yyyy}-${mm}-${dd}`;
+            } else if (typeof dateRaw === 'object' && dateRaw instanceof Date) {
+              dateStr = dateRaw.toISOString().split('T')[0];
             }
 
-            const status = cells[5];
-            const name = cells[6];
+            const status = cells[4];
+            const name = cells[5];
 
-            if (date === todayStr && name) {
+            if (dateStr === todayStr && name) {
               if (!counts[name]) {
                 counts[name] = {
                   NDF: 0,
@@ -120,7 +126,7 @@
           });
         })
         .catch(err => {
-          console.error(`Błąd przy przetwarzaniu arkusza "${sheetName}":`, err);
+          console.error(`Błąd wczytywania ${sheetName}:`, err);
         });
     }
 
