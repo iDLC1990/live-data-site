@@ -1,180 +1,94 @@
 <!DOCTYPE html>
 <html lang="pl">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>LCDR LIVE DATA 2025</title>
+  <meta charset="UTF-8">
+  <title>Dane z FI Station</title>
   <style>
-    body {
-      margin: 0;
-      font-family: Arial, sans-serif;
-      background: #1e1e1e;
-      color: #fff;
-    }
-    header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      background: #111;
-      padding: 10px 20px;
-      font-size: 1.2em;
-    }
-    main {
-      padding: 20px;
-    }
-    .table-block {
-      background: #fff;
-      color: #000;
-      margin-bottom: 30px;
-      padding: 10px;
-      border-radius: 4px;
-      overflow-x: auto;
-    }
-    table {
-      width: 100%;
-      border-collapse: collapse;
-      margin-bottom: 0;
-    }
-    th, td {
-      border: 1px solid #ccc;
-      padding: 6px 8px;
-      text-align: center;
-    }
-    th {
-      background-color: #eee;
-      font-weight: bold;
-    }
-    .section-title {
-      font-weight: bold;
-      font-size: 1.1em;
-      margin-bottom: 5px;
-    }
+    body { font-family: sans-serif; padding: 20px; background-color: #f9f9f9; }
+    h2 { margin-top: 40px; }
+    table { border-collapse: collapse; width: 100%; margin-top: 10px; }
+    th, td { border: 1px solid #ccc; padding: 8px; text-align: left; }
+    th { background-color: #eee; }
   </style>
 </head>
 <body>
-  <header>
-    <div>LCDR LIVE DATA 2025</div>
-    <div id="date"></div>
-  </header>
-  <main id="tables-container">Ładowanie danych...</main>
+  <h1>Dane z FI Station — dzisiaj</h1>
+
+  <div id="kovzlchyk">
+    <h2>fi station kovzlchyk y.</h2>
+    <table>
+      <thead></thead>
+      <tbody></tbody>
+    </table>
+  </div>
+
+  <div id="ulanovych">
+    <h2>fi station ulanovych.r</h2>
+    <table>
+      <thead></thead>
+      <tbody></tbody>
+    </table>
+  </div>
 
   <script>
-    document.getElementById('date').textContent = new Date().toLocaleDateString('pl-PL');
+    const sheetID = '10W03bvKlVFlIUcxsHkzP_v_13gtnYRBmnrrO0ujB1bU';
+    const sheets = [
+      { id: 'kovzlchyk', name: 'fi station kovzlchyk y.' },
+      { id: 'ulanovych', name: 'fi station ulanovych.r' }
+    ];
 
-    const sheetId = "10W03bvKlVFlIUcxsHkzP_v_13gtnYRBmnrrO0ujB1bU";
-    const sheetName = "live data";
-    const url = `https://docs.google.com/spreadsheets/d/${sheetId}/gviz/tq?sheet=${sheetName}`;
+    const today = new Date();
+    today.setHours(0,0,0,0);
 
-    fetch(url)
-      .then(res => res.text())
-      .then(rep => {
-        try {
-          console.log('Ответ от API Google Sheets:', rep);  // Логируем весь ответ от API
+    function parseDate(dateStr) {
+      const parts = dateStr.split(/[./-]/);
+      if (parts.length === 3) {
+        const [day, month, year] = parts.map(p => parseInt(p, 10));
+        return new Date(year < 100 ? 2000 + year : year, month - 1, day);
+      }
+      return null;
+    }
 
-          const data = JSON.parse(rep.match(/google.visualization.Query.setResponse\(([\s\S\w]+)\)/)[1]);
+    function fetchSheet(sheet) {
+      const url = `https://docs.google.com/spreadsheets/d/${sheetID}/gviz/tq?sheet=${encodeURIComponent(sheet.name)}`;
+      fetch(url)
+        .then(res => res.text())
+        .then(text => {
+          const json = JSON.parse(text.substring(47).slice(0, -2));
+          const cols = json.table.cols.map(c => c.label);
+          const rows = json.table.rows;
 
-          // Проверка на наличие необходимых данных
-          if (!data || !data.table || !data.table.rows || !data.table.cols) {
-            console.error("Błąd: Brak wymaganych danych w odpowiedzi.");
-            document.getElementById("tables-container").textContent = "Nie udało się załadować danych.";
-            return;
-          }
+          const container = document.getElementById(sheet.id);
+          const thead = container.querySelector('thead');
+          const tbody = container.querySelector('tbody');
 
-          console.log('Проверенные данные:', data.table);  // Логируем таблицу данных, чтобы убедиться, что структура верная
+          // Заголовки
+          const headerRow = document.createElement('tr');
+          cols.forEach(col => {
+            const th = document.createElement('th');
+            th.textContent = col;
+            headerRow.appendChild(th);
+          });
+          thead.appendChild(headerRow);
 
-          const rows = data.table.rows;
-          const tablesContainer = document.getElementById("tables-container");
-          tablesContainer.innerHTML = '';
-
-          let currentSection = null;
-          let currentData = [];
-
-          const flushTable = () => {
-            if (!currentSection || currentData.length === 0) return;
-
-            const categories = ["NDF", "OK", "SCRAP TTL", "WAITING"];
-            const tableData = {
-              name: [],
-              ndf: [],
-              ok: [],
-              scrap: [],
-              waiting: [],
-              total: []
-            };
-
-            currentData.forEach(row => {
-              const name = row[1]?.v || "";  // Название
-              const data = {
-                NDF: 0,
-                OK: 0,
-                "SCRAP TTL": 0,
-                WAITING: 0
-              };
-
-              // Заполнение данных для каждой категории
-              for (let i = 2; i < row.length; i++) {
-                const category = data.table.cols[i]?.label;
-                if (categories.includes(category)) {
-                  data[category] = row[i]?.v || 0;  // Если значение отсутствует, будет 0
-                }
-              }
-
-              tableData.name.push(name);
-              tableData.ndf.push(data["NDF"]);
-              tableData.ok.push(data["OK"]);
-              tableData.scrap.push(data["SCRAP TTL"]);
-              tableData.waiting.push(data["WAITING"]);
-              tableData.total.push(
-                data["NDF"] + data["OK"] + data["SCRAP TTL"] + data["WAITING"]
-              );
-            });
-
-            const div = document.createElement('div');
-            div.className = "table-block";
-
-            let html = `<div class="section-title">${currentSection}</div><table><thead><tr>
-              <th>Name</th><th>NDF</th><th>OK</th><th>SCRAP TTL</th><th>WAITING</th><th>Suma całkowita</th>
-            </tr></thead><tbody>`;
-
-            for (let i = 0; i < tableData.name.length; i++) {
-              html += `<tr>
-                <td>${tableData.name[i]}</td>
-                <td>${tableData.ndf[i]}</td>
-                <td>${tableData.ok[i]}</td>
-                <td>${tableData.scrap[i]}</td>
-                <td>${tableData.waiting[i]}</td>
-                <td>${tableData.total[i]}</td>
-              </tr>`;
-            }
-
-            html += `</tbody></table></div>`;
-            div.innerHTML = html;
-            tablesContainer.appendChild(div);
-          };
-
-          rows.forEach(r => {
-            const val = r.c[1]?.v;
-            if (typeof val === "string" && val.startsWith("FI #")) {
-              flushTable();
-              currentSection = val;
-              currentData = [];
-            } else if (val === "Suma całkowita") {
-              currentData.push(r.c);
-              flushTable();
-              currentData = [];
-            } else if (val && val !== "Name") {
-              currentData.push(r.c);
+          // Строки
+          rows.forEach(row => {
+            const cells = row.c.map(cell => (cell ? cell.v : ''));
+            const cellDate = parseDate(cells[0]?.toString());
+            if (cellDate && cellDate.getTime() === today.getTime()) {
+              const tr = document.createElement('tr');
+              cells.forEach(val => {
+                const td = document.createElement('td');
+                td.textContent = val;
+                tr.appendChild(td);
+              });
+              tbody.appendChild(tr);
             }
           });
-        } catch (error) {
-          console.error("Błąd podczas przetwarzania danych:", error);
-          document.getElementById("tables-container").textContent = "Wystąpił błąd podczas przetwarzania danych.";
-        }
-      })
-      .catch(err => {
-        console.error("Błąd ładowania danych:", err);
-        document.getElementById("tables-container").textContent = "Nie udało się załadować danych.";
-      });
+        });
+    }
+
+    sheets.forEach(fetchSheet);
   </script>
 </body>
 </html>
