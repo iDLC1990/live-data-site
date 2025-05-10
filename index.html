@@ -2,7 +2,7 @@
 <html lang="pl">
 <head>
   <meta charset="UTF-8">
-  <title>Dane FI Station (tylko dzisiaj)</title>
+  <title>Dane FI Station</title>
   <style>
     body { font-family: sans-serif; background-color: #f4f4f4; padding: 20px; }
     h1 { text-align: center; }
@@ -14,7 +14,7 @@
   </style>
 </head>
 <body>
-  <h1>Dane FI Station (tylko dzisiaj)</h1>
+  <h1>Dane FI Station (wszystkie daty)</h1>
 
   <div id="KOVALCHYK">
     <h2>FI Station KOVALCHYK Y.</h2>
@@ -59,9 +59,6 @@
       { divId: 'ULANOVYCH', sheetName: 'FI Station 2 ULANOVYCH.R' }
     ];
 
-    const today = new Date();
-    const todayStr = `${String(today.getDate()).padStart(2, '0')}.${String(today.getMonth() + 1).padStart(2, '0')}.${today.getFullYear()}`;
-
     function fetchData({ divId, sheetName }) {
       const encodedName = encodeURIComponent(sheetName);
       const url = `https://docs.google.com/spreadsheets/d/${sheetID}/gviz/tq?sheet=${encodedName}`;
@@ -76,11 +73,10 @@
           rows.forEach(row => {
             const cells = row.c.map(c => (c ? c.v : ''));
 
-            const dateStr = cells[0]; // kolumna A
-            const status = cells[4];  // kolumna E
-            const name = cells[5];    // kolumna F
+            const status = cells[4];
+            const name = cells[5];
 
-            if (dateStr === todayStr && name && status) {
+            if (name && status) {
               if (!counts[name]) {
                 counts[name] = {
                   NDF: 0,
@@ -100,26 +96,4 @@
           tbody.innerHTML = '';
 
           Object.entries(counts).forEach(([name, stat]) => {
-            const total = Object.values(stat).reduce((a, b) => a + b, 0);
-            const row = `
-              <tr>
-                <td>${name}</td>
-                <td>${stat.NDF}</td>
-                <td>${stat.OK}</td>
-                <td>${stat.WAITING}</td>
-                <td>${stat['SCRAP TTL']}</td>
-                <td>${stat['SCRAP PNLA']}</td>
-                <td>${total}</td>
-              </tr>`;
-            tbody.insertAdjacentHTML('beforeend', row);
-          });
-        })
-        .catch(err => {
-          console.error(`Błąd wczytywania ${sheetName}:`, err);
-        });
-    }
-
-    sheets.forEach(fetchData);
-  </script>
-</body>
-</html>
+            const total = Object
