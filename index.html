@@ -14,7 +14,7 @@
   </style>
 </head>
 <body>
-  <h1>Dane FI Station (wszystkie dni)</h1>
+  <h1>Dane FI Station (dzisiaj)</h1>
 
   <div id="KOVALCHYK">
     <h2>FI Station KOVALCHYK Y.</h2>
@@ -59,6 +59,9 @@
       { divId: 'ULANOVYCH', sheetName: 'FI Station 2 ULANOVYCH.R' }
     ];
 
+    const today = new Date();
+    const todayStr = today.toISOString().split('T')[0]; // 'YYYY-MM-DD'
+
     function parseDate(value) {
       if (typeof value === 'string') {
         if (/^\d{4}-\d{2}-\d{2}$/.test(value)) {
@@ -87,10 +90,11 @@
 
           rows.forEach(row => {
             const cells = row.c.map(c => (c ? c.v : ''));
+            const dateStr = parseDate(cells[0]); // Extract and parse the date
             const status = cells[4];
             const name = cells[5];
 
-            if (name && status) {
+            if (dateStr === todayStr && name && status) {
               if (!counts[name]) {
                 counts[name] = {
                   NDF: 0,
