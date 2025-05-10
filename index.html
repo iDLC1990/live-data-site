@@ -9,6 +9,7 @@
     table { border-collapse: collapse; width: 100%; margin-top: 10px; }
     th, td { border: 1px solid #ccc; padding: 8px; text-align: left; }
     th { background-color: #eee; }
+    th, td { width: 14%; } /* Выравнивание столбцов */
   </style>
 </head>
 <body>
@@ -17,7 +18,17 @@
   <div id="kovzlchyk">
     <h2>fi station kovzlchyk y.</h2>
     <table>
-      <thead></thead>
+      <thead>
+        <tr>
+          <th>NAME</th>
+          <th>NDF</th>
+          <th>OK</th>
+          <th>WAITING</th>
+          <th>SCRAP TTL</th>
+          <th>SCRAP PNLA</th>
+          <th>SUMA CALKOWITA</th>
+        </tr>
+      </thead>
       <tbody></tbody>
     </table>
   </div>
@@ -25,7 +36,17 @@
   <div id="ulanovych">
     <h2>fi station ulanovych.r</h2>
     <table>
-      <thead></thead>
+      <thead>
+        <tr>
+          <th>NAME</th>
+          <th>NDF</th>
+          <th>OK</th>
+          <th>WAITING</th>
+          <th>SCRAP TTL</th>
+          <th>SCRAP PNLA</th>
+          <th>SUMA CALKOWITA</th>
+        </tr>
+      </thead>
       <tbody></tbody>
     </table>
   </div>
@@ -59,17 +80,7 @@
           const rows = json.table.rows;
 
           const container = document.getElementById(sheet.id);
-          const thead = container.querySelector('thead');
           const tbody = container.querySelector('tbody');
-
-          // Заголовки
-          const headerRow = document.createElement('tr');
-          cols.forEach(col => {
-            const th = document.createElement('th');
-            th.textContent = col;
-            headerRow.appendChild(th);
-          });
-          thead.appendChild(headerRow);
 
           // Строки
           rows.forEach(row => {
@@ -77,11 +88,16 @@
             const cellDate = parseDate(cells[0]?.toString());
             if (cellDate && cellDate.getTime() === today.getTime()) {
               const tr = document.createElement('tr');
-              cells.forEach(val => {
-                const td = document.createElement('td');
-                td.textContent = val;
-                tr.appendChild(td);
-              });
+              // Заполняем 7 столбцов
+              tr.innerHTML = `
+                <td>${cells[0] || ''}</td>
+                <td>${cells[1] || ''}</td>
+                <td>${cells[2] || ''}</td>
+                <td>${cells[3] || ''}</td>
+                <td>${cells[4] || ''}</td>
+                <td>${cells[5] || ''}</td>
+                <td>${cells[6] || ''}</td>
+              `;
               tbody.appendChild(tr);
             }
           });
