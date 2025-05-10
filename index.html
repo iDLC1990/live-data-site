@@ -59,7 +59,7 @@
     ];
 
     const today = new Date();
-    today.setHours(0,0,0,0);
+    today.setHours(0, 0, 0, 0);
 
     function parseDate(dateStr) {
       const parts = dateStr.split(/[./-]/);
@@ -81,25 +81,50 @@
 
           const container = document.getElementById(sheet.id);
           const tbody = container.querySelector('tbody');
+          const statusCount = {};
 
-          // Строки
+          // Подсчитываем количество каждого статуса для каждой фамилии
           rows.forEach(row => {
             const cells = row.c.map(cell => (cell ? cell.v : ''));
             const cellDate = parseDate(cells[0]?.toString());
+            const name = cells[5]; // Фамилия в колонке F
+            const status = cells[4]; // Статус в колонке E
+            
             if (cellDate && cellDate.getTime() === today.getTime()) {
-              const tr = document.createElement('tr');
-              // Заполняем 7 столбцов
-              tr.innerHTML = `
-                <td>${cells[0] || ''}</td>
-                <td>${cells[1] || ''}</td>
-                <td>${cells[2] || ''}</td>
-                <td>${cells[3] || ''}</td>
-                <td>${cells[4] || ''}</td>
-                <td>${cells[5] || ''}</td>
-                <td>${cells[6] || ''}</td>
-              `;
-              tbody.appendChild(tr);
+              // Инициализация статистики для фамилии
+              if (!statusCount[name]) {
+                statusCount[name] = {
+                  NDF: 0,
+                  OK: 0,
+                  WAITING: 0,
+                  'SCRAP TTL': 0,
+                  'SCRAP PNLA': 0,
+                  'SUMA CALKOWITA': 0
+                };
+              }
+
+              // Увеличиваем счетчик для соответствующего статуса
+              if (statusCount[name][status] !== undefined) {
+                statusCount[name][status]++;
+              }
             }
+          });
+
+          // Заполняем таблицу
+          Object.keys(statusCount).forEach(name => {
+            const tr = document.createElement('tr');
+            const data = statusCount[name];
+
+            tr.innerHTML = `
+              <td>${name}</td>
+              <td>${data.NDF}</td>
+              <td>${data.OK}</td>
+              <td>${data.WAITING}</td>
+              <td>${data['SCRAP TTL']}</td>
+              <td>${data['SCRAP PNLA']}</td>
+              <td>${Object.values(data).reduce((a, b) => a + b, 0)}</td> <!-- Общая сумма -->
+            `;
+            tbody.appendChild(tr);
           });
         });
     }
