@@ -1,150 +1,117 @@
 <!DOCTYPE html>
-<html lang="pl">
+<html lang="ru">
 <head>
   <meta charset="UTF-8">
-  <title>Dane FI Station</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Подсчёт статусов</title>
   <style>
-    body { font-family: sans-serif; background-color: #f4f4f4; padding: 20px; }
-    h1 { text-align: center; }
-    h2 { margin-top: 40px; }
-    table { width: 100%; border-collapse: collapse; margin-top: 10px; }
-    th, td { border: 1px solid #ccc; padding: 8px; text-align: center; }
-    th { background-color: #eee; }
-    td:first-child { text-align: left; }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+    table, th, td {
+      border: 1px solid black;
+    }
+    th, td {
+      padding: 8px;
+      text-align: center;
+    }
   </style>
 </head>
 <body>
-  <h1>Dane FI Station (ostatni dzień)</h1>
 
-  <div id="KOVALCHYK">
-    <h2>FI Station KOVALCHYK Y.</h2>
-    <table>
-      <thead>
-        <tr>
-          <th>NAME</th>
-          <th>NDF</th>
-          <th>OK</th>
-          <th>WAITING</th>
-          <th>SCRAP TTL</th>
-          <th>SCRAP PNLA</th>
-          <th>SUMA CALKOWITA</th>
-        </tr>
-      </thead>
-      <tbody></tbody>
-    </table>
-  </div>
+  <h1>Статистика по статусам</h1>
 
-  <div id="ULANOVYCH">
-    <h2>FI Station 2 ULANOVYCH.R</h2>
-    <table>
-      <thead>
-        <tr>
-          <th>NAME</th>
-          <th>NDF</th>
-          <th>OK</th>
-          <th>WAITING</th>
-          <th>SCRAP TTL</th>
-          <th>SCRAP PNLA</th>
-          <th>SUMA CALKOWITA</th>
-        </tr>
-      </thead>
-      <tbody></tbody>
-    </table>
-  </div>
+  <table id="stats-table">
+    <thead>
+      <tr>
+        <th>Имя</th>
+        <th>ndf</th>
+        <th>OK</th>
+        <th>WAITING</th>
+        <th>SCRAP TTL</th>
+        <th>SCRAP PNLA</th>
+        <th>Suma Całkowita</th>
+      </tr>
+    </thead>
+    <tbody>
+      <!-- Здесь будут динамически добавляться строки -->
+    </tbody>
+  </table>
 
   <script>
-    const sheetID = '16MNddQGaidy__FBtRFeiw6HxRDQojBW2_c8Qznt62O8';
-    const sheets = [
-      { divId: 'KOVALCHYK', sheetName: 'FI Station KOVALCHYK Y.' },
-      { divId: 'ULANOVYCH', sheetName: 'FI Station 2 ULANOVYCH.R' }
+    // Пример данных
+    const data = [
+      { name: 'Иванов', status: 'ndf' },
+      { name: 'Петров', status: 'OK' },
+      { name: 'Иванов', status: 'WAITING' },
+      { name: 'Иванов', status: 'SCRAP TTL' },
+      { name: 'Петров', status: 'SCRAP PNLA' },
+      { name: 'Иванов', status: 'OK' },
+      { name: 'Петров', status: 'WAITING' },
+      { name: 'Иванов', status: 'SCRAP TTL' },
+      { name: 'Петров', status: 'ndf' },
+      // Другие записи...
     ];
 
-    function parseDate(value) {
-      // Проверяем различные форматы дат
-      if (typeof value === 'string') {
-        if (/^\d{4}-\d{2}-\d{2}$/.test(value)) {
-          return value;
-        } else if (/^\d{4}\.\d{2}\.\d{2}$/.test(value)) {
-          const [yyyy, mm, dd] = value.split('.');
-          return `${yyyy}-${mm}-${dd}`;
-        } else if (/^\d{2}\.\d{2}\.\d{4}$/.test(value)) {
-          const [dd, mm, yyyy] = value.split('.');
-          return `${yyyy}-${mm}-${dd}`;
+    // Функция для подсчёта статистики
+    function calculateStats(data) {
+      const stats = {};
+
+      // Перебираем все данные и считаем статусы для каждого человека
+      data.forEach(record => {
+        const { name, status } = record;
+
+        // Если такого человека ещё нет в объекте, создаём запись
+        if (!stats[name]) {
+          stats[name] = {
+            ndf: 0,
+            OK: 0,
+            WAITING: 0,
+            'SCRAP TTL': 0,
+            'SCRAP PNLA': 0,
+            total: 0,
+          };
         }
-      }
-      return '';
+
+        // Увеличиваем счетчик для соответствующего статуса
+        if (status === 'ndf') stats[name].ndf++;
+        if (status === 'OK') stats[name].OK++;
+        if (status === 'WAITING') stats[name].WAITING++;
+        if (status === 'SCRAP TTL') stats[name]['SCRAP TTL']++;
+        if (status === 'SCRAP PNLA') stats[name]['SCRAP PNLA']++;
+
+        // Увеличиваем общий счётчик
+        stats[name].total++;
+      });
+
+      return stats;
     }
 
-    function fetchData({ divId, sheetName }) {
-      const encodedName = encodeURIComponent(sheetName);
-      const url = `https://docs.google.com/spreadsheets/d/${sheetID}/gviz/tq?sheet=${encodedName}`;
+    // Получаем подсчёт статистики
+    const result = calculateStats(data);
 
-      fetch(url)
-        .then(res => res.text())
-        .then(text => JSON.parse(text.substring(47).slice(0, -2)))
-        .then(data => {
-          const rows = data.table.rows;
-          const counts = {};
-          const today = new Date();
-          const todayStr = today.toISOString().split('T')[0]; // 'YYYY-MM-DD'
+    // Получаем ссылку на таблицу для добавления данных
+    const statsTableBody = document.querySelector('#stats-table tbody');
 
-          console.log("Сегодняшняя дата: ", todayStr);
+    // Динамически добавляем строки в таблицу
+    Object.keys(result).forEach(name => {
+      const row = document.createElement('tr');
+      const data = result[name];
 
-          rows.forEach(row => {
-            const cells = row.c.map(c => (c ? c.v : ''));
-            const status = cells[4];
-            const name = cells[5];
-            const dateStr = parseDate(cells[0]);
+      row.innerHTML = `
+        <td>${name}</td>
+        <td>${data.ndf}</td>
+        <td>${data.OK}</td>
+        <td>${data.WAITING}</td>
+        <td>${data['SCRAP TTL']}</td>
+        <td>${data['SCRAP PNLA']}</td>
+        <td>${data.total}</td>
+      `;
 
-            console.log("Дата из строки: ", dateStr, " | Имя: ", name, " | Статус: ", status);
-
-            // Проверяем, совпадает ли дата с сегодняшним днем
-            if (dateStr === todayStr && name && status) {
-              if (!counts[name]) {
-                counts[name] = {
-                  NDF: 0,
-                  OK: 0,
-                  WAITING: 0,
-                  'SCRAP TTL': 0,
-                  'SCRAP PNLA': 0
-                };
-              }
-              if (counts[name][status] !== undefined) {
-                counts[name][status]++;
-              }
-            }
-          });
-
-          console.log("Посчитанные данные: ", counts);
-
-          const tbody = document.querySelector(`#${divId} tbody`);
-          tbody.innerHTML = '';
-
-          if (Object.keys(counts).length === 0) {
-            console.log("Нет данных для отображения!");
-          }
-
-          Object.entries(counts).forEach(([name, stat]) => {
-            const total = Object.values(stat).reduce((a, b) => a + b, 0);
-            const row = `
-              <tr>
-                <td>${name}</td>
-                <td>${stat.NDF}</td>
-                <td>${stat.OK}</td>
-                <td>${stat.WAITING}</td>
-                <td>${stat['SCRAP TTL']}</td>
-                <td>${stat['SCRAP PNLA']}</td>
-                <td>${total}</td>
-              </tr>`;
-            tbody.insertAdjacentHTML('beforeend', row);
-          });
-        })
-        .catch(err => {
-          console.error(`Błąd wczytywania ${sheetName}:`, err);
-        });
-    }
-
-    sheets.forEach(fetchData);
+      statsTableBody.appendChild(row);
+    });
   </script>
+
 </body>
 </html>
