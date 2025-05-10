@@ -2,8 +2,7 @@
 <html lang="ru">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Подсчёт статусов</title>
+  <title>Статистика по статусам</title>
   <style>
     table {
       width: 100%;
@@ -20,104 +19,69 @@
 </head>
 <body>
 
-  <h1>Статистика по статусам на текущий день</h1>
+<h1>Статистика по статусам на текущий день</h1>
 
-  <table id="stats-table">
-    <thead>
-      <tr>
-        <th>Имя</th>
-        <th>ndf</th>
-        <th>OK</th>
-        <th>WAITING</th>
-        <th>SCRAP TTL</th>
-        <th>SCRAP PNLA</th>
-        <th>Suma Całkowita</th>
-      </tr>
-    </thead>
-    <tbody>
-      <!-- Здесь будут динамически добавляться строки -->
-    </tbody>
-  </table>
+<table id="stats-table">
+  <thead>
+    <tr>
+      <th>Имя</th>
+      <th>ndf</th>
+      <th>OK</th>
+      <th>WAITING</th>
+      <th>SCRAP TTL</th>
+      <th>SCRAP PNLA</th>
+      <th>Suma Całkowita</th>
+    </tr>
+  </thead>
+  <tbody></tbody>
+</table>
 
-  <script>
-    // Пример данных с датой
-    const data = [
-      { name: 'Иванов', status: 'ndf', date: '2025-05-10' },
-      { name: 'Петров', status: 'OK', date: '2025-05-10' },
-      { name: 'Иванов', status: 'WAITING', date: '2025-05-10' },
-      { name: 'Иванов', status: 'SCRAP TTL', date: '2025-05-10' },
-      { name: 'Петров', status: 'SCRAP PNLA', date: '2025-05-10' },
-      { name: 'Иванов', status: 'OK', date: '2025-05-10' },
-      { name: 'Петров', status: 'WAITING', date: '2025-05-10' },
-      { name: 'Иванов', status: 'SCRAP TTL', date: '2025-05-10' },
-      { name: 'Петров', status: 'ndf', date: '2025-05-10' },
-      // Другие записи...
-    ];
+<script>
+  const sheetID = '16MNddQGaidy__FBtRFeiw6HxRDQojBW2_c8Qznt62O8';
+  const apiKey = 'AIzaSyCP7tzYiGwIZ6cymLAlv_9QgPIEshnRgqI';
+  const range = 'live data!E2:H';
 
-    // Получаем текущую дату в формате YYYY-MM-DD
-    const today = new Date().toISOString().split('T')[0];
+  const today = new Date().toISOString().split('T')[0];
 
-    // Функция для подсчёта статистики за текущий день
-    function calculateStats(data) {
+  fetch(`https://sheets.googleapis.com/v4/spreadsheets/${sheetID}/values/${range}?key=${apiKey}`)
+    .then(res => res.json())
+    .then(data => {
       const stats = {};
 
-      // Перебираем все данные и считаем статусы для каждого человека за текущий день
-      data.forEach(record => {
-        const { name, status, date } = record;
+      data.values.forEach(row => {
+        const [status, name, , date] = row;
+        if (!status || !name || !date) return;
+        if (date.trim() !== today) return;
 
-        // Фильтруем по текущей дате
-        if (date !== today) return;
-
-        // Если такого человека ещё нет в объекте, создаём запись
         if (!stats[name]) {
-          stats[name] = {
-            ndf: 0,
-            OK: 0,
-            WAITING: 0,
-            'SCRAP TTL': 0,
-            'SCRAP PNLA': 0,
-            total: 0,
-          };
+          stats[name] = { ndf: 0, OK: 0, WAITING: 0, 'SCRAP TTL': 0, 'SCRAP PNLA': 0, total: 0 };
         }
 
-        // Увеличиваем счетчик для соответствующего статуса
-        if (status === 'ndf') stats[name].ndf++;
-        if (status === 'OK') stats[name].OK++;
-        if (status === 'WAITING') stats[name].WAITING++;
-        if (status === 'SCRAP TTL') stats[name]['SCRAP TTL']++;
-        if (status === 'SCRAP PNLA') stats[name]['SCRAP PNLA']++;
-
-        // Увеличиваем общий счётчик
-        stats[name].total++;
+        if (stats[name][status] !== undefined) {
+          stats[name][status]++;
+          stats[name].total++;
+        }
       });
 
-      return stats;
-    }
-
-    // Получаем подсчёт статистики за текущий день
-    const result = calculateStats(data);
-
-    // Получаем ссылку на таблицу для добавления данных
-    const statsTableBody = document.querySelector('#stats-table tbody');
-
-    // Динамически добавляем строки в таблицу
-    Object.keys(result).forEach(name => {
-      const row = document.createElement('tr');
-      const data = result[name];
-
-      row.innerHTML = `
-        <td>${name}</td>
-        <td>${data.ndf}</td>
-        <td>${data.OK}</td>
-        <td>${data.WAITING}</td>
-        <td>${data['SCRAP TTL']}</td>
-        <td>${data['SCRAP PNLA']}</td>
-        <td>${data.total}</td>
-      `;
-
-      statsTableBody.appendChild(row);
+      const tbody = document.querySelector('#stats-table tbody');
+      Object.entries(stats).forEach(([name, values]) => {
+        const row = document.createElement('tr');
+        row.innerHTML = `
+          <td>${name}</td>
+          <td>${values.ndf}</td>
+          <td>${values.OK}</td>
+          <td>${values.WAITING}</td>
+          <td>${values['SCRAP TTL']}</td>
+          <td>${values['SCRAP PNLA']}</td>
+          <td>${values.total}</td>
+        `;
+        tbody.appendChild(row);
+      });
+    })
+    .catch(err => {
+      console.error('Ошибка загрузки данных:', err);
     });
-  </script>
+</script>
 
 </body>
 </html>
