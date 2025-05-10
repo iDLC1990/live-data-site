@@ -20,7 +20,7 @@
 </head>
 <body>
 
-  <h1>Статистика по статусам</h1>
+  <h1>Статистика по статусам на текущий день</h1>
 
   <table id="stats-table">
     <thead>
@@ -40,27 +40,33 @@
   </table>
 
   <script>
-    // Пример данных
+    // Пример данных с датой
     const data = [
-      { name: 'Иванов', status: 'ndf' },
-      { name: 'Петров', status: 'OK' },
-      { name: 'Иванов', status: 'WAITING' },
-      { name: 'Иванов', status: 'SCRAP TTL' },
-      { name: 'Петров', status: 'SCRAP PNLA' },
-      { name: 'Иванов', status: 'OK' },
-      { name: 'Петров', status: 'WAITING' },
-      { name: 'Иванов', status: 'SCRAP TTL' },
-      { name: 'Петров', status: 'ndf' },
+      { name: 'Иванов', status: 'ndf', date: '2025-05-10' },
+      { name: 'Петров', status: 'OK', date: '2025-05-10' },
+      { name: 'Иванов', status: 'WAITING', date: '2025-05-10' },
+      { name: 'Иванов', status: 'SCRAP TTL', date: '2025-05-10' },
+      { name: 'Петров', status: 'SCRAP PNLA', date: '2025-05-10' },
+      { name: 'Иванов', status: 'OK', date: '2025-05-10' },
+      { name: 'Петров', status: 'WAITING', date: '2025-05-10' },
+      { name: 'Иванов', status: 'SCRAP TTL', date: '2025-05-10' },
+      { name: 'Петров', status: 'ndf', date: '2025-05-10' },
       // Другие записи...
     ];
 
-    // Функция для подсчёта статистики
+    // Получаем текущую дату в формате YYYY-MM-DD
+    const today = new Date().toISOString().split('T')[0];
+
+    // Функция для подсчёта статистики за текущий день
     function calculateStats(data) {
       const stats = {};
 
-      // Перебираем все данные и считаем статусы для каждого человека
+      // Перебираем все данные и считаем статусы для каждого человека за текущий день
       data.forEach(record => {
-        const { name, status } = record;
+        const { name, status, date } = record;
+
+        // Фильтруем по текущей дате
+        if (date !== today) return;
 
         // Если такого человека ещё нет в объекте, создаём запись
         if (!stats[name]) {
@@ -88,7 +94,7 @@
       return stats;
     }
 
-    // Получаем подсчёт статистики
+    // Получаем подсчёт статистики за текущий день
     const result = calculateStats(data);
 
     // Получаем ссылку на таблицу для добавления данных
