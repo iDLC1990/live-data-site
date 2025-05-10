@@ -14,7 +14,7 @@
   </style>
 </head>
 <body>
-  <h1>Dane FI Station (wszystkie dni)</h1>
+  <h1>Dane FI Station (ostatni dzień)</h1>
 
   <div id="KOVALCHYK">
     <h2>FI Station KOVALCHYK Y.</h2>
@@ -84,14 +84,17 @@
         .then(data => {
           const rows = data.table.rows;
           const counts = {};
+          const today = new Date();
+          const todayStr = today.toISOString().split('T')[0]; // 'YYYY-MM-DD'
 
           rows.forEach(row => {
             const cells = row.c.map(c => (c ? c.v : ''));
-            const dateStr = parseDate(cells[0]); // Extract and parse the date
             const status = cells[4];
             const name = cells[5];
+            const dateStr = parseDate(cells[0]);
 
-            if (name && status) {
+            // Проверяем, совпадает ли дата с сегодняшним днем
+            if (dateStr === todayStr && name && status) {
               if (!counts[name]) {
                 counts[name] = {
                   NDF: 0,
