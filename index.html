@@ -60,6 +60,7 @@
     ];
 
     function parseDate(value) {
+      // Проверяем различные форматы дат
       if (typeof value === 'string') {
         if (/^\d{4}-\d{2}-\d{2}$/.test(value)) {
           return value;
@@ -87,11 +88,15 @@
           const today = new Date();
           const todayStr = today.toISOString().split('T')[0]; // 'YYYY-MM-DD'
 
+          console.log("Сегодняшняя дата: ", todayStr);
+
           rows.forEach(row => {
             const cells = row.c.map(c => (c ? c.v : ''));
             const status = cells[4];
             const name = cells[5];
             const dateStr = parseDate(cells[0]);
+
+            console.log("Дата из строки: ", dateStr, " | Имя: ", name, " | Статус: ", status);
 
             // Проверяем, совпадает ли дата с сегодняшним днем
             if (dateStr === todayStr && name && status) {
@@ -110,8 +115,14 @@
             }
           });
 
+          console.log("Посчитанные данные: ", counts);
+
           const tbody = document.querySelector(`#${divId} tbody`);
           tbody.innerHTML = '';
+
+          if (Object.keys(counts).length === 0) {
+            console.log("Нет данных для отображения!");
+          }
 
           Object.entries(counts).forEach(([name, stat]) => {
             const total = Object.values(stat).reduce((a, b) => a + b, 0);
