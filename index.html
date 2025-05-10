@@ -2,21 +2,22 @@
 <html lang="pl">
 <head>
   <meta charset="UTF-8">
-  <title>Dane z FI Station</title>
+  <title>Dane FI Station</title>
   <style>
-    body { font-family: sans-serif; padding: 20px; background-color: #f9f9f9; }
+    body { font-family: sans-serif; background-color: #f4f4f4; padding: 20px; }
+    h1 { text-align: center; }
     h2 { margin-top: 40px; }
-    table { border-collapse: collapse; width: 100%; margin-top: 10px; }
-    th, td { border: 1px solid #ccc; padding: 8px; text-align: left; }
+    table { width: 100%; border-collapse: collapse; margin-top: 10px; }
+    th, td { border: 1px solid #ccc; padding: 8px; text-align: center; }
     th { background-color: #eee; }
-    th, td { width: 14%; } /* Выравнивание столбцов */
+    td:first-child { text-align: left; }
   </style>
 </head>
 <body>
-  <h1>Dane z FI Station — dzisiaj</h1>
+  <h1>Dane FI Station (tylko dzisiaj)</h1>
 
-  <div id="kovzlchyk">
-    <h2>fi station kovalchyk y.</h2>
+  <div id="KOVALCHYK">
+    <h2>FI Station KOVALCHYK Y.</h2>
     <table>
       <thead>
         <tr>
@@ -33,8 +34,8 @@
     </table>
   </div>
 
-  <div id="ulanovych">
-    <h2>fi station ulanovych.r</h2>
+  <div id="ULANOVYCH">
+    <h2>FI Station 2 ULANOVYCH.R</h2>
     <table>
       <thead>
         <tr>
@@ -54,88 +55,73 @@
   <script>
     const sheetID = '16MNddQGaidy__FBtRFeiw6HxRDQojBW2_c8Qznt62O8';
     const sheets = [
-      { id: 'kovalchyk', name: 'FI Station KOVALCHYK Y.' },
-      { id: 'ulanovych', name: 'FI Station 2 ULANOVYCH.R' }
+      { divId: 'KOVALCHYK', sheetName: 'FI Station KOVALCHYK Y.' },
+      { divId: 'ULANOVYCH', sheetName: 'FI Station 2 ULANOVYCH.R' }
     ];
 
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);  // Убираем время, чтобы сравнивать только по дате
+    const todayStr = new Date().toISOString().slice(0, 10); // "2025-05-10"
 
-    // Преобразуем строку "yyyy-mm-dd" в объект Date
-    function parseDate(dateStr) {
-      const [year, month, day] = dateStr.split('-').map(num => parseInt(num, 10));
-      return new Date(year, month - 1, day);  // Месяцы в JavaScript начинаются с 0
+    function parseDate(str) {
+      return str && /^\d{4}-\d{2}-\d{2}$/.test(str) ? str : null;
     }
 
-    function fetchSheet(sheet) {
-      // Закодируем название листа с пробелами и символами
-      const sheetNameEncoded = encodeURIComponent(sheet.name);
-      const url = `https://docs.google.com/spreadsheets/d/${sheetID}/gviz/tq?sheet=${sheetNameEncoded}`;
+    function fetchData({ divId, sheetName }) {
+      const encodedName = encodeURIComponent(sheetName);
+      const url = `https://docs.google.com/spreadsheets/d/${sheetID}/gviz/tq?sheet=${encodedName}`;
 
-      console.log(`Fetching data from: ${url}`);
-      
       fetch(url)
         .then(res => res.text())
-        .then(text => {
-          const json = JSON.parse(text.substring(47).slice(0, -2));
-          console.log('Data fetched successfully:', json); // Логирование данных
-          const cols = json.table.cols.map(c => c.label);
-          const rows = json.table.rows;
+        .then(text => JSON.parse(text.substring(47).slice(0, -2)))
+        .then(data => {
+          const rows = data.table.rows;
+          const counts = {};
 
-          const container = document.getElementById(sheet.id);
-          const tbody = container.querySelector('tbody');
-          const statusCount = {};
-
-          // Подсчитываем количество каждого статуса для каждой фамилии
           rows.forEach(row => {
-            const cells = row.c.map(cell => (cell ? cell.v : ''));
-            const cellDate = parseDate(cells[0]?.toString()); // Преобразуем дату из первого столбца (в формате yyyy-mm-dd)
-            const name = cells[5]; // Фамилия из столбца F
-            const status = cells[4]; // Статус из столбца E
-            
-            if (cellDate && cellDate.getTime() === today.getTime()) {
-              // Инициализация статистики для фамилии
-              if (!statusCount[name]) {
-                statusCount[name] = {
+            const cells = row.c.map(c => (c ? c.v : ''));
+            const date = parseDate(cells[0]);
+            const status = cells[4];
+            const name = cells[5];
+
+            if (date === todayStr && name) {
+              if (!counts[name]) {
+                counts[name] = {
                   NDF: 0,
                   OK: 0,
                   WAITING: 0,
                   'SCRAP TTL': 0,
-                  'SCRAP PNLA': 0,
-                  'SUMA CALKOWITA': 0
+                  'SCRAP PNLA': 0
                 };
               }
-
-              // Увеличиваем счетчик для соответствующего статуса
-              if (statusCount[name][status] !== undefined) {
-                statusCount[name][status]++;
+              if (counts[name][status] !== undefined) {
+                counts[name][status]++;
               }
             }
           });
 
-          // Заполняем таблицу
-          Object.keys(statusCount).forEach(name => {
-            const tr = document.createElement('tr');
-            const data = statusCount[name];
+          const tbody = document.querySelector(`#${divId} tbody`);
+          tbody.innerHTML = ''; // Очистка
 
-            tr.innerHTML = `
-              <td>${name}</td>
-              <td>${data.NDF}</td>
-              <td>${data.OK}</td>
-              <td>${data.WAITING}</td>
-              <td>${data['SCRAP TTL']}</td>
-              <td>${data['SCRAP PNLA']}</td>
-              <td>${Object.values(data).reduce((a, b) => a + b, 0)}</td> <!-- Общая сумма -->
-            `;
-            tbody.appendChild(tr);
+          Object.entries(counts).forEach(([name, stat]) => {
+            const total = Object.values(stat).reduce((a, b) => a + b, 0);
+            const row = `
+              <tr>
+                <td>${name}</td>
+                <td>${stat.NDF}</td>
+                <td>${stat.OK}</td>
+                <td>${stat.WAITING}</td>
+                <td>${stat['SCRAP TTL']}</td>
+                <td>${stat['SCRAP PNLA']}</td>
+                <td>${total}</td>
+              </tr>`;
+            tbody.insertAdjacentHTML('beforeend', row);
           });
         })
-        .catch(error => {
-          console.error('Error fetching data:', error);
+        .catch(err => {
+          console.error(`Błąd przy przetwarzaniu arkusza "${sheetName}":`, err);
         });
     }
 
-    sheets.forEach(fetchSheet);
+    sheets.forEach(fetchData);
   </script>
 </body>
 </html>
