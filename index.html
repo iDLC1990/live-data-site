@@ -59,15 +59,12 @@
     ];
 
     const today = new Date();
-    today.setHours(0, 0, 0, 0);
+    today.setHours(0, 0, 0, 0);  // Убираем время, чтобы сравнивать только по дате
 
+    // Преобразуем строку "yyyy-mm-dd" в объект Date
     function parseDate(dateStr) {
-      const parts = dateStr.split(/[./-]/);
-      if (parts.length === 3) {
-        const [day, month, year] = parts.map(p => parseInt(p, 10));
-        return new Date(year < 100 ? 2000 + year : year, month - 1, day);
-      }
-      return null;
+      const [year, month, day] = dateStr.split('-').map(num => parseInt(num, 10));
+      return new Date(year, month - 1, day);  // Месяцы в JavaScript начинаются с 0
     }
 
     function fetchSheet(sheet) {
@@ -86,9 +83,9 @@
           // Подсчитываем количество каждого статуса для каждой фамилии
           rows.forEach(row => {
             const cells = row.c.map(cell => (cell ? cell.v : ''));
-            const cellDate = parseDate(cells[0]?.toString());
-            const name = cells[5]; // Фамилия в колонке F
-            const status = cells[4]; // Статус в колонке E
+            const cellDate = parseDate(cells[0]?.toString()); // Преобразуем дату из первого столбца (в формате yyyy-mm-dd)
+            const name = cells[5]; // Фамилия из столбца F
+            const status = cells[4]; // Статус из столбца E
             
             if (cellDate && cellDate.getTime() === today.getTime()) {
               // Инициализация статистики для фамилии
