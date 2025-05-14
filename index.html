@@ -125,17 +125,29 @@
     </table>
   </div>
 
-  <!-- Итоговая таблица -->
   <div class="table-container">
+    <button class="table-button">Podsumowanie 2 Stacji</button>
     <table id="summary-table">
+      <thead>
+        <tr>
+          <th>Podsumowanie</th>
+          <th>NDF</th>
+          <th>OK</th>
+          <th>WAITING</th>
+          <th>SCRAP TTL</th>
+          <th>SCRAP PNLA</th>
+          <th>SUMA CALKOWITA</th>
+        </tr>
+      </thead>
       <tbody>
         <tr class="total-row">
-          <td>Podsumowanie</td>
+          <td>SUMA</td>
           <td id="sum-ndf">0</td>
           <td id="sum-ok">0</td>
           <td id="sum-waiting">0</td>
           <td id="sum-scrap-ttl">0</td>
           <td id="sum-scrap-pnla">0</td>
+          <td id="sum-total">0</td>
         </tr>
       </tbody>
     </table>
@@ -252,18 +264,13 @@
       return totals;
     }
 
-    function updateSummary(totals1, totals2) {
-      const sumNDF = totals1.NDF + totals2.NDF;
-      const sumOK = totals1.OK + totals2.OK;
-      const sumWAITING = totals1.WAITING + totals2.WAITING;
-      const sumSCRAP_TTL = totals1['SCRAP TTL'] + totals2['SCRAP TTL'];
-      const sumSCRAP_PNLA = totals1['SCRAP PNLA'] + totals2['SCRAP PNLA'];
-
-      document.getElementById('sum-ndf').textContent = sumNDF;
-      document.getElementById('sum-ok').textContent = sumOK;
-      document.getElementById('sum-waiting').textContent = sumWAITING;
-      document.getElementById('sum-scrap-ttl').textContent = sumSCRAP_TTL;
-      document.getElementById('sum-scrap-pnla').textContent = sumSCRAP_PNLA;
+    function updateSummaryTotals(total1, total2) {
+      document.getElementById('sum-ndf').textContent = total1.NDF + total2.NDF;
+      document.getElementById('sum-ok').textContent = total1.OK + total2.OK;
+      document.getElementById('sum-waiting').textContent = total1.WAITING + total2.WAITING;
+      document.getElementById('sum-scrap-ttl').textContent = total1['SCRAP TTL'] + total2['SCRAP TTL'];
+      document.getElementById('sum-scrap-pnla').textContent = total1['SCRAP PNLA'] + total2['SCRAP PNLA'];
+      document.getElementById('sum-total').textContent = total1.total + total2.total;
     }
 
     async function updateStats() {
@@ -273,10 +280,9 @@
         'FI Station 2 ULANOVYCH.R': 'stats-table-ulan'
       };
 
-      let totals1 = null;
-      let totals2 = null;
+      const allTotals = {};
 
-      Object.entries(data).forEach(([sheetName, sheetData], index) => {
+      Object.entries(data).forEach(([sheetName, sheetData]) => {
         const lastDate = getLastDate(sheetData);
         const lastDateString = lastDate.toISOString().split('T')[0];
         const filteredData = sheetData.filter(record => {
@@ -285,16 +291,13 @@
         });
         const result = calculateStats(filteredData);
         const totals = displayStats(result, tableIdMap[sheetName]);
-
-        if (index === 0) totals1 = totals;
-        else totals2 = totals;
-
+        allTotals[sheetName] = totals;
         document.getElementById('date-info').textContent = `DATE: ${lastDateString}`;
       });
 
-      if (totals1 && totals2) {
-        updateSummary(totals1, totals2);
-      }
+      const t1 = allTotals['FI Station KOVALCHYK Y.'] || {NDF:0, OK:0, WAITING:0, 'SCRAP TTL':0, 'SCRAP PNLA':0, total:0};
+      const t2 = allTotals['FI Station 2 ULANOVYCH.R'] || {NDF:0, OK:0, WAITING:0, 'SCRAP TTL':0, 'SCRAP PNLA':0, total:0};
+      updateSummaryTotals(t1, t2);
     }
 
     setInterval(updateStats, 60 * 1000);
