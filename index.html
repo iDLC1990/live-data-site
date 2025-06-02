@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="ru">
+<html lang="pl">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
@@ -100,13 +100,13 @@
   <div class="header">
     <h1>LCDR LIVE DATA 2025</h1>
     <div class="controls">
-      <label for="month-select" class="date-info">Выберите месяц:</label>
+      <label for="month-select" class="date-info">Wybierz miesiąc:</label>
       <select id="month-select"></select>
     </div>
   </div>
 
   <div class="table-container">
-    <button class="table-button">FI Station Overview</button>
+    <button class="table-button">Podsumowanie FI Station</button>
     <table id="combined-table">
       <thead>
         <tr>
@@ -116,7 +116,7 @@
           <th>WAITING</th>
           <th>SCRAP TTL</th>
           <th>SCRAP PNLA</th>
-          <th>SUMA CALKOWITA</th>
+          <th>SUMA CAŁKOWITA</th>
         </tr>
       </thead>
       <tbody></tbody>
@@ -226,8 +226,9 @@
       for (let i = 0; i < monthsToShow; i++) {
         const date = new Date(now.getFullYear(), now.getMonth() - i, 1);
         const value = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`;
-        const label = date.toLocaleDateString('ru-RU', { month: 'long', year: 'numeric' });
-        const option = new Option(label.toUpperCase(), value);
+        const label = date.toLocaleDateString('pl-PL', { month: 'long', year: 'numeric' });
+        const capitalizedLabel = label.charAt(0).toUpperCase() + label.slice(1);
+        const option = new Option(capitalizedLabel, value);
         select.appendChild(option);
       }
     }
@@ -250,14 +251,12 @@
       displayCombinedStats(stats);
     }
 
-    // Обновление при смене месяца
     document.addEventListener('DOMContentLoaded', () => {
       populateMonthSelect();
       document.getElementById('month-select').addEventListener('change', updateStats);
       updateStats();
     });
 
-    // Автообновление каждые 5 секунд
     setInterval(updateStats, 5000);
   </script>
 </body>
