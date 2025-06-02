@@ -17,6 +17,7 @@
       align-items: center;
       padding: 20px 10%;
       background-color: #111;
+      flex-wrap: wrap;
     }
 
     .header h1 {
@@ -25,9 +26,21 @@
       font-size: 24px;
     }
 
+    .controls {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-top: 10px;
+    }
+
     .date-info {
       color: #008080;
-      font-size: 24px;
+      font-size: 20px;
+    }
+
+    select {
+      padding: 6px 10px;
+      font-size: 16px;
     }
 
     .table-container {
@@ -86,12 +99,15 @@
 <body>
   <div class="header">
     <h1>LCDR LIVE DATA 2025</h1>
-    <div class="date-info" id="date-info">DATE: --</div>
+    <div class="controls">
+      <label for="month-select" class="date-info">Выберите месяц:</label>
+      <select id="month-select"></select>
+    </div>
   </div>
 
   <div class="table-container">
-    <button class="table-button">FI Station KOVALCHYK Y.</button>
-    <table id="stats-table-kov">
+    <button class="table-button">FI Station Overview</button>
+    <table id="combined-table">
       <thead>
         <tr>
           <th>NAME</th>
@@ -104,52 +120,6 @@
         </tr>
       </thead>
       <tbody></tbody>
-    </table>
-  </div>
-
-  <div class="table-container">
-    <button class="table-button">FI Station 2 ULANOVYCH.R</button>
-    <table id="stats-table-ulan">
-      <thead>
-        <tr>
-          <th>NAME</th>
-          <th>NDF</th>
-          <th>OK</th>
-          <th>WAITING</th>
-          <th>SCRAP TTL</th>
-          <th>SCRAP PNLA</th>
-          <th>SUMA CALKOWITA</th>
-        </tr>
-      </thead>
-      <tbody></tbody>
-    </table>
-  </div>
-
-  <div class="table-container">
-    <button class="table-button">Podsumowanie </button>
-    <table id="summary-table">
-      <thead>
-        <tr>
-          <th>  </th>
-          <th>NDF</th>
-          <th>OK</th>
-          <th>WAITING</th>
-          <th>SCRAP TTL</th>
-          <th>SCRAP PNLA</th>
-          <th>SUMA CALKOWITA</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr class="total-row">
-          <td>SUMA</td>
-          <td id="sum-ndf">0</td>
-          <td id="sum-ok">0</td>
-          <td id="sum-waiting">0</td>
-          <td id="sum-scrap-ttl">0</td>
-          <td id="sum-scrap-pnla">0</td>
-          <td id="sum-total">0</td>
-        </tr>
-      </tbody>
     </table>
   </div>
 
@@ -167,26 +137,12 @@
     async function fetchData() {
       const sheet1Data = await getData('FI Station KOVALCHYK Y.');
       const sheet2Data = await getData('FI Station 2 ULANOVYCH.R');
-      return {
-        'FI Station KOVALCHYK Y.': sheet1Data.slice(1).map(row => ({
-          name: row[5],
-          status: row[4],
-          date: row[0]
-        })),
-        'FI Station 2 ULANOVYCH.R': sheet2Data.slice(1).map(row => ({
-          name: row[5],
-          status: row[4],
-          date: row[0]
-        }))
-      };
-    }
-
-    function getLastDate(data) {
-      const dates = data.map(record => {
-        const datePart = record.date?.split(' ')[0];
-        return datePart ? new Date(datePart) : new Date(0);
-      });
-      return new Date(Math.max(...dates));
+      const combined = [...sheet1Data.slice(1), ...sheet2Data.slice(1)];
+      return combined.map(row => ({
+        name: row[5],
+        status: row[4],
+        date: row[0]
+      }));
     }
 
     function calculateStats(data) {
@@ -212,9 +168,9 @@
       return stats;
     }
 
-    function displayStats(stats, tableId) {
-      const statsTableBody = document.querySelector(`#${tableId} tbody`);
-      statsTableBody.innerHTML = '';
+    function displayCombinedStats(stats) {
+      const tbody = document.querySelector('#combined-table tbody');
+      tbody.innerHTML = '';
 
       const totals = {
         NDF: 0,
@@ -238,7 +194,7 @@
           <td>${data['SCRAP PNLA']}</td>
           <td>${data.total}</td>
         `;
-        statsTableBody.appendChild(row);
+        tbody.appendChild(row);
 
         totals.NDF += data.NDF;
         totals.OK += data.OK;
@@ -251,7 +207,7 @@
       const totalRow = document.createElement('tr');
       totalRow.className = 'total-row';
       totalRow.innerHTML = `
-        <td>SUMA CALKOWITA</td>
+        <td>SUMA</td>
         <td>${totals.NDF}</td>
         <td>${totals.OK}</td>
         <td>${totals.WAITING}</td>
@@ -259,49 +215,50 @@
         <td>${totals['SCRAP PNLA']}</td>
         <td>${totals.total}</td>
       `;
-      statsTableBody.appendChild(totalRow);
-
-      return totals;
+      tbody.appendChild(totalRow);
     }
 
-    function updateSummaryTotals(total1, total2) {
-      document.getElementById('sum-ndf').textContent = total1.NDF + total2.NDF;
-      document.getElementById('sum-ok').textContent = total1.OK + total2.OK;
-      document.getElementById('sum-waiting').textContent = total1.WAITING + total2.WAITING;
-      document.getElementById('sum-scrap-ttl').textContent = total1['SCRAP TTL'] + total2['SCRAP TTL'];
-      document.getElementById('sum-scrap-pnla').textContent = total1['SCRAP PNLA'] + total2['SCRAP PNLA'];
-      document.getElementById('sum-total').textContent = total1.total + total2.total;
+    function populateMonthSelect() {
+      const select = document.getElementById('month-select');
+      const now = new Date();
+      const monthsToShow = 12;
+
+      for (let i = 0; i < monthsToShow; i++) {
+        const date = new Date(now.getFullYear(), now.getMonth() - i, 1);
+        const value = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`;
+        const label = date.toLocaleDateString('ru-RU', { month: 'long', year: 'numeric' });
+        const option = new Option(label.toUpperCase(), value);
+        select.appendChild(option);
+      }
     }
 
     async function updateStats() {
-      const data = await fetchData();
-      const tableIdMap = {
-        'FI Station KOVALCHYK Y.': 'stats-table-kov',
-        'FI Station 2 ULANOVYCH.R': 'stats-table-ulan'
-      };
+      const selectedMonth = document.getElementById('month-select').value;
+      const [year, month] = selectedMonth.split('-').map(Number);
 
-      const allTotals = {};
+      const combinedData = await fetchData();
 
-      Object.entries(data).forEach(([sheetName, sheetData]) => {
-        const lastDate = getLastDate(sheetData);
-        const lastDateString = lastDate.toISOString().split('T')[0];
-        const filteredData = sheetData.filter(record => {
-          const recordDate = record.date?.split(' ')[0] || '';
-          return recordDate === lastDateString;
-        });
-        const result = calculateStats(filteredData);
-        const totals = displayStats(result, tableIdMap[sheetName]);
-        allTotals[sheetName] = totals;
-        document.getElementById('date-info').textContent = `DATE: ${lastDateString}`;
+      const filtered = combinedData.filter(record => {
+        const dateStr = record.date?.split(' ')[0];
+        if (!dateStr) return false;
+
+        const date = new Date(dateStr);
+        return date.getFullYear() === year && date.getMonth() + 1 === month;
       });
 
-      const t1 = allTotals['FI Station KOVALCHYK Y.'] || {NDF:0, OK:0, WAITING:0, 'SCRAP TTL':0, 'SCRAP PNLA':0, total:0};
-      const t2 = allTotals['FI Station 2 ULANOVYCH.R'] || {NDF:0, OK:0, WAITING:0, 'SCRAP TTL':0, 'SCRAP PNLA':0, total:0};
-      updateSummaryTotals(t1, t2);
+      const stats = calculateStats(filtered);
+      displayCombinedStats(stats);
     }
 
-    setInterval(updateStats, 60 * 1000);
-    updateStats();
+    // Обновление при смене месяца
+    document.addEventListener('DOMContentLoaded', () => {
+      populateMonthSelect();
+      document.getElementById('month-select').addEventListener('change', updateStats);
+      updateStats();
+    });
+
+    // Автообновление каждые 5 секунд
+    setInterval(updateStats, 5000);
   </script>
 </body>
 </html>
