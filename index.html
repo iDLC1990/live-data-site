@@ -117,6 +117,7 @@
           <th>SCRAP TTL</th>
           <th>SCRAP PNLA</th>
           <th>SUMA CAŁKOWITA</th>
+          <th>DNI OBECNOŚCI</th>
         </tr>
       </thead>
       <tbody></tbody>
@@ -129,9 +130,14 @@
     const sheetURL = `https://sheets.googleapis.com/v4/spreadsheets/${sheetId}/values/`;
 
     async function getData(sheetName) {
-      const response = await fetch(`${sheetURL}${sheetName}?key=${apiKey}`);
-      const data = await response.json();
-      return data.values;
+      try {
+        const response = await fetch(`${sheetURL}${sheetName}?key=${apiKey}`);
+        const data = await response.json();
+        return data.values;
+      } catch (err) {
+        console.error(`Błąd pobierania danych: ${err}`);
+        return [];
+      }
     }
 
     async function fetchData() {
@@ -147,7 +153,9 @@
 
     function calculateStats(data) {
       const stats = {};
-      data.forEach(({ name, status }) => {
+      const presenceMap = {};
+
+      data.forEach(({ name, status, date }) => {
         if (!stats[name]) {
           stats[name] = {
             NDF: 0,
@@ -155,16 +163,27 @@
             WAITING: 0,
             'SCRAP TTL': 0,
             'SCRAP PNLA': 0,
-            total: 0
+            total: 0,
+            presentDays: 0
           };
+          presenceMap[name] = new Set();
         }
+
         if (status === 'NDF') stats[name].NDF++;
         if (status === 'OK') stats[name].OK++;
         if (status === 'WAITING') stats[name].WAITING++;
         if (status === 'SCRAP TTL') stats[name]['SCRAP TTL']++;
         if (status === 'SCRAP PNLA') stats[name]['SCRAP PNLA']++;
         stats[name].total++;
+
+        const dayOnly = date?.split(' ')[0];
+        if (dayOnly) presenceMap[name].add(dayOnly);
       });
+
+      for (const name in presenceMap) {
+        stats[name].presentDays = presenceMap[name].size;
+      }
+
       return stats;
     }
 
@@ -193,6 +212,7 @@
           <td>${data['SCRAP TTL']}</td>
           <td>${data['SCRAP PNLA']}</td>
           <td>${data.total}</td>
+          <td>${data.presentDays}</td>
         `;
         tbody.appendChild(row);
 
@@ -214,6 +234,7 @@
         <td>${totals['SCRAP TTL']}</td>
         <td>${totals['SCRAP PNLA']}</td>
         <td>${totals.total}</td>
+        <td>-</td>
       `;
       tbody.appendChild(totalRow);
     }
