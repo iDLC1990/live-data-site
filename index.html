@@ -290,7 +290,6 @@
       flex-direction: column;
       align-items: center;
       width: 100%;
-      overflow: hidden; /* Щоб штрихкоди не виходили за межі блоку */
     }
 
     .label-caption {
@@ -308,14 +307,12 @@
       display: flex;
       justify-content: center;
       align-items: center;
-      flex-grow: 1; /* Дозволяємо блоку штрихкоду розширюватися */
     }
 
+    /* Одинаковая фиксированная высота для всех SVG штрихкодов */
     .barcode-wrapper svg {
       max-width: 100%;
-      /* height прибираємо, щоб працювали налаштування з JS */
-      height: auto;
-      max-height: 100%; /* Обмежуємо висоту батьківським блоком */
+      height: 16mm;
       display: block;
     }
 
@@ -333,7 +330,7 @@
 
     /* Стиль для Serial Number (18pt) */
     .label-value-sn {
-      font-size: 16pt;
+      font-size: 18pt;
       font-weight: 900;
       font-family: 'Consolas', 'Courier New', monospace;
       color: #000000;
@@ -345,7 +342,7 @@
 
     /* Відступ між блоками PN та SN */
     .label-spacer {
-      height: 1.5mm;
+      height: 2mm;
       width: 100%;
     }
 
@@ -505,7 +502,7 @@
 
           <div class="label-spacer"></div>
 
-          <div class="label-block" style="flex-grow: 1; justify-content: center;">
+          <div class="label-block">
             <span class="label-caption">SN</span>
             <div class="barcode-wrapper">
               <svg id="barcodeSN_${suffix}"></svg>
@@ -523,35 +520,23 @@
       modalPreviewBody.innerHTML = generateLabelHTML(product.pn, product.sn, 'preview');
       printContainer.innerHTML = generateLabelHTML(product.pn, product.sn, 'print');
 
-      // Спільні базові налаштування
-      const barcodeOptionsBase = {
+      // Единые настройки для обоих штрихкодов
+      const barcodeOptions = {
         format: "CODE128",
         displayValue: false,
         margin: 0,
-        width: 1.55,
+        height: 45, // Единая высота для PN и SN
+        width: 1.5,
         lineColor: "#000000",
         background: "transparent"
       };
 
-      // Налаштування для Part Number (зменшена висота)
-      const barcodeOptionsPN = {
-        ...barcodeOptionsBase,
-        height: 60 // ЗМЕНШЕНО
-      };
+      // Генерация одинаковых штрихкодов
+      JsBarcode("#barcodePN_preview", product.pn, barcodeOptions);
+      JsBarcode("#barcodePN_print", product.pn, barcodeOptions);
 
-      // Налаштування для Serial Number (збільшена висота)
-      const barcodeOptionsSN = {
-        ...barcodeOptionsBase,
-        height: 60 // ЗБІЛЬШЕНО
-      };
-
-      // Геруємо штрихкоди для PN (короткі)
-      JsBarcode("#barcodePN_preview", product.pn, barcodeOptionsPN);
-      JsBarcode("#barcodePN_print", product.pn, barcodeOptionsPN);
-
-      // Геруємо штрихкоди для SN (високі)
-      JsBarcode("#barcodeSN_preview", product.sn, barcodeOptionsSN);
-      JsBarcode("#barcodeSN_print", product.sn, barcodeOptionsSN);
+      JsBarcode("#barcodeSN_preview", product.sn, barcodeOptions);
+      JsBarcode("#barcodeSN_print", product.sn, barcodeOptions);
 
       modal.classList.add('is-open');
       modal.setAttribute('aria-hidden', 'false');
