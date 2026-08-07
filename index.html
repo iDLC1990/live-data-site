@@ -1,285 +1,557 @@
 <!DOCTYPE html>
-<html lang="pl">
+<html lang="uk">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>LCDR LIVE DATA</title>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Printer Labels - Виробнича система</title>
+  
+  <script src="https://cdn.jsdelivr.net/npm/jsbarcode@3.11.6/dist/JsBarcode.all.min.js"></script>
+
   <style>
-    body {
-      background-color: #000;
-      color: #fff;
-      font-family: Arial, sans-serif;
+    /* ==========================================
+       ОСНОВНІ СТИЛІ ТА СЕМАНТИЧНІ ЗМІННІ (DARK THEME)
+       ========================================== */
+    :root {
+      --bg-color: #111827;
+      --card-bg: #1F2937;
+      --accent-color: #2563EB;
+      --accent-hover: #1D4ED8;
+      --text-main: #F9FAFB;
+      --text-muted: #9CA3AF;
+      --border-color: #374151;
+      --radius: 12px;
+      --shadow-lg: 0 10px 25px -5px rgba(0, 0, 0, 0.5), 0 8px 10px -6px rgba(0, 0, 0, 0.3);
+      --shadow-modal: 0 25px 50px -12px rgba(0, 0, 0, 0.7);
     }
 
-    .header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      padding: 20px 10%;
-      background-color: #112;
-      flex-wrap: wrap;
-    }
-
-    .header h1 {
+    * {
+      box-sizing: border-box;
       margin: 0;
-      color: #008080;
-      font-size: 24px;
+      padding: 0;
     }
 
-    .controls {
+    body {
+      background-color: var(--bg-color);
+      color: var(--text-main);
+      font-family: 'Segoe UI', -apple-system, BlinkMacSystemFont, Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+      min-height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: flex-start;
+      padding: 40px 20px;
+      line-height: 1.5;
+    }
+
+    /* ==========================================
+       ГОЛОВНИЙ КОНТЕЙНЕР ТА СЕКЦІЇ
+       ========================================== */
+    .app-container {
+      max-width: 960px;
+      width: 100%;
+    }
+
+    .page-header {
+      margin-bottom: 28px;
+    }
+
+    .page-title {
+      font-size: 28px;
+      font-weight: 700;
+      color: #FFFFFF;
+      letter-spacing: -0.5px;
       display: flex;
       align-items: center;
-      gap: 10px;
-      margin-top: 10px;
+      gap: 12px;
     }
 
-    .date-info {
-      color: #008080;
-      font-size: 20px;
+    .page-subtitle {
+      font-size: 14px;
+      color: var(--text-muted);
+      margin-top: 6px;
     }
 
-    select {
-      padding: 6px 10px;
-      font-size: 16px;
+    /* ==========================================
+       КАРТКА ТА ТАБЛИЦЯ ТОВАРІВ
+       ========================================== */
+    .card {
+      background-color: var(--card-bg);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow-lg);
+      border: 1px solid var(--border-color);
+      overflow: hidden;
     }
 
     .table-container {
-      width: 80%;
-      margin: 24px auto;
-    }
-
-    .table-button {
-      display: block;
       width: 100%;
-      padding: 12px;
-      background-color: #008080;
-      color: #000;
-      font-size: 18px;
-      font-weight: bold;
-      border: none;
-      border-radius: 10px 10px 0 0;
-      cursor: pointer;
-      text-align: left;
-      padding-left: 20px;
-      margin-bottom: -1px;
+      overflow-x: auto;
     }
 
-    table {
+    .data-table {
       width: 100%;
       border-collapse: collapse;
-      background-color: #555;
-      border-radius: 0 0 10px 10px;
+      text-align: left;
     }
 
-    table, th, td {
-      border: 1px solid #fff;
+    .data-table th {
+      background-color: #111827;
+      color: var(--text-muted);
+      font-size: 12px;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      padding: 16px 24px;
+      font-weight: 600;
+      border-bottom: 1px solid var(--border-color);
     }
 
-    th, td {
-      padding: 10px;
+    .data-table td {
+      padding: 18px 24px;
+      font-size: 14px;
+      color: #E5E7EB;
+      border-bottom: 1px solid var(--border-color);
+      vertical-align: middle;
+    }
+
+    .data-table tbody tr:last-child td {
+      border-bottom: none;
+    }
+
+    .data-table tbody tr {
+      transition: background-color 0.15s ease;
+    }
+
+    .data-table tbody tr:hover {
+      background-color: rgba(255, 255, 255, 0.03);
+    }
+
+    .code-text {
+      font-family: 'Segoe UI Mono', 'Consolas', 'Courier New', monospace;
+      font-weight: 600;
+      letter-spacing: 0.5px;
+    }
+
+    /* ==========================================
+       КНОПКИ ТА ІНТЕРАКТИВНІ ЕЛЕМЕНТИ
+       ========================================== */
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      background-color: var(--accent-color);
+      color: #FFFFFF;
+      border: none;
+      border-radius: 8px;
+      padding: 10px 18px;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+      font-family: inherit;
+      box-shadow: 0 4px 6px -1px rgba(37, 99, 235, 0.3);
+      outline: none;
+    }
+
+    .btn:hover {
+      background-color: var(--accent-hover);
+      transform: translateY(-2px);
+      box-shadow: 0 6px 14px -2px rgba(37, 99, 235, 0.45);
+    }
+
+    .btn:active {
+      transform: translateY(0);
+      box-shadow: 0 2px 4px -1px rgba(37, 99, 235, 0.3);
+    }
+
+    .btn-secondary {
+      background-color: #374151;
+      color: #F3F4F6;
+      box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.2);
+    }
+
+    .btn-secondary:hover {
+      background-color: #4B5563;
+      box-shadow: 0 6px 12px -2px rgba(0, 0, 0, 0.3);
+    }
+
+    /* ==========================================
+       МОДАЛЬНЕ ВІКНО ПОПЕРЕДНЬОГО ПЕРЕГЛЯДУ
+       ========================================== */
+    .modal-backdrop {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      background-color: rgba(0, 0, 0, 0.75);
+      backdrop-filter: blur(6px);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.25s ease-in-out;
+      z-index: 1000;
+    }
+
+    .modal-backdrop.is-open {
+      opacity: 1;
+      pointer-events: auto;
+    }
+
+    .modal-card {
+      background-color: var(--card-bg);
+      border-radius: var(--radius);
+      border: 1px solid var(--border-color);
+      box-shadow: var(--shadow-modal);
+      width: 90%;
+      max-width: 580px;
+      display: flex;
+      flex-direction: column;
+      transform: scale(0.92);
+      transition: transform 0.25s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+      overflow: hidden;
+    }
+
+    .modal-backdrop.is-open .modal-card {
+      transform: scale(1);
+    }
+
+    .modal-header {
+      padding: 18px 24px;
+      border-bottom: 1px solid var(--border-color);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .modal-title {
+      font-size: 18px;
+      font-weight: 600;
+      color: #FFFFFF;
+    }
+
+    .modal-close-btn {
+      background: none;
+      border: none;
+      color: var(--text-muted);
+      font-size: 22px;
+      cursor: pointer;
+      line-height: 1;
+      border-radius: 4px;
+      padding: 4px 8px;
+      transition: color 0.15s, background-color 0.15s;
+    }
+
+    .modal-close-btn:hover {
+      color: #FFFFFF;
+      background-color: rgba(255, 255, 255, 0.1);
+    }
+
+    .modal-body {
+      padding: 24px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      background-color: #111827;
+      overflow-x: auto;
+    }
+
+    .modal-footer {
+      padding: 16px 24px;
+      border-top: 1px solid var(--border-color);
+      display: flex;
+      justify-content: flex-end;
+      gap: 12px;
+      background-color: var(--card-bg);
+    }
+
+    /* ==========================================
+       ПРОМИСЛОВА ЕТИКЕТКА (100mm x 80mm Landscape)
+       ========================================== */
+    .industrial-label {
+      width: 100mm;
+      height: 80mm;
+      background-color: #FFFFFF;
+      color: #000000;
+      padding: 3mm 4mm;
+      box-sizing: border-box;
+      font-family: 'Segoe UI', Arial, sans-serif;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
       text-align: center;
+      border: 1px solid #D1D5DB;
+      box-shadow: 0 10px 25px rgba(0, 0, 0, 0.5);
     }
 
-    th {
-      font-weight: bold;
-      font-size: 16px;
+    .label-block {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      width: 100%;
     }
 
-    td {
-      font-size: 16px;
+    .label-caption {
+      font-size: 22pt; /* Увеличено с 16pt */
+      font-weight: 900;
+      color: #000000;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      line-height: 1;
+      margin-bottom: 2px;
     }
 
-    .total-row {
-      font-weight: bold;
-      background-color: #333;
-      color: #00ffcc;
+    .barcode-wrapper {
+      width: 100%;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+
+    .barcode-wrapper svg {
+      max-width: 100%;
+      height: 18mm;
+      display: block;
+    }
+
+    .label-value-text {
+      font-size: 20pt; /* Увеличено с 15pt */
+      font-weight: 900;
+      font-family: 'Consolas', 'Courier New', monospace;
+      color: #000000;
+      letter-spacing: 0.5px;
+      margin-top: 2px;
+      word-break: break-all;
+      line-height: 1.1;
+    }
+
+    /* Відступ між блоками PN та SN */
+    .label-spacer {
+      height: 1.5mm; /* Уменьшено с 3mm для баланса пространства */
+      width: 100%;
+    }
+
+    /* ==========================================
+       СТИЛІ ДРУКУ (@media print)
+       ========================================== */
+    @page {
+      size: 100mm 80mm landscape;
+      margin: 0;
+    }
+
+    @media print {
+      .app-container,
+      .modal-backdrop {
+        display: none !important;
+      }
+
+      #printContainer,
+      #printContainer * {
+        visibility: visible !important;
+      }
+
+      #printContainer {
+        display: flex !important;
+        justify-content: center !important;
+        align-items: center !important;
+        position: absolute !important;
+        left: 0 !important;
+        top: 0 !important;
+        width: 100mm !important;
+        height: 80mm !important;
+        margin: 0 !important;
+        padding: 0 !important;
+        background: #FFFFFF !important;
+      }
+
+      #printContainer .industrial-label {
+        border: none !important;
+        box-shadow: none !important;
+        width: 100mm !important;
+        height: 80mm !important;
+        padding: 3mm 4mm !important;
+      }
     }
   </style>
 </head>
 <body>
-  <div class="header">
-    <h1>LCDR LIVE DATA </h1>
-    <div class="controls">
-      <label for="month-select" class="date-info">Wybierz miesiąc:</label>
-      <select id="month-select"></select>
+
+  <div class="app-container">
+    <header class="page-header">
+      <h1 class="page-title">
+        <span>🖨 Printer Labels</span>
+      </h1>
+      <p class="page-subtitle">Система генерації та друку промислових маркувальних етикеток</p>
+    </header>
+
+    <main class="card">
+      <div class="table-container">
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th>Part Number (PN)</th>
+              <th>Serial Number (SN)</th>
+              <th style="width: 140px; text-align: right;">Дія</th>
+            </tr>
+          </thead>
+          <tbody id="productsTableBody">
+            </tbody>
+        </table>
+      </div>
+    </main>
+  </div>
+
+  <div class="modal-backdrop" id="labelModal" aria-hidden="true" role="dialog">
+    <div class="modal-card">
+      <div class="modal-header">
+        <h2 class="modal-title">Попередній перегляд етикетки</h2>
+        <button class="modal-close-btn" id="closeModalCross" title="Закрити">&times;</button>
+      </div>
+      
+      <div class="modal-body" id="modalPreviewBody">
+        </div>
+
+      <div class="modal-footer">
+        <button class="btn btn-secondary" id="closeModalBtn">Close</button>
+        <button class="btn" id="printLabelBtn">Print</button>
+      </div>
     </div>
   </div>
 
-  <div class="table-container">
-    <button class="table-button">Podsumowanie FI Station</button>
-    <table id="combined-table">
-      <thead>
-        <tr>
-          <th>NAME</th>
-          <th>NDF</th>
-          <th>OK</th>
-          <th>WAITING</th>
-          <th>SCRAP TTL</th>
-          <th>SCRAP PNLA</th>
-          <th>SUMA CAŁKOWITA</th>
-          <th>DNI OBECNOŚCI</th>
-        </tr>
-      </thead>
-      <tbody></tbody>
-    </table>
-  </div>
+  <div id="printContainer" style="display: none;"></div>
 
   <script>
-    const apiKey = 'AIzaSyCP7tzYiGwIZ6cymLAlv_9QgPIEshnRgqI';
-    const sheetId = '10W03bvKlVFlIUcxsHkzP_v_13gtnYRBmnrrO0ujB1bU';
-    const sheetURL = `https://sheets.googleapis.com/v4/spreadsheets/${sheetId}/values/`;
-
-    async function getData(sheetName) {
-      try {
-        const response = await fetch(`${sheetURL}${sheetName}?key=${apiKey}`);
-        const data = await response.json();
-        return data.values;
-      } catch (err) {
-        console.error(`Błąd pobierania danych: ${err}`);
-        return [];
+    const products = [
+      {
+        id: 1,
+        pn: "750TBV580CT4AHN000",
+        sn: "TBV580CT4AHX00Q20XVA2AV1103"
+      },
+      {
+        id: 2,
+        pn: "750TBV550V1NAHN000",
+        sn: "TBV550V1NAHX00U40XVA58E0513"
+      },
+      {
+        id: 3,
+        pn: "750TBV600CT4AHN000",
+        sn: "TBV600CT4AHX00K20XVA99A1101"
       }
-    }
+    ];
 
-    async function fetchData() {
-      const sheet1Data = await getData('FI Station KOVALCHYK Y.');
-      const sheet2Data = await getData('FI Station 2 ULANOVYCH.R');
-      const combined = [...sheet1Data.slice(1), ...sheet2Data.slice(1)];
-      return combined.map(row => ({
-        name: row[5],
-        status: row[4],
-        date: row[0]
-      }));
-    }
+    const tableBody = document.getElementById('productsTableBody');
+    const modal = document.getElementById('labelModal');
+    const modalPreviewBody = document.getElementById('modalPreviewBody');
+    const printContainer = document.getElementById('printContainer');
 
-    function calculateStats(data) {
-      const stats = {};
-      const presenceMap = {};
+    const closeModalCross = document.getElementById('closeModalCross');
+    const closeModalBtn = document.getElementById('closeModalBtn');
+    const printLabelBtn = document.getElementById('printLabelBtn');
 
-      data.forEach(({ name, status, date }) => {
-        if (!stats[name]) {
-          stats[name] = {
-            NDF: 0,
-            OK: 0,
-            WAITING: 0,
-            'SCRAP TTL': 0,
-            'SCRAP PNLA': 0,
-            total: 0,
-            presentDays: 0
-          };
-          presenceMap[name] = new Set();
-        }
+    function renderTable() {
+      tableBody.innerHTML = '';
 
-        if (status === 'NDF') stats[name].NDF++;
-        if (status === 'OK') stats[name].OK++;
-        if (status === 'WAITING') stats[name].WAITING++;
-        if (status === 'SCRAP TTL') stats[name]['SCRAP TTL']++;
-        if (status === 'SCRAP PNLA') stats[name]['SCRAP PNLA']++;
-        stats[name].total++;
+      products.forEach(product => {
+        const row = document.createElement('tr');
 
-        const dayOnly = date?.split(' ')[0];
-        if (dayOnly) presenceMap[name].add(dayOnly);
+        row.innerHTML = `
+          <td class="code-text">${escapeHtml(product.pn)}</td>
+          <td class="code-text">${escapeHtml(product.sn)}</td>
+          <td style="text-align: right;">
+            <button class="btn" onclick="openPrintModal(${product.id})">
+              🖨 Print
+            </button>
+          </td>
+        `;
+
+        tableBody.appendChild(row);
       });
-
-      for (const name in presenceMap) {
-        stats[name].presentDays = presenceMap[name].size;
-      }
-
-      return stats;
     }
 
-    function displayCombinedStats(stats) {
-      const tbody = document.querySelector('#combined-table tbody');
-      tbody.innerHTML = '';
+    function escapeHtml(text) {
+      const div = document.createElement('div');
+      div.innerText = text;
+      return div.innerHTML;
+    }
 
-      const totals = {
-        NDF: 0,
-        OK: 0,
-        WAITING: 0,
-        'SCRAP TTL': 0,
-        'SCRAP PNLA': 0,
-        total: 0
+    function generateLabelHTML(pn, sn, suffix = '') {
+      return `
+        <div class="industrial-label">
+          <div class="label-block">
+            <span class="label-caption">PN</span>
+            <div class="barcode-wrapper">
+              <svg id="barcodePN_${suffix}"></svg>
+            </div>
+            <span class="label-value-text">${escapeHtml(pn)}</span>
+          </div>
+
+          <div class="label-spacer"></div>
+
+          <div class="label-block">
+            <span class="label-caption">SN</span>
+            <div class="barcode-wrapper">
+              <svg id="barcodeSN_${suffix}"></svg>
+            </div>
+            <span class="label-value-text">${escapeHtml(sn)}</span>
+          </div>
+        </div>
+      `;
+    }
+
+    function openPrintModal(productId) {
+      const product = products.find(p => p.id === productId);
+      if (!product) return;
+
+      modalPreviewBody.innerHTML = generateLabelHTML(product.pn, product.sn, 'preview');
+      printContainer.innerHTML = generateLabelHTML(product.pn, product.sn, 'print');
+
+      const barcodeOptions = {
+        format: "CODE128",
+        displayValue: false,
+        margin: 0,
+        height: 38, /* Уменьшено с 48 для сохранения пропорций */
+        width: 1.55,
+        lineColor: "#000000",
+        background: "transparent"
       };
 
-      const sortedStats = Object.entries(stats).sort(([, a], [, b]) => b.OK - a.OK);
+      JsBarcode("#barcodePN_preview", product.pn, barcodeOptions);
+      JsBarcode("#barcodeSN_preview", product.sn, barcodeOptions);
 
-      sortedStats.forEach(([name, data]) => {
-        const row = document.createElement('tr');
-        row.innerHTML = `
-          <td>${name}</td>
-          <td>${data.NDF}</td>
-          <td>${data.OK}</td>
-          <td>${data.WAITING}</td>
-          <td>${data['SCRAP TTL']}</td>
-          <td>${data['SCRAP PNLA']}</td>
-          <td>${data.total}</td>
-          <td>${data.presentDays}</td>
-        `;
-        tbody.appendChild(row);
+      JsBarcode("#barcodePN_print", product.pn, barcodeOptions);
+      JsBarcode("#barcodeSN_print", product.sn, barcodeOptions);
 
-        totals.NDF += data.NDF;
-        totals.OK += data.OK;
-        totals.WAITING += data.WAITING;
-        totals['SCRAP TTL'] += data['SCRAP TTL'];
-        totals['SCRAP PNLA'] += data['SCRAP PNLA'];
-        totals.total += data.total;
-      });
-
-      const totalRow = document.createElement('tr');
-      totalRow.className = 'total-row';
-      totalRow.innerHTML = `
-        <td>SUMA</td>
-        <td>${totals.NDF}</td>
-        <td>${totals.OK}</td>
-        <td>${totals.WAITING}</td>
-        <td>${totals['SCRAP TTL']}</td>
-        <td>${totals['SCRAP PNLA']}</td>
-        <td>${totals.total}</td>
-        <td>-</td>
-      `;
-      tbody.appendChild(totalRow);
+      modal.classList.add('is-open');
+      modal.setAttribute('aria-hidden', 'false');
     }
 
-    function populateMonthSelect() {
-      const select = document.getElementById('month-select');
-      const now = new Date();
-      const monthsToShow = 12;
+    function closeModal() {
+      modal.classList.remove('is-open');
+      modal.setAttribute('aria-hidden', 'true');
+    }
 
-      for (let i = 0; i < monthsToShow; i++) {
-        const date = new Date(now.getFullYear(), now.getMonth() - i, 1);
-        const value = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`;
-        const label = date.toLocaleDateString('pl-PL', { month: 'long', year: 'numeric' });
-        const capitalizedLabel = label.charAt(0).toUpperCase() + label.slice(1);
-        const option = new Option(capitalizedLabel, value);
-        select.appendChild(option);
+    function triggerPrint() {
+      window.print();
+    }
+
+    closeModalCross.addEventListener('click', closeModal);
+    closeModalBtn.addEventListener('click', closeModal);
+    printLabelBtn.addEventListener('click', triggerPrint);
+
+    modal.addEventListener('click', (event) => {
+      if (event.target === modal) {
+        closeModal();
       }
-    }
-
-    async function updateStats() {
-      const selectedMonth = document.getElementById('month-select').value;
-      const [year, month] = selectedMonth.split('-').map(Number);
-
-      const combinedData = await fetchData();
-
-      const filtered = combinedData.filter(record => {
-        const dateStr = record.date?.split(' ')[0];
-        if (!dateStr) return false;
-
-        const date = new Date(dateStr);
-        return date.getFullYear() === year && date.getMonth() + 1 === month;
-      });
-
-      const stats = calculateStats(filtered);
-      displayCombinedStats(stats);
-    }
-
-    document.addEventListener('DOMContentLoaded', () => {
-      populateMonthSelect();
-      document.getElementById('month-select').addEventListener('change', updateStats);
-      updateStats();
     });
 
-    setInterval(updateStats, 5000);
+    document.addEventListener('keydown', (event) => {
+      if (event.key === 'Escape' && modal.classList.contains('is-open')) {
+        closeModal();
+      }
+    });
+
+    document.addEventListener('DOMContentLoaded', renderTable);
   </script>
-  
 </body>
 </html>
