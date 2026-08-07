@@ -266,14 +266,14 @@
     }
 
     /* ==========================================
-       ПРОМИСЛОВА ЕТИКЕТКА (100mm x 80mm Landscape)
+       ІНТЕГРОВАНІ СТИЛІ ЕТИКЕТКИ З РЕДАКТОРА
        ========================================== */
     .industrial-label {
       width: 100mm;
       height: 80mm;
+      padding: 3mm;
       background-color: #FFFFFF;
       color: #000000;
-      padding: 3mm; /* Параметр padding з редактора */
       box-sizing: border-box;
       font-family: 'Segoe UI', Arial, sans-serif;
       display: flex;
@@ -301,9 +301,13 @@
       display: inline-block;
     }
 
-    /* --- Зсуви заголовків PN / SN --- */
-    .pn-caption { transform: translateY(0px); }
-    .sn-caption { transform: translateY(0px); }
+    /* --- Заголовки (Внесені зсуви Y) --- */
+    .pn-caption {
+      transform: translateY(-11px);
+    }
+    .sn-caption {
+      transform: translateY(12px);
+    }
 
     .barcode-wrapper {
       width: 100%;
@@ -312,16 +316,20 @@
       align-items: center;
     }
 
-    /* --- Зсуви контейнерів штрихкодів PN / SN --- */
-    .pn-bc-wrapper { transform: translateY(0px); }
-    .sn-bc-wrapper { transform: translateY(0px); }
-
     .barcode-wrapper svg {
       max-width: 100%;
       display: block;
     }
 
-    /* --- Стиль для Part Number (PN) --- */
+    /* --- Оболонки штрихкодів (Внесені зсуви Y) --- */
+    .pn-bc-wrapper {
+      transform: translateY(-1px);
+    }
+    .sn-bc-wrapper {
+      transform: translateY(12px);
+    }
+
+    /* --- Значення PN та SN (Шрифти, зсуви Y та ScaleY) --- */
     .label-value-pn {
       font-size: 22pt;
       font-weight: 900;
@@ -331,12 +339,11 @@
       word-break: break-all;
       line-height: 1.1;
       display: inline-block;
-      transform: translateY(0px) scaleY(1); /* Зсув Y та висота букв PN */
+      transform: translateY(6px) scaleY(1);
     }
 
-    /* --- Стиль для Serial Number (SN) --- */
     .label-value-sn {
-      font-size: 18pt;
+      font-size: 17pt;
       font-weight: 900;
       font-family: 'Consolas', 'Courier New', monospace;
       color: #000000;
@@ -344,10 +351,10 @@
       word-break: break-all;
       line-height: 1.1;
       display: inline-block;
-      transform: translateY(0px) scaleY(1); /* Зсув Y та висота букв SN */
+      transform: translateY(15px) scaleY(1.8);
     }
 
-    /* --- Відступ між блоками PN та SN --- */
+    /* --- Відступ між PN та SN --- */
     .label-spacer {
       height: 2mm;
       width: 100%;
@@ -526,24 +533,24 @@
       modalPreviewBody.innerHTML = generateLabelHTML(product.pn, product.sn, 'preview');
       printContainer.innerHTML = generateLabelHTML(product.pn, product.sn, 'print');
 
-      // Налаштування для штрихкоду PN з редактора
+      // Інтегровані налаштування з редактора для PN
       const barcodeOptionsPN = {
         format: "CODE128",
         displayValue: false,
         margin: 0,
-        height: 45, // Висота з редактора
-        width: 1.5, // Товщина ліній з редактора
+        height: 52,
+        width: 1.5,
         lineColor: "#000000",
         background: "transparent"
       };
 
-      // Налаштування для штрихкоду SN з редактора
+      // Інтегровані налаштування з редактора для SN
       const barcodeOptionsSN = {
         format: "CODE128",
         displayValue: false,
         margin: 0,
-        height: 45, // Висота з редактора
-        width: 1.5, // Товщина ліній з редактора
+        height: 72,
+        width: 1.5,
         lineColor: "#000000",
         background: "transparent"
       };
