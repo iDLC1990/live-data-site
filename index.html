@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Візуальний Редактор Промислових Етикеток</title>
+  <title>Візуальний Редактор Промислових Етикеток v2</title>
   <script src="https://cdn.jsdelivr.net/npm/jsbarcode@3.11.6/dist/JsBarcode.all.min.js"></script>
 
   <style>
@@ -48,7 +48,7 @@
 
     /* Панель керування (зліва) */
     .sidebar {
-      width: 380px;
+      width: 400px;
       background-color: var(--panel-bg);
       border-right: 1px solid var(--border-color);
       padding: 20px;
@@ -169,6 +169,8 @@
       letter-spacing: 0.5px;
       word-break: break-all;
       line-height: 1.1;
+      display: inline-block; /* Потрібно для коректної роботи transform: scaleY */
+      transform-origin: center center;
     }
 
     .btn {
@@ -206,7 +208,7 @@
     }
     textarea {
       width: 100%;
-      height: 300px;
+      height: 320px;
       background: var(--bg-dark);
       color: #A5F3FC;
       border: 1px solid var(--border-color);
@@ -247,6 +249,10 @@
           <input type="range" id="pn_font" min="10" max="36" value="22">
         </div>
         <div class="control-group">
+          <label class="control-label">Висота букв PN (масштаб): <span id="val_pn_scale">100%</span></label>
+          <input type="range" id="pn_scale" min="50" max="250" value="100" step="5">
+        </div>
+        <div class="control-group">
           <label class="control-label">Висота штрихкоду PN: <span id="val_pn_bc_h">45px</span></label>
           <input type="range" id="pn_bc_h" min="15" max="120" value="45">
         </div>
@@ -261,6 +267,10 @@
         <div class="control-group">
           <label class="control-label">Розмір шрифту SN: <span id="val_sn_font">18pt</span></label>
           <input type="range" id="sn_font" min="10" max="36" value="18">
+        </div>
+        <div class="control-group">
+          <label class="control-label">Висота букв SN (масштаб): <span id="val_sn_scale">100%</span></label>
+          <input type="range" id="sn_scale" min="50" max="250" value="100" step="5">
         </div>
         <div class="control-group">
           <label class="control-label">Висота штрихкоду SN: <span id="val_sn_bc_h">45px</span></label>
@@ -323,14 +333,16 @@
   </div>
 
   <script>
-    // Отримання всіх елементів
+    // Елементи керування
     const inputs = {
       pn_text: document.getElementById('input_pn_text'),
       sn_text: document.getElementById('input_sn_text'),
       pn_font: document.getElementById('pn_font'),
+      pn_scale: document.getElementById('pn_scale'),
       pn_bc_h: document.getElementById('pn_bc_h'),
       pn_bc_w: document.getElementById('pn_bc_w'),
       sn_font: document.getElementById('sn_font'),
+      sn_scale: document.getElementById('sn_scale'),
       sn_bc_h: document.getElementById('sn_bc_h'),
       sn_bc_w: document.getElementById('sn_bc_w'),
       padding: document.getElementById('label_padding'),
@@ -345,37 +357,44 @@
     };
 
     function updateLabel() {
-      // 1. Оновлення текстових значень
+      // 1. Текстові значення
       const pnVal = inputs.pn_text.value || "PN_EXAMPLE";
       const snVal = inputs.sn_text.value || "SN_EXAMPLE";
       
       preview.pnText.textContent = pnVal;
       preview.snText.textContent = snVal;
 
-      // 2. Оновлення відображення значень біля бегунків
+      // 2. Оновлення лічильників значення
       document.getElementById('val_pn_font').textContent = inputs.pn_font.value + 'pt';
+      document.getElementById('val_pn_scale').textContent = inputs.pn_scale.value + '%';
       document.getElementById('val_pn_bc_h').textContent = inputs.pn_bc_h.value + 'px';
       document.getElementById('val_pn_bc_w').textContent = inputs.pn_bc_w.value;
       
       document.getElementById('val_sn_font').textContent = inputs.sn_font.value + 'pt';
+      document.getElementById('val_sn_scale').textContent = inputs.sn_scale.value + '%';
       document.getElementById('val_sn_bc_h').textContent = inputs.sn_bc_h.value + 'px';
       document.getElementById('val_sn_bc_w').textContent = inputs.sn_bc_w.value;
 
       document.getElementById('val_padding').textContent = inputs.padding.value + 'mm';
       document.getElementById('val_spacer').textContent = inputs.spacer.value + 'mm';
 
-      // 3. Застосування CSS стилів до макету
+      // 3. Застосування CSS стилів
       preview.label.style.width = '100mm';
       preview.label.style.height = '80mm';
       preview.label.style.padding = `${inputs.padding.value}mm`;
 
+      // Розмір та висота букв (Scale Y) для PN
       preview.pnText.style.fontSize = `${inputs.pn_font.value}pt`;
+      preview.pnText.style.transform = `scaleY(${inputs.pn_scale.value / 100})`;
+
+      // Розмір та висота букв (Scale Y) для SN
       preview.snText.style.fontSize = `${inputs.sn_font.value}pt`;
+      preview.snText.style.transform = `scaleY(${inputs.sn_scale.value / 100})`;
 
       preview.spacer.style.height = `${inputs.spacer.value}mm`;
       preview.spacer.style.width = '100%';
 
-      // 4. Генерація штрихкоду PN
+      // 4. Генерація штрихкодів
       JsBarcode("#barcodePN", pnVal, {
         format: "CODE128",
         displayValue: false,
@@ -385,7 +404,6 @@
         lineColor: "#000000"
       });
 
-      // 5. Генерація штрихкоду SN
       JsBarcode("#barcodeSN", snVal, {
         format: "CODE128",
         displayValue: false,
@@ -396,12 +414,12 @@
       });
     }
 
-    // Додаємо обробники подій на всі елементи керування
+    // Події на всі інпути
     Object.values(inputs).forEach(input => {
       input.addEventListener('input', updateLabel);
     });
 
-    // Модальне вікно експорту коду
+    // Експорт коду
     function openCodeModal() {
       const generatedCode = `/* === ЗГЕНЕРОВАНІ СТИЛІ CSS === */
 .industrial-label {
@@ -412,10 +430,14 @@
 
 .label-value-pn {
   font-size: ${inputs.pn_font.value}pt;
+  transform: scaleY(${inputs.pn_scale.value / 100}); /* Висота букв PN */
+  display: inline-block;
 }
 
 .label-value-sn {
   font-size: ${inputs.sn_font.value}pt;
+  transform: scaleY(${inputs.sn_scale.value / 100}); /* Висота букв SN */
+  display: inline-block;
 }
 
 .label-spacer {
@@ -427,8 +449,8 @@ const barcodeOptionsPN = {
   format: "CODE128",
   displayValue: false,
   margin: 0,
-  height: ${inputs.pn_bc_h.value}, // Висота штрихкоду PN
-  width: ${inputs.pn_bc_w.value},  // Товщина ліній PN
+  height: ${inputs.pn_bc_h.value},
+  width: ${inputs.pn_bc_w.value},
   lineColor: "#000000"
 };
 
@@ -436,8 +458,8 @@ const barcodeOptionsSN = {
   format: "CODE128",
   displayValue: false,
   margin: 0,
-  height: ${inputs.sn_bc_h.value}, // Висота штрихкоду SN
-  width: ${inputs.sn_bc_w.value},  // Товщина ліній SN
+  height: ${inputs.sn_bc_h.value},
+  width: ${inputs.sn_bc_w.value},
   lineColor: "#000000"
 };`;
 
@@ -449,7 +471,6 @@ const barcodeOptionsSN = {
       document.getElementById('codeModal').style.display = 'none';
     }
 
-    // Ініціалізація при завантаженні
     document.addEventListener('DOMContentLoaded', updateLabel);
   </script>
 </body>
