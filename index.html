@@ -3,13 +3,13 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Printer Labels - Google Sheets Integration</title>
+  <title>Печать этикеток — TSC DA220</title>
   
   <script src="https://cdn.jsdelivr.net/npm/jsbarcode@3.11.6/dist/JsBarcode.all.min.js"></script>
 
   <style>
     /* ==========================================
-       СТИЛИ И ТЕМНАЯ ТЕМА
+       СТИЛИ ИНТЕРФЕЙСА (ТЕМНАЯ ТЕМА)
        ========================================== */
     :root {
       --bg-color: #111827;
@@ -59,6 +59,7 @@
       padding: 4px 10px;
       border-radius: 20px;
       margin-top: 6px;
+      font-weight: 500;
     }
 
     .card {
@@ -122,7 +123,7 @@
     .btn-secondary { background-color: #374151; color: #F3F4F6; }
     .btn-secondary:hover { background-color: #4B5563; }
 
-    /* Модальное окно */
+    /* Модальное окно просмотра */
     .modal-backdrop {
       position: fixed;
       top: 0; left: 0; width: 100vw; height: 100vh;
@@ -152,7 +153,9 @@
     .modal-body { padding: 24px; display: flex; justify-content: center; align-items: center; background-color: #111827; }
     .modal-footer { padding: 16px 24px; border-top: 1px solid var(--border-color); display: flex; justify-content: flex-end; gap: 12px; }
 
-    /* Этикетка 100x80мм */
+    /* ==========================================
+       ЭТИКЕТКА 100x80 мм (Оптимизировано для TSC DA220)
+       ========================================== */
     .industrial-label {
       width: 100mm;
       height: 80mm;
@@ -193,10 +196,16 @@
 
     .label-spacer { height: 2mm; width: 100%; }
 
-    /* Настройки печати */
-    @page { size: 100mm 80mm landscape; margin: 0; }
+    /* ==========================================
+       НАСТРОЙКИ ДЛЯ ТЕРМОПЕЧАТИ TSC DA220
+       ========================================== */
+    @page { 
+      size: 100mm 80mm landscape; 
+      margin: 0; 
+    }
 
     @media print {
+      body { background: #ffffff !important; color: #000000 !important; }
       .app-container, .modal-backdrop { display: none !important; }
       #printContainer, #printContainer * { visibility: visible !important; }
       #printContainer {
@@ -217,12 +226,12 @@
   <div class="app-container">
     <header class="page-header">
       <div>
-        <h1 class="page-title">🖨️ Друк етикеток (Google Sheets)</h1>
-        <p class="page-subtitle">Автоматичне отримання 5 останніх номерів з листу "FI Station KOVALCHYK Y."</p>
-        <div class="status-badge" id="statusBadge">🟢 Связь с Google Таблицей установлена</div>
+        <h1 class="page-title">🖨️ Друк етикеток (TSC DA220)</h1>
+        <p class="page-subtitle">Лист: FI Station KOVALCHYK Y. (Авто-обновление каждые 10 сек)</p>
+        <div class="status-badge" id="statusBadge">🟡 Подключение к Google Таблице...</div>
       </div>
       <div>
-        <button class="btn btn-secondary" onclick="fetchDataFromGoogleSheet()">🔄 Обновить</button>
+        <button class="btn btn-secondary" onclick="fetchDataFromGoogleSheet()">🔄 Обновить сейчас</button>
       </div>
     </header>
 
@@ -238,7 +247,7 @@
             </tr>
           </thead>
           <tbody id="productsTableBody">
-            <tr><td colspan="4" style="text-align: center; padding: 30px;">Загрузка данных из Google Таблицы...</td></tr>
+            <tr><td colspan="4" style="text-align: center; padding: 30px;">Загрузка данных из Гугл Таблицы...</td></tr>
           </tbody>
         </table>
       </div>
@@ -248,13 +257,13 @@
   <div class="modal-backdrop" id="labelModal">
     <div class="modal-card">
       <div class="modal-header">
-        <h2 class="modal-title">Предпросмотр этикетки</h2>
+        <h2 class="modal-title">Предпросмотр этикетки (100x80 мм)</h2>
         <button class="modal-close-btn" id="closeModalCross">&times;</button>
       </div>
       <div class="modal-body" id="modalPreviewBody"></div>
       <div class="modal-footer">
         <button class="btn btn-secondary" id="closeModalBtn">Закрыть</button>
-        <button class="btn" id="printLabelBtn">🖨 Печать</button>
+        <button class="btn" id="printLabelBtn">🖨️ Печать</button>
       </div>
     </div>
   </div>
@@ -262,10 +271,9 @@
   <div id="printContainer" style="display: none;"></div>
 
   <script>
-    // URL Google Таблицы (Формат CSV-экспорта конкретного листа)
+    // GOOGLE SHEETS
     const SHEET_ID = '10W03bvKlVFlIUcxsHkzP_v_13gtnYRBmnrrO0ujB1bU';
-    const GID = '193025884'; // Лист "FI Station KOVALCHYK Y."
-    const CSV_URL = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:csv&gid=${GID}`;
+    const GID = '0'; // Лист "FI Station KOVALCHYK Y."
 
     let products = [];
 
@@ -274,7 +282,6 @@
     const modalPreviewBody = document.getElementById('modalPreviewBody');
     const printContainer = document.getElementById('printContainer');
 
-    // Разбор CSV строки в массив
     function parseCSV(str) {
       const arr = [];
       let quote = false;
@@ -293,40 +300,48 @@
       return arr;
     }
 
-    // Загрузка данных из Гугл Таблицы
     async function fetchDataFromGoogleSheet() {
       try {
-        const response = await fetch(CSV_URL);
+        const url = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:csv&gid=${GID}&_nc=${Date.now()}`;
+        const response = await fetch(url);
+        
+        if (!response.ok) throw new Error('Не удалось получить данные с сервера Google');
+        
         const csvText = await response.text();
         const rows = parseCSV(csvText);
 
-        // Фильтруем строки: берем только те, где есть Serial Number в колонке C (индекс 2)
         const validItems = [];
         for (let i = 1; i < rows.length; i++) {
           const row = rows[i];
+          if (!row || row.length < 3) continue;
+
+          // Колонка C (индекс 2) содержит SERIAL NUMBER
           const sn = row[2] ? row[2].trim() : '';
           
-          if (sn && sn !== 'SERIAL NUMBER') {
-            // PN можно извлекать из маски SN или использовать базовую модель
+          if (sn && sn.toUpperCase() !== 'SERIAL NUMBER') {
             const pn = extractPNFromSN(sn);
             validItems.push({ pn, sn });
           }
         }
 
-        // Берем 5 самых последних записей из таблицы
+        // Берем 5 самых последних серийных номеров
         products = validItems.slice(-5).reverse();
 
         renderTable();
-        document.getElementById('statusBadge').style.background = '#065F46';
-        document.getElementById('statusBadge').innerText = `🟢 Синхронизировано (${new Date().toLocaleTimeString()})`;
+
+        const badge = document.getElementById('statusBadge');
+        badge.style.background = '#065F46';
+        badge.style.color = '#34D399';
+        badge.innerText = `🟢 Синхронизировано (${new Date().toLocaleTimeString()})`;
       } catch (error) {
         console.error('Ошибка загрузки Google Таблицы:', error);
-        document.getElementById('statusBadge').style.background = '#991B1B';
-        document.getElementById('statusBadge').innerText = '🔴 Ошибка доступа к Google Таблице';
+        const badge = document.getElementById('statusBadge');
+        badge.style.background = '#991B1B';
+        badge.style.color = '#FCA5A5';
+        badge.innerText = '🔴 Ошибка доступа к Google Таблице';
       }
     }
 
-    // Функция авто-генерации PN по коду SN (при необходимости)
     function extractPNFromSN(sn) {
       if (sn.length >= 12) {
         return "750" + sn.substring(0, 10) + "N000";
@@ -336,7 +351,7 @@
 
     function renderTable() {
       if (products.length === 0) {
-        tableBody.innerHTML = `<tr><td colspan="4" style="text-align: center; padding: 20px;">Нет данных в Гугл Таблице</td></tr>`;
+        tableBody.innerHTML = `<tr><td colspan="4" style="text-align: center; padding: 20px;">Записей в таблице не найдено</td></tr>`;
         return;
       }
 
@@ -349,7 +364,7 @@
           <td class="code-text">${escapeHtml(product.sn)}</td>
           <td class="actions-cell">
             <button class="btn btn-secondary" onclick="openPrintModal(${index})" title="Просмотр">👁️</button>
-            <button class="btn" onclick="directPrint(${index})" title="Печать на Citizen CL-S700">🖨️</button>
+            <button class="btn" onclick="directPrint(${index})" title="Печать на TSC DA220">🖨️</button>
           </td>
         `;
         tableBody.appendChild(row);
@@ -386,7 +401,7 @@
       `;
     }
 
-    // ПРЯМАЯ ПЕЧАТЬ (по значку 🖨️)
+    // Настройки ширины штрихкода оптимизированы под разрешение TSC DA220 (203 dpi)
     function directPrint(index) {
       const product = products[index];
       if (!product) return;
@@ -402,7 +417,6 @@
       window.print();
     }
 
-    // ПРОСМОТР В МОДАЛЬНОМ ОКНЕ (по значку 👁️)
     function openPrintModal(index) {
       const product = products[index];
       if (!product) return;
@@ -428,10 +442,8 @@
     document.getElementById('closeModalBtn').addEventListener('click', closeModal);
     document.getElementById('printLabelBtn').addEventListener('click', () => window.print());
 
-    // Инициализация загрузки при открытии страницы
     document.addEventListener('DOMContentLoaded', () => {
       fetchDataFromGoogleSheet();
-      // Авто-обновление каждые 10 секунд
       setInterval(fetchDataFromGoogleSheet, 10000);
     });
   </script>
