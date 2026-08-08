@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Печать этикеток — TSC DA220 с редакторами</title>
+  <title>Печать этикеток — TSC DA220 с визуальным редактором</title>
   
   <!-- Библиотеки -->
   <script src="https://cdn.jsdelivr.net/npm/jsbarcode@3.11.6/dist/JsBarcode.all.min.js"></script>
@@ -62,6 +62,12 @@
       border-radius: 20px;
       margin-top: 6px;
       font-weight: 500;
+    }
+
+    .top-editors-bar {
+      display: flex;
+      gap: 12px;
+      margin-bottom: 20px;
     }
 
     .card {
@@ -128,57 +134,93 @@
     .btn-success { background-color: #059669; }
     .btn-success:hover { background-color: #047857; }
 
-    /* Панель редакторов (аккордеон / блоки) */
-    .editors-panel {
-      background-color: var(--card-bg);
-      border-radius: var(--radius);
-      border: 1px solid var(--border-color);
-      padding: 20px 24px;
-      margin-bottom: 24px;
-      box-shadow: var(--shadow-lg);
-    }
-    .editors-title { font-size: 18px; font-weight: 600; margin-bottom: 15px; color: #FFFFFF; display: flex; justify-content: space-between; align-items: center; }
-    .editors-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
-    @media (max-width: 800px) { .editors-grid { grid-template-columns: 1fr; } }
-    
-    .editor-box { background: #111827; padding: 15px; border-radius: 8px; border: 1px solid var(--border-color); }
-    .editor-box h3 { font-size: 15px; margin-bottom: 10px; color: #60A5FA; }
-    .control-group { margin-bottom: 10px; font-size: 13px; }
-    .control-group label { display: block; color: var(--text-muted); margin-bottom: 3px; }
-    .control-group input { width: 100%; background: #1F2937; border: 1px solid var(--border-color); color: #fff; padding: 5px 8px; border-radius: 4px; font-family: monospace; }
-
-    /* Модальное окно просмотра */
+    /* ==========================================
+        МОДАЛЬНОЕ ОКНО ВИЗУАЛЬНОГО РЕДАКТОРА
+        ========================================== */
     .modal-backdrop {
       position: fixed;
       top: 0; left: 0; width: 100vw; height: 100vh;
-      background-color: rgba(0, 0, 0, 0.75);
+      background-color: rgba(0, 0, 0, 0.8);
       backdrop-filter: blur(6px);
       display: flex; align-items: center; justify-content: center;
       opacity: 0; pointer-events: none;
       transition: opacity 0.25s ease-in-out;
       z-index: 1000;
+      padding: 20px;
     }
 
     .modal-backdrop.is-open { opacity: 1; pointer-events: auto; }
 
-    .modal-card {
+    .editor-modal-card {
       background-color: var(--card-bg);
       border-radius: var(--radius);
       border: 1px solid var(--border-color);
       box-shadow: var(--shadow-modal);
-      width: 90%; max-width: 620px;
+      width: 100%; max-width: 980px;
+      max-height: 92vh;
       display: flex; flex-direction: column;
       overflow: hidden;
     }
 
-    .modal-header { padding: 18px 24px; border-bottom: 1px solid var(--border-color); display: flex; justify-content: space-between; align-items: center; }
+    .modal-header { padding: 18px 24px; border-bottom: 1px solid var(--border-color); display: flex; justify-content: space-between; align-items: center; background: #111827; }
     .modal-title { font-size: 18px; font-weight: 600; color: #FFFFFF; }
-    .modal-close-btn { background: none; border: none; color: var(--text-muted); font-size: 22px; cursor: pointer; }
-    .modal-body { padding: 24px; display: flex; justify-content: center; align-items: center; background-color: #111827; }
-    .modal-footer { padding: 16px 24px; border-top: 1px solid var(--border-color); display: flex; justify-content: flex-end; gap: 12px; }
+    .modal-close-btn { background: none; border: none; color: var(--text-muted); font-size: 24px; cursor: pointer; }
+    
+    .editor-modal-body {
+      padding: 24px;
+      display: grid;
+      grid-template-columns: 400px 1fr;
+      gap: 24px;
+      overflow-y: auto;
+      background-color: #111827;
+      align-items: start;
+    }
+    @media (max-width: 900px) { .editor-modal-body { grid-template-columns: 1fr; } }
+
+    .controls-pane { background: #1F2937; padding: 16px; border-radius: 8px; border: 1px solid var(--border-color); }
+    .controls-pane h3 { font-size: 14px; margin-bottom: 12px; color: #60A5FA; text-transform: uppercase; letter-spacing: 0.05em; }
+    
+    .control-group { margin-bottom: 12px; font-size: 12px; }
+    .control-group label { display: flex; justify-content: space-between; color: var(--text-muted); margin-bottom: 4px; }
+    .control-group input[type="range"] { width: 100%; accent-color: var(--accent-color); cursor: pointer; }
+
+    .preview-pane {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      background: #182234;
+      padding: 20px;
+      border-radius: 8px;
+      border: 1px dashed var(--border-color);
+    }
+    .preview-pane span.hint { font-size: 12px; color: var(--text-muted); margin-bottom: 12px; text-transform: uppercase; letter-spacing: 0.05em; }
+
+    /* Блок для копирования параметров (то что скинешь мне) */
+    .export-box {
+      margin-top: 16px;
+      background: #111827;
+      border: 1px solid var(--border-color);
+      border-radius: 8px;
+      padding: 12px;
+    }
+    .export-box label { display: block; font-size: 11px; color: var(--text-muted); margin-bottom: 6px; text-transform: uppercase; }
+    .export-box textarea {
+      width: 100%;
+      height: 70px;
+      background: #1F2937;
+      border: 1px solid var(--border-color);
+      color: #34D399;
+      font-family: monospace;
+      font-size: 11px;
+      padding: 8px;
+      border-radius: 4px;
+      resize: none;
+    }
+
+    .modal-footer { padding: 16px 24px; border-top: 1px solid var(--border-color); display: flex; justify-content: space-between; align-items: center; background: #111827; }
 
     /* ==========================================
-        ЭТИКЕТКА 100x80 мм (Динамическая)
+        ЭТИКЕТКА 100x80 мм (Живой макет)
         ========================================== */
     .industrial-label {
       width: 100mm;
@@ -205,16 +247,13 @@
     .barcode-wrapper svg { max-width: 100%; display: block; }
 
     /* ==========================================
-        НАСТРОЙКИ ДЛЯ ТЕРМОПЕЧАТИ TSC DA220
+        ПЕЧАТЬ (TSC DA220)
         ========================================== */
-    @page { 
-      size: 100mm 80mm landscape; 
-      margin: 0; 
-    }
+    @page { size: 100mm 80mm landscape; margin: 0; }
 
     @media print {
       body { background: #ffffff !important; color: #000000 !important; }
-      .app-container, .modal-backdrop, .editors-panel { display: none !important; }
+      .app-container, .modal-backdrop { display: none !important; }
       #printContainer, #printContainer * { visibility: visible !important; }
       #printContainer {
         display: flex !important;
@@ -243,78 +282,10 @@
       </div>
     </header>
 
-    <!-- ПАНЕЛЬ РЕДАКТОРОВ ПАРАМЕТРОВ -->
-    <div class="editors-panel">
-      <div class="editors-title">
-        <span>⚙️ Редакторы параметров этикеток (для калибровки)</span>
-        <button class="btn btn-secondary" style="font-size: 11px; padding: 4px 8px;" onclick="resetEditors()">Сбросить</button>
-      </div>
-      <div class="editors-grid">
-        <!-- Редактор 1 (CS - Обычная) -->
-        <div class="editor-box">
-          <h3>Редактор 1: CS (Обычная)</h3>
-          <div class="control-group">
-            <label>1. Смещение по вертикали (Верхний блок / PN): <span id="val_cs_v1">0</span>px</label>
-            <input type="range" id="cs_v1" min="-50" max="50" value="0" oninput="updateEditorParams()">
-          </div>
-          <div class="control-group">
-            <label>Высота штрихкода PN: <span id="val_cs_h1">52</span>px</label>
-            <input type="range" id="cs_h1" min="20" max="100" value="52" oninput="updateEditorParams()">
-          </div>
-          <div class="control-group">
-            <label>3. Размер шрифта текста PN: <span id="val_cs_f1">22</span>pt</label>
-            <input type="range" id="cs_f1" min="10" max="40" value="22" oninput="updateEditorParams()">
-          </div>
-          <hr style="border-color: var(--border-color); margin: 10px 0;">
-          <div class="control-group">
-            <label>Смещение по вертикали (Нижний блок / SN): <span id="val_cs_v2">0</span>px</label>
-            <input type="range" id="cs_v2" min="-50" max="50" value="0" oninput="updateEditorParams()">
-          </div>
-          <div class="control-group">
-            <label>Высота штрихкода SN: <span id="val_cs_h2">72</span>px</label>
-            <input type="range" id="cs_h2" min="20" max="120" value="72" oninput="updateEditorParams()">
-          </div>
-          <div class="control-group">
-            <label>Размер шрифта текста SN: <span id="val_cs_f2">17</span>pt</label>
-            <input type="range" id="cs_f2" min="10" max="35" value="17" oninput="updateEditorParams()">
-          </div>
-        </div>
-
-        <!-- Редактор 2 (MNT - С брендом) -->
-        <div class="editor-box">
-          <h3>Редактор 2: MNT (С брендом)</h3>
-          <div class="control-group">
-            <label>4. Brand: смещение по горизонтали (<span id="val_mnt_bx">0</span>px) / вертикали (<span id="val_mnt_by">0</span>px)</label>
-            <div style="display: flex; gap: 5px;">
-              <input type="range" id="mnt_bx" min="-150" max="150" value="0" oninput="updateEditorParams()" title="По горизонтали">
-              <input type="range" id="mnt_by" min="-50" max="50" value="0" oninput="updateEditorParams()" title="По вертикали">
-            </div>
-          </div>
-          <div class="control-group">
-            <label>Размер шрифта Brand: <span id="val_mnt_bf">16</span>pt</label>
-            <input type="range" id="mnt_bf" min="10" max="35" value="16" oninput="updateEditorParams()">
-          </div>
-          <div class="control-group">
-            <label>1. Смещение по вертикали (PN): <span id="val_mnt_v1">0</span>px</label>
-            <input type="range" id="mnt_v1" min="-50" max="50" value="0" oninput="updateEditorParams()">
-          </div>
-          <div class="control-group">
-            <label>Высота штрихкода PN / Шрифт PN: <span id="val_mnt_h1">45</span>px / <span id="val_mnt_f1">20</span>pt</label>
-            <div style="display: flex; gap: 5px;">
-              <input type="range" id="mnt_h1" min="20" max="100" value="45" oninput="updateEditorParams()">
-              <input type="range" id="mnt_f1" min="10" max="35" value="20" oninput="updateEditorParams()">
-            </div>
-          </div>
-          <div class="control-group">
-            <label>Смещение по вертикали (SN): <span id="val_mnt_v2">0</span>px | ШК: <span id="val_mnt_h2">60</span>px | Шрифт: <span id="val_mnt_f2">15</span>pt</label>
-            <div style="display: flex; gap: 5px;">
-              <input type="range" id="mnt_v2" min="-50" max="50" value="0" oninput="updateEditorParams()">
-              <input type="range" id="mnt_h2" min="20" max="100" value="60" oninput="updateEditorParams()">
-              <input type="range" id="mnt_f2" min="10" max="30" value="15" oninput="updateEditorParams()">
-            </div>
-          </div>
-        </div>
-      </div>
+    <!-- Кнопки быстрого доступа к редакторам (CS и MNT) -->
+    <div class="top-editors-bar">
+      <button class="btn btn-secondary" onclick="openEditor('cs')">⚙️ Редактор CS (Обычные)</button>
+      <button class="btn btn-success" onclick="openEditor('mnt')">⚙️ Редактор MNT (С брендом)</button>
     </div>
 
     <main class="card">
@@ -337,16 +308,38 @@
     </main>
   </div>
 
-  <div class="modal-backdrop" id="labelModal">
-    <div class="modal-card">
+  <!-- УНИВЕРСАЛЬНОЕ ОКНО РЕДАКТОРА С ЖИВЫМ ПРЕВЬЮ И ПОЛЕМ ДЛЯ ПЕРЕДАЧИ МНЕ -->
+  <div class="modal-backdrop" id="editorModal">
+    <div class="editor-modal-card">
       <div class="modal-header">
-        <h2 class="modal-title" id="modalHeaderTitle">Предпросмотр этикетки</h2>
-        <button class="modal-close-btn" id="closeModalCross">&times;</button>
+        <h2 class="modal-title" id="editorModalTitle">Редактор этикетки</h2>
+        <button class="modal-close-btn" onclick="closeEditor()">&times;</button>
       </div>
-      <div class="modal-body" id="modalPreviewBody"></div>
+      
+      <div class="editor-modal-body">
+        <!-- Слева: Панель ползунков + блок параметров для отправки мне -->
+        <div>
+          <div class="controls-pane" id="controlsPaneContainer"></div>
+          
+          <div class="export-box">
+            <label>📋 Скопируй и скинь мне эти параметры после подгонки:</label>
+            <textarea id="paramsExportField" readonly onclick="this.select();"></textarea>
+          </div>
+        </div>
+
+        <!-- Справа: Живой визуальный макет этикетки -->
+        <div class="preview-pane">
+          <span class="hint">Живой предпросмотр (100x80 мм)</span>
+          <div id="livePreviewContainer"></div>
+        </div>
+      </div>
+
       <div class="modal-footer">
-        <button class="btn btn-secondary" id="closeModalBtn">Закрыть</button>
-        <button class="btn" id="printLabelBtn">🖨️ Печать</button>
+        <button class="btn btn-secondary" onclick="resetCurrentEditor()">Сбросить</button>
+        <div style="display: flex; gap: 10px;">
+          <button class="btn btn-secondary" onclick="closeEditor()">Закрыть</button>
+          <button class="btn" onclick="printFromEditor()">🖨️ Печать</button>
+        </div>
       </div>
     </div>
   </div>
@@ -368,73 +361,229 @@
     const GID = '0';
 
     let products = [];
-    let currentPrintPayload = null; // Данные для текущей печати/модалки
+    let activeEditorType = 'cs';
+    let sampleProduct = { sn: "SN1234567890", pn: "PN-SAMPLE-999", brand: "SAMPLE BRAND" };
 
     const tableBody = document.getElementById('productsTableBody');
-    const modal = document.getElementById('labelModal');
-    const modalPreviewBody = document.getElementById('modalPreviewBody');
-    const printContainer = document.getElementById('printContainer');
+    const editorModal = document.getElementById('editorModal');
 
-    // Получение параметров из редакторов в реальном времени
     function getParams(type) {
       if (type === 'cs') {
         return {
-          v1: parseInt(document.getElementById('cs_v1').value),
-          h1: parseInt(document.getElementById('cs_h1').value),
-          f1: parseInt(document.getElementById('cs_f1').value),
-          v2: parseInt(document.getElementById('cs_v2').value),
-          h2: parseInt(document.getElementById('cs_h2').value),
-          f2: parseInt(document.getElementById('cs_f2').value),
+          v1: parseInt(document.getElementById('cs_v1')?.value || 0),
+          h1: parseInt(document.getElementById('cs_h1')?.value || 52),
+          f1: parseInt(document.getElementById('cs_f1')?.value || 22),
+          v2: parseInt(document.getElementById('cs_v2')?.value || 0),
+          h2: parseInt(document.getElementById('cs_h2')?.value || 72),
+          f2: parseInt(document.getElementById('cs_f2')?.value || 17),
         };
       } else {
         return {
-          bx: parseInt(document.getElementById('mnt_bx').value),
-          by: parseInt(document.getElementById('mnt_by').value),
-          bf: parseInt(document.getElementById('mnt_bf').value),
-          v1: parseInt(document.getElementById('mnt_v1').value),
-          h1: parseInt(document.getElementById('mnt_h1').value),
-          f1: parseInt(document.getElementById('mnt_f1').value),
-          v2: parseInt(document.getElementById('mnt_v2').value),
-          h2: parseInt(document.getElementById('mnt_h2').value),
-          f2: parseInt(document.getElementById('mnt_f2').value),
+          bx: parseInt(document.getElementById('mnt_bx')?.value || 0),
+          by: parseInt(document.getElementById('mnt_by')?.value || 0),
+          bf: parseInt(document.getElementById('mnt_bf')?.value || 16),
+          v1: parseInt(document.getElementById('mnt_v1')?.value || 0),
+          h1: parseInt(document.getElementById('mnt_h1')?.value || 45),
+          f1: parseInt(document.getElementById('mnt_f1')?.value || 20),
+          v2: parseInt(document.getElementById('mnt_v2')?.value || 0),
+          h2: parseInt(document.getElementById('mnt_h2')?.value || 60),
+          f2: parseInt(document.getElementById('mnt_f2')?.value || 15),
         };
       }
     }
 
-    function updateEditorParams() {
-      // Обновление числовых меток в интерфейсе редактора
-      document.getElementById('val_cs_v1').innerText = document.getElementById('cs_v1').value;
-      document.getElementById('val_cs_h1').innerText = document.getElementById('cs_h1').value;
-      document.getElementById('val_cs_f1').innerText = document.getElementById('cs_f1').value;
-      document.getElementById('val_cs_v2').innerText = document.getElementById('cs_v2').value;
-      document.getElementById('val_cs_h2').innerText = document.getElementById('cs_h2').value;
-      document.getElementById('val_cs_f2').innerText = document.getElementById('cs_f2').value;
-
-      document.getElementById('val_mnt_bx').innerText = document.getElementById('mnt_bx').value;
-      document.getElementById('val_mnt_by').innerText = document.getElementById('mnt_by').value;
-      document.getElementById('val_mnt_bf').innerText = document.getElementById('mnt_bf').value;
-      document.getElementById('val_mnt_v1').innerText = document.getElementById('mnt_v1').value;
-      document.getElementById('val_mnt_h1').innerText = document.getElementById('mnt_h1').value;
-      document.getElementById('val_mnt_f1').innerText = document.getElementById('mnt_f1').value;
-      document.getElementById('val_mnt_v2').innerText = document.getElementById('mnt_v2').value;
-      document.getElementById('val_mnt_h2').innerText = document.getElementById('mnt_h2').value;
-      document.getElementById('val_mnt_f2').innerText = document.getElementById('mnt_f2').value;
-
-      // Если открыта модалка, динамически обновляем превью при движении ползунков
-      if (modal.classList.contains('is-open') && currentPrintPayload) {
-        renderModalAndPrintContainer(currentPrintPayload.type, currentPrintPayload.product, currentPrintPayload.suffix);
+    function renderControlsPane(type) {
+      const container = document.getElementById('controlsPaneContainer');
+      if (type === 'cs') {
+        container.innerHTML = `
+          <h3>Редактор 1: CS (Обычная)</h3>
+          <div class="control-group">
+            <label><span>1. Перемещение по вертикали (Верх):</span> <strong id="lbl_cs_v1">0</strong>px</label>
+            <input type="range" id="cs_v1" min="-50" max="50" value="0" oninput="onSliderInput('cs')">
+          </div>
+          <div class="control-group">
+            <label><span>2. Высота букв/штрихкода (Верх):</span> <strong id="lbl_cs_h1">52</strong>px</label>
+            <input type="range" id="cs_h1" min="20" max="100" value="52" oninput="onSliderInput('cs')">
+          </div>
+          <div class="control-group">
+            <label><span>3. Размер шрифта (Верх):</span> <strong id="lbl_cs_f1">22</strong>pt</label>
+            <input type="range" id="cs_f1" min="10" max="40" value="22" oninput="onSliderInput('cs')">
+          </div>
+          <hr style="border-color: var(--border-color); margin: 12px 0;">
+          <div class="control-group">
+            <label><span>1. Перемещение по вертикали (Низ):</span> <strong id="lbl_cs_v2">0</strong>px</label>
+            <input type="range" id="cs_v2" min="-50" max="50" value="0" oninput="onSliderInput('cs')">
+          </div>
+          <div class="control-group">
+            <label><span>2. Высота букв/штрихкода (Низ):</span> <strong id="lbl_cs_h2">72</strong>px</label>
+            <input type="range" id="cs_h2" min="20" max="120" value="72" oninput="onSliderInput('cs')">
+          </div>
+          <div class="control-group">
+            <label><span>3. Размер шрифта (Низ):</span> <strong id="lbl_cs_f2">17</strong>pt</label>
+            <input type="range" id="cs_f2" min="10" max="35" value="17" oninput="onSliderInput('cs')">
+          </div>
+        `;
+      } else {
+        container.innerHTML = `
+          <h3>Редактор 2: MNT (С брендом)</h3>
+          <div class="control-group">
+            <label><span>4. Brand по горизонтали / вертикали:</span> <strong id="lbl_mnt_bx">0</strong> / <strong id="lbl_mnt_by">0</strong>px</label>
+            <div style="display: flex; gap: 6px;">
+              <input type="range" id="mnt_bx" min="-150" max="150" value="0" oninput="onSliderInput('mnt')" title="По горизонтали">
+              <input type="range" id="mnt_by" min="-50" max="50" value="0" oninput="onSliderInput('mnt')" title="По вертикали">
+            </div>
+          </div>
+          <div class="control-group">
+            <label><span>3. Размер шрифта Brand:</span> <strong id="lbl_mnt_bf">16</strong>pt</label>
+            <input type="range" id="mnt_bf" min="10" max="35" value="16" oninput="onSliderInput('mnt')">
+          </div>
+          <hr style="border-color: var(--border-color); margin: 12px 0;">
+          <div class="control-group">
+            <label><span>1. Перемещение по вертикали (Верх):</span> <strong id="lbl_mnt_v1">0</strong>px</label>
+            <input type="range" id="mnt_v1" min="-50" max="50" value="0" oninput="onSliderInput('mnt')">
+          </div>
+          <div class="control-group">
+            <label><span>2. Высота ШК / 3. Шрифт (Верх):</span> <strong id="lbl_mnt_h1">45</strong>px / <strong id="lbl_mnt_f1">20</strong>pt</label>
+            <div style="display: flex; gap: 6px;">
+              <input type="range" id="mnt_h1" min="20" max="100" value="45" oninput="onSliderInput('mnt')">
+              <input type="range" id="mnt_f1" min="10" max="35" value="20" oninput="onSliderInput('mnt')">
+            </div>
+          </div>
+          <div class="control-group">
+            <label><span>1. Перемещение по вертикали (Низ):</span> <strong id="lbl_mnt_v2">0</strong>px</label>
+            <input type="range" id="mnt_v2" min="-50" max="50" value="0" oninput="onSliderInput('mnt')">
+          </div>
+          <div class="control-group">
+            <label><span>2. Высота ШК / 3. Шрифт (Низ):</span> <strong id="lbl_mnt_h2">60</strong>px / <strong id="lbl_mnt_f2">15</strong>pt</label>
+            <div style="display: flex; gap: 6px;">
+              <input type="range" id="mnt_h2" min="20" max="100" value="60" oninput="onSliderInput('mnt')">
+              <input type="range" id="mnt_f2" min="10" max="30" value="15" oninput="onSliderInput('mnt')">
+            </div>
+          </div>
+        `;
       }
     }
 
-    function resetEditors() {
-      document.getElementById('cs_v1').value = 0; document.getElementById('cs_h1').value = 52; document.getElementById('cs_f1').value = 22;
-      document.getElementById('cs_v2').value = 0; document.getElementById('cs_h2').value = 72; document.getElementById('cs_f2').value = 17;
-      document.getElementById('mnt_bx').value = 0; document.getElementById('mnt_by').value = 0; document.getElementById('mnt_bf').value = 16;
-      document.getElementById('mnt_v1').value = 0; document.getElementById('mnt_h1').value = 45; document.getElementById('mnt_f1').value = 20;
-      document.getElementById('mnt_v2').value = 0; document.getElementById('mnt_h2').value = 60; document.getElementById('mnt_f2').value = 15;
-      updateEditorParams();
+    function generateLabelMarkup(type, product) {
+      const p = getParams(type);
+      if (type === 'cs') {
+        return `
+          <div class="industrial-label">
+            <div class="label-block" style="transform: translateY(${p.v1}px);">
+              <span class="label-caption">PN</span>
+              <div class="barcode-wrapper"><svg id="live_bc_pn"></svg></div>
+              <span style="font-size: ${p.f1}pt; font-weight: 900; font-family: 'Consolas', monospace; line-height: 1.1;">${escapeHtml(product.pn)}</span>
+            </div>
+            <div style="height: 10px; width: 100%;"></div>
+            <div class="label-block" style="transform: translateY(${p.v2}px);">
+              <span class="label-caption">SN</span>
+              <div class="barcode-wrapper"><svg id="live_bc_sn"></svg></div>
+              <span style="font-size: ${p.f2}pt; font-weight: 900; font-family: 'Consolas', monospace; line-height: 1.1; transform: scaleY(1.5);">${escapeHtml(product.sn)}</span>
+            </div>
+          </div>
+        `;
+      } else {
+        return `
+          <div class="industrial-label">
+            <div style="position: absolute; transform: translate(${p.bx}px, ${p.by}px); font-size: ${p.bf}pt; font-weight: 900; text-transform: uppercase;">
+              ${escapeHtml(product.brand)}
+            </div>
+            <div class="label-block" style="transform: translateY(${p.v1}px); margin-top: 12px;">
+              <span class="label-caption">PN</span>
+              <div class="barcode-wrapper"><svg id="live_bc_pn"></svg></div>
+              <span style="font-size: ${p.f1}pt; font-weight: 900; font-family: 'Consolas', monospace; line-height: 1.1;">${escapeHtml(product.pn)}</span>
+            </div>
+            <div style="height: 5px; width: 100%;"></div>
+            <div class="label-block" style="transform: translateY(${p.v2}px);">
+              <span class="label-caption">SN</span>
+              <div class="barcode-wrapper"><svg id="live_bc_sn"></svg></div>
+              <span style="font-size: ${p.f2}pt; font-weight: 900; font-family: 'Consolas', monospace; line-height: 1.1; transform: scaleY(1.5);">${escapeHtml(product.sn)}</span>
+            </div>
+          </div>
+        `;
+      }
     }
 
+    function updateLivePreview(prod = sampleProduct) {
+      const previewPaneContainer = document.getElementById('livePreviewContainer');
+      previewPaneContainer.innerHTML = generateLabelMarkup(activeEditorType, prod);
+      
+      const p = getParams(activeEditorType);
+      try {
+        JsBarcode("#live_bc_pn", prod.pn, { format: "CODE128", displayValue: false, margin: 0, height: p.h1, width: 2 });
+        JsBarcode("#live_bc_sn", prod.sn, { format: "CODE128", displayValue: false, margin: 0, height: p.h2, width: 2 });
+      } catch (e) {}
+
+      // Автоматическое обновление текста в поле для отправки мне
+      document.getElementById('paramsExportField').value = JSON.stringify({ type: activeEditorType, ...p }, null, 2);
+    }
+
+    function onSliderInput(type) {
+      const p = getParams(type);
+      if (type === 'cs') {
+        document.getElementById('lbl_cs_v1').innerText = p.v1;
+        document.getElementById('lbl_cs_h1').innerText = p.h1;
+        document.getElementById('lbl_cs_f1').innerText = p.f1;
+        document.getElementById('lbl_cs_v2').innerText = p.v2;
+        document.getElementById('lbl_cs_h2').innerText = p.h2;
+        document.getElementById('lbl_cs_f2').innerText = p.f2;
+      } else {
+        document.getElementById('lbl_mnt_bx').innerText = p.bx;
+        document.getElementById('lbl_mnt_by').innerText = p.by;
+        document.getElementById('lbl_mnt_bf').innerText = p.bf;
+        document.getElementById('lbl_mnt_v1').innerText = p.v1;
+        document.getElementById('lbl_mnt_h1').innerText = p.h1;
+        document.getElementById('lbl_mnt_f1').innerText = p.f1;
+        document.getElementById('lbl_mnt_v2').innerText = p.v2;
+        document.getElementById('lbl_mnt_h2').innerText = p.h2;
+        document.getElementById('lbl_mnt_f2').innerText = p.f2;
+      }
+      updateLivePreview(sampleProduct);
+    }
+
+    function openEditor(type, productFromTable = null) {
+      activeEditorType = type;
+      if (productFromTable) {
+        sampleProduct = productFromTable;
+      }
+      document.getElementById('editorModalTitle').innerText = type === 'cs' ? 'Редактор этикетки: CS (Обычная)' : 'Редактор этикетки: MNT (С брендом)';
+      renderControlsPane(type);
+      updateLivePreview(sampleProduct);
+      editorModal.classList.add('is-open');
+    }
+
+    function closeEditor() {
+      editorModal.classList.remove('is-open');
+    }
+
+    function resetCurrentEditor() {
+      if (activeEditorType === 'cs') {
+        document.getElementById('cs_v1').value = 0; document.getElementById('cs_h1').value = 52; document.getElementById('cs_f1').value = 22;
+        document.getElementById('cs_v2').value = 0; document.getElementById('cs_h2').value = 72; document.getElementById('cs_f2').value = 17;
+      } else {
+        document.getElementById('mnt_bx').value = 0; document.getElementById('mnt_by').value = 0; document.getElementById('mnt_bf').value = 16;
+        document.getElementById('mnt_v1').value = 0; document.getElementById('mnt_h1').value = 45; document.getElementById('mnt_f1').value = 20;
+        document.getElementById('mnt_v2').value = 0; document.getElementById('mnt_h2').value = 60; document.getElementById('mnt_f2').value = 15;
+      }
+      onSliderInput(activeEditorType);
+    }
+
+    function printFromEditor() {
+      const printContainer = document.getElementById('printContainer');
+      printContainer.innerHTML = generateLabelMarkup(activeEditorType, sampleProduct);
+      
+      const p = getParams(activeEditorType);
+      try {
+        printContainer.querySelector('#live_bc_pn').id = 'print_bc_pn';
+        printContainer.querySelector('#live_bc_sn').id = 'print_bc_sn';
+        JsBarcode("#print_bc_pn", sampleProduct.pn, { format: "CODE128", displayValue: false, margin: 0, height: p.h1, width: 2 });
+        JsBarcode("#print_bc_sn", sampleProduct.sn, { format: "CODE128", displayValue: false, margin: 0, height: p.h2, width: 2 });
+      } catch (e) {}
+
+      window.print();
+    }
+
+    // --- GOOGLE SHEETS & SUPABASE ---
     function parseCSV(str) {
       const arr = [];
       let quote = false;
@@ -494,6 +643,9 @@
         }
 
         products = validItems;
+        if (products.length > 0) {
+          sampleProduct = products[0];
+        }
         renderTable();
 
         const badge = document.getElementById('statusBadge');
@@ -524,8 +676,8 @@
           <td class="code-text">${escapeHtml(product.pn)}</td>
           <td><span style="background: #374151; padding: 3px 8px; border-radius: 4px; font-size: 12px; font-weight: 600;">${escapeHtml(product.brand)}</span></td>
           <td class="actions-cell">
-            <button class="btn btn-secondary" onclick="openPrintModal(${index}, 'cs')" title="Обычная этикетка (CS)">CS</button>
-            <button class="btn btn-success" onclick="openPrintModal(${index}, 'mnt')" title="Этикетка с брендом (MNT)">MNT</button>
+            <button class="btn btn-secondary" onclick="openEditor('cs', products[${index}])" title="Обычная этикетка (CS)">CS</button>
+            <button class="btn btn-success" onclick="openEditor('mnt', products[${index}])" title="Этикетка с брендом (MNT)">MNT</button>
           </td>
         `;
         tableBody.appendChild(row);
@@ -538,100 +690,9 @@
       return div.innerHTML;
     }
 
-    // Генерация HTML разметки этикетки в зависимости от типа (CS или MNT)
-    function generateLabelHTML(type, product, suffix) {
-      const p = getParams(type);
-
-      if (type === 'cs') {
-        return `
-          <div class="industrial-label">
-            <div class="label-block" style="transform: translateY(${p.v1}px);">
-              <span class="label-caption">PN</span>
-              <div class="barcode-wrapper">
-                <svg id="barcodePN_${suffix}"></svg>
-              </div>
-              <span style="font-size: ${p.f1}pt; font-weight: 900; font-family: 'Consolas', monospace; line-height: 1.1;">${escapeHtml(product.pn)}</span>
-            </div>
-
-            <div style="height: 10px; width: 100%;"></div>
-
-            <div class="label-block" style="transform: translateY(${p.v2}px);">
-              <span class="label-caption">SN</span>
-              <div class="barcode-wrapper">
-                <svg id="barcodeSN_${suffix}"></svg>
-              </div>
-              <span style="font-size: ${p.f2}pt; font-weight: 900; font-family: 'Consolas', monospace; line-height: 1.1; transform: scaleY(1.5);">${escapeHtml(product.sn)}</span>
-            </div>
-          </div>
-        `;
-      } else {
-        // MNT с брендом
-        return `
-          <div class="industrial-label">
-            <div style="position: absolute; transform: translate(${p.bx}px, ${p.by}px); font-size: ${p.bf}pt; font-weight: 900; text-transform: uppercase;">
-              ${escapeHtml(product.brand)}
-            </div>
-
-            <div class="label-block" style="transform: translateY(${p.v1}px); margin-top: 12px;">
-              <span class="label-caption">PN</span>
-              <div class="barcode-wrapper">
-                <svg id="barcodePN_${suffix}"></svg>
-              </div>
-              <span style="font-size: ${p.f1}pt; font-weight: 900; font-family: 'Consolas', monospace; line-height: 1.1;">${escapeHtml(product.pn)}</span>
-            </div>
-
-            <div style="height: 5px; width: 100%;"></div>
-
-            <div class="label-block" style="transform: translateY(${p.v2}px);">
-              <span class="label-caption">SN</span>
-              <div class="barcode-wrapper">
-                <svg id="barcodeSN_${suffix}"></svg>
-              </div>
-              <span style="font-size: ${p.f2}pt; font-weight: 900; font-family: 'Consolas', monospace; line-height: 1.1; transform: scaleY(1.5);">${escapeHtml(product.sn)}</span>
-            </div>
-          </div>
-        `;
-      }
-    }
-
-    function applyBarcodes(type, product, suffix) {
-      const p = getParams(type);
-      JsBarcode(`#barcodePN_${suffix}`, product.pn, { format: "CODE128", displayValue: false, margin: 0, height: p.h1, width: 2 });
-      JsBarcode(`#barcodeSN_${suffix}`, product.sn, { format: "CODE128", displayValue: false, margin: 0, height: p.h2, width: 2 });
-    }
-
-    function renderModalAndPrintContainer(type, product, suffixBase) {
-      const htmlPreview = generateLabelHTML(type, product, suffixBase + '_preview');
-      const htmlPrint = generateLabelHTML(type, product, suffixBase + '_print');
-
-      modalPreviewBody.innerHTML = htmlPreview;
-      printContainer.innerHTML = htmlPrint;
-
-      applyBarcodes(type, product, suffixBase + '_preview');
-      applyBarcodes(type, product, suffixBase + '_print');
-    }
-
-    function openPrintModal(index, type) {
-      const product = products[index];
-      if (!product) return;
-
-      currentPrintPayload = { product, type, suffix: 'modal' };
-      
-      document.getElementById('modalHeaderTitle').innerText = `Предпросмотр этикетки (${type.toUpperCase()})`;
-      renderModalAndPrintContainer(type, product, 'modal');
-
-      modal.classList.add('is-open');
-    }
-
-    function closeModal() { modal.classList.remove('is-open'); }
-
-    document.getElementById('closeModalCross').addEventListener('click', closeModal);
-    document.getElementById('closeModalBtn').addEventListener('click', closeModal);
-    document.getElementById('printLabelBtn').addEventListener('click', () => window.print());
-
     document.addEventListener('DOMContentLoaded', () => {
       fetchDataFromGoogleSheet();
-      setInterval(fetchDataFromGoogleSheet, 10000);
+      setInterval(fetchDataFromGoogleSheet, 30000);
     });
   </script>
 </body>
