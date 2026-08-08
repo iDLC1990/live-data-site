@@ -40,7 +40,7 @@
       line-height: 1.5;
     }
 
-    .app-container { max-width: 960px; width: 100%; }
+    .app-container { max-width: 1020px; width: 100%; }
     
     .page-header { 
       margin-bottom: 28px; 
@@ -243,13 +243,14 @@
           <thead>
             <tr>
               <th>#</th>
+              <th>Brand</th>
               <th>Part Number (PN)</th>
               <th>Serial Number (SN)</th>
               <th style="width: 140px; text-align: right;">Действия</th>
             </tr>
           </thead>
           <tbody id="productsTableBody">
-            <tr><td colspan="4" style="text-align: center; padding: 30px;">Загрузка данных...</td></tr>
+            <tr><td colspan="5" style="text-align: center; padding: 30px;">Загрузка данных...</td></tr>
           </tbody>
         </table>
       </div>
@@ -278,10 +279,11 @@
     const SUPABASE_KEY = 'sb_publishable_MLyF6CMVplwDyDqSeDnSBA__RakJscC';
     const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
-    // Исправлено имя таблицы на products_db
+    // Настройки таблиц и колонок
     const TABLE_NAME = 'products_db';
     const COLUMN_PN = 'tpv_pn';
     const COLUMN_SN = 'panel_sn';
+    const COLUMN_BRAND = 'brand'; // Добавлена колонка бренда
 
     // --- GOOGLE SHEETS ---
     const SHEET_ID = '10W03bvKlVFlIUcxsHkzP_v_13gtnYRBmnrrO0ujB1bU';
@@ -312,19 +314,24 @@
       return arr;
     }
 
-    // Функция поиска PN в базе Supabase (поиск по 560к+ строк)
-    async function getPnFromDatabase(sn) {
+    // Функция запроса PN и Brand из базы Supabase по серийнику
+    async function getProductFromDatabase(sn) {
       try {
         const { data, error } = await supabaseClient
           .from(TABLE_NAME)
-          .select(COLUMN_PN)
+          .select(`${COLUMN_PN}, ${COLUMN_BRAND}`)
           .eq(COLUMN_SN, sn)
           .single();
 
-        if (error || !data) return "NOT_FOUND_IN_DB";
-        return data[COLUMN_PN];
+        if (error || !data) {
+          return { pn: "NOT_FOUND_IN_DB", brand: "-" };
+        }
+        return { 
+          pn: data[COLUMN_PN] || "N/A", 
+          brand: data[COLUMN_BRAND] || "-" 
+        };
       } catch (e) {
-        return "DB_ERROR";
+        return { pn: "DB_ERROR", brand: "ERR" };
       }
     }
 
@@ -353,10 +360,14 @@
         const lastSnList = rawSnList.slice(-5).reverse();
         const validItems = [];
 
-        // Подтягиваем PN для каждого серийника из Supabase
+        // Подтягиваем данные для каждого серийника из Supabase
         for (const sn of lastSnList) {
-          const pn = await getPnFromDatabase(sn);
-          validItems.push({ pn, sn });
+          const dbData = await getProductFromDatabase(sn);
+          validItems.push({ 
+            pn: dbData.pn, 
+            brand: dbData.brand, 
+            sn: sn 
+          });
         }
 
         products = validItems;
@@ -377,7 +388,7 @@
 
     function renderTable() {
       if (products.length === 0) {
-        tableBody.innerHTML = `<tr><td colspan="4" style="text-align: center; padding: 20px;">Записей в таблице не найдено</td></tr>`;
+        tableBody.innerHTML = `<tr><td colspan="5" style="text-align: center; padding: 20px;">Записей в таблице не найдено</td></tr>`;
         return;
       }
 
@@ -386,6 +397,7 @@
         const row = document.createElement('tr');
         row.innerHTML = `
           <td><strong>${index + 1}</strong></td>
+          <td><span style="background: #374151; padding: 3px 8px; border-radius: 4px; font-size: 12px; font-weight: 600;">${escapeHtml(product.brand)}</span></td>
           <td class="code-text">${escapeHtml(product.pn)}</td>
           <td class="code-text">${escapeHtml(product.sn)}</td>
           <td class="actions-cell">
@@ -469,7 +481,7 @@
 
     document.addEventListener('DOMContentLoaded', () => {
       fetchDataFromGoogleSheet();
-      setInterval(fetchDataFromGoogleSheet, 30000);
+      setInterval(fetchDataFromGoogleSheet, 10000);
     });
   </script>
 </body>
