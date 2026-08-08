@@ -618,7 +618,6 @@
 
     function onSliderInput(type) {
       const p = getParams(type);
-      // Динамическое обновление меток значений на слайдерах без полной перерисовки панели управления
       for (let key in p) {
         if (key.endsWith('_locked')) continue;
         const el = document.getElementById(`lbl_${type}_${key}`);
@@ -764,8 +763,8 @@
     }
 
     document.addEventListener('DOMContentLoaded', () => {
-      fetchDataFromGoogleScript();
-      setInterval(fetchDataFromGoogleScript, 30000);
+      fetchDataFromGoogleSheet();
+      setInterval(fetchDataFromGoogleSheet, 30000);
     });
   </script>
 </body>
