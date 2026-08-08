@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Печать этикеток — TSC DA220</title>
+  <title>Печать этикеток — TSC DA220 с редакторами</title>
   
   <!-- Библиотеки -->
   <script src="https://cdn.jsdelivr.net/npm/jsbarcode@3.11.6/dist/JsBarcode.all.min.js"></script>
@@ -70,6 +70,7 @@
       box-shadow: var(--shadow-lg);
       border: 1px solid var(--border-color);
       overflow: hidden;
+      margin-bottom: 20px;
     }
 
     .table-container { width: 100%; overflow-x: auto; }
@@ -102,18 +103,18 @@
     }
 
     /* Кнопки */
-    .actions-cell { display: flex; gap: 8px; justify-content: flex-end; }
+    .actions-cell { display: flex; gap: 6px; justify-content: flex-end; align-items: center; }
 
     .btn {
       display: inline-flex;
       align-items: center;
       justify-content: center;
-      gap: 8px;
+      gap: 6px;
       background-color: var(--accent-color);
       color: #FFFFFF;
       border: none;
       border-radius: 8px;
-      padding: 8px 14px;
+      padding: 8px 12px;
       font-size: 13px;
       font-weight: 600;
       cursor: pointer;
@@ -124,6 +125,27 @@
     .btn:hover { background-color: var(--accent-hover); transform: translateY(-1px); }
     .btn-secondary { background-color: #374151; color: #F3F4F6; }
     .btn-secondary:hover { background-color: #4B5563; }
+    .btn-success { background-color: #059669; }
+    .btn-success:hover { background-color: #047857; }
+
+    /* Панель редакторов (аккордеон / блоки) */
+    .editors-panel {
+      background-color: var(--card-bg);
+      border-radius: var(--radius);
+      border: 1px solid var(--border-color);
+      padding: 20px 24px;
+      margin-bottom: 24px;
+      box-shadow: var(--shadow-lg);
+    }
+    .editors-title { font-size: 18px; font-weight: 600; margin-bottom: 15px; color: #FFFFFF; display: flex; justify-content: space-between; align-items: center; }
+    .editors-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+    @media (max-width: 800px) { .editors-grid { grid-template-columns: 1fr; } }
+    
+    .editor-box { background: #111827; padding: 15px; border-radius: 8px; border: 1px solid var(--border-color); }
+    .editor-box h3 { font-size: 15px; margin-bottom: 10px; color: #60A5FA; }
+    .control-group { margin-bottom: 10px; font-size: 13px; }
+    .control-group label { display: block; color: var(--text-muted); margin-bottom: 3px; }
+    .control-group input { width: 100%; background: #1F2937; border: 1px solid var(--border-color); color: #fff; padding: 5px 8px; border-radius: 4px; font-family: monospace; }
 
     /* Модальное окно просмотра */
     .modal-backdrop {
@@ -144,7 +166,7 @@
       border-radius: var(--radius);
       border: 1px solid var(--border-color);
       box-shadow: var(--shadow-modal);
-      width: 90%; max-width: 580px;
+      width: 90%; max-width: 620px;
       display: flex; flex-direction: column;
       overflow: hidden;
     }
@@ -156,7 +178,7 @@
     .modal-footer { padding: 16px 24px; border-top: 1px solid var(--border-color); display: flex; justify-content: flex-end; gap: 12px; }
 
     /* ==========================================
-        ЭТИКЕТКА 100x80 мм (Оптимизировано для TSC DA220)
+        ЭТИКЕТКА 100x80 мм (Динамическая)
         ========================================== */
     .industrial-label {
       width: 100mm;
@@ -168,35 +190,19 @@
       font-family: 'Segoe UI', Arial, sans-serif;
       display: flex;
       flex-direction: column;
-      justify-content: center;
+      justify-content: flex-start;
       align-items: center;
       text-align: center;
       border: 1px solid #D1D5DB;
+      position: relative;
+      overflow: hidden;
     }
 
-    .label-block { display: flex; flex-direction: column; align-items: center; width: 100%; }
+    .label-block { display: flex; flex-direction: column; align-items: center; width: 100%; position: relative; }
     .label-caption { font-weight: 900; color: #000000; letter-spacing: 1px; text-transform: uppercase; line-height: 1; }
-    .pn-caption { transform: translateY(-11px); }
-    .sn-caption { transform: translateY(12px); }
 
     .barcode-wrapper { width: 100%; display: flex; justify-content: center; align-items: center; }
     .barcode-wrapper svg { max-width: 100%; display: block; }
-    .pn-bc-wrapper { transform: translateY(-1px); }
-    .sn-bc-wrapper { transform: translateY(12px); }
-
-    .label-value-pn {
-      font-size: 22pt; font-weight: 900;
-      font-family: 'Consolas', monospace; color: #000;
-      line-height: 1.1; transform: translateY(6px);
-    }
-
-    .label-value-sn {
-      font-size: 17pt; font-weight: 900;
-      font-family: 'Consolas', monospace; color: #000;
-      line-height: 1.1; transform: translateY(15px) scaleY(1.8);
-    }
-
-    .label-spacer { height: 2mm; width: 100%; }
 
     /* ==========================================
         НАСТРОЙКИ ДЛЯ ТЕРМОПЕЧАТИ TSC DA220
@@ -208,7 +214,7 @@
 
     @media print {
       body { background: #ffffff !important; color: #000000 !important; }
-      .app-container, .modal-backdrop { display: none !important; }
+      .app-container, .modal-backdrop, .editors-panel { display: none !important; }
       #printContainer, #printContainer * { visibility: visible !important; }
       #printContainer {
         display: flex !important;
@@ -237,6 +243,80 @@
       </div>
     </header>
 
+    <!-- ПАНЕЛЬ РЕДАКТОРОВ ПАРАМЕТРОВ -->
+    <div class="editors-panel">
+      <div class="editors-title">
+        <span>⚙️ Редакторы параметров этикеток (для калибровки)</span>
+        <button class="btn btn-secondary" style="font-size: 11px; padding: 4px 8px;" onclick="resetEditors()">Сбросить</button>
+      </div>
+      <div class="editors-grid">
+        <!-- Редактор 1 (CS - Обычная) -->
+        <div class="editor-box">
+          <h3>Редактор 1: CS (Обычная)</h3>
+          <div class="control-group">
+            <label>1. Смещение по вертикали (Верхний блок / PN): <span id="val_cs_v1">0</span>px</label>
+            <input type="range" id="cs_v1" min="-50" max="50" value="0" oninput="updateEditorParams()">
+          </div>
+          <div class="control-group">
+            <label>Высота штрихкода PN: <span id="val_cs_h1">52</span>px</label>
+            <input type="range" id="cs_h1" min="20" max="100" value="52" oninput="updateEditorParams()">
+          </div>
+          <div class="control-group">
+            <label>3. Размер шрифта текста PN: <span id="val_cs_f1">22</span>pt</label>
+            <input type="range" id="cs_f1" min="10" max="40" value="22" oninput="updateEditorParams()">
+          </div>
+          <hr style="border-color: var(--border-color); margin: 10px 0;">
+          <div class="control-group">
+            <label>Смещение по вертикали (Нижний блок / SN): <span id="val_cs_v2">0</span>px</label>
+            <input type="range" id="cs_v2" min="-50" max="50" value="0" oninput="updateEditorParams()">
+          </div>
+          <div class="control-group">
+            <label>Высота штрихкода SN: <span id="val_cs_h2">72</span>px</label>
+            <input type="range" id="cs_h2" min="20" max="120" value="72" oninput="updateEditorParams()">
+          </div>
+          <div class="control-group">
+            <label>Размер шрифта текста SN: <span id="val_cs_f2">17</span>pt</label>
+            <input type="range" id="cs_f2" min="10" max="35" value="17" oninput="updateEditorParams()">
+          </div>
+        </div>
+
+        <!-- Редактор 2 (MNT - С брендом) -->
+        <div class="editor-box">
+          <h3>Редактор 2: MNT (С брендом)</h3>
+          <div class="control-group">
+            <label>4. Brand: смещение по горизонтали (<span id="val_mnt_bx">0</span>px) / вертикали (<span id="val_mnt_by">0</span>px)</label>
+            <div style="display: flex; gap: 5px;">
+              <input type="range" id="mnt_bx" min="-150" max="150" value="0" oninput="updateEditorParams()" title="По горизонтали">
+              <input type="range" id="mnt_by" min="-50" max="50" value="0" oninput="updateEditorParams()" title="По вертикали">
+            </div>
+          </div>
+          <div class="control-group">
+            <label>Размер шрифта Brand: <span id="val_mnt_bf">16</span>pt</label>
+            <input type="range" id="mnt_bf" min="10" max="35" value="16" oninput="updateEditorParams()">
+          </div>
+          <div class="control-group">
+            <label>1. Смещение по вертикали (PN): <span id="val_mnt_v1">0</span>px</label>
+            <input type="range" id="mnt_v1" min="-50" max="50" value="0" oninput="updateEditorParams()">
+          </div>
+          <div class="control-group">
+            <label>Высота штрихкода PN / Шрифт PN: <span id="val_mnt_h1">45</span>px / <span id="val_mnt_f1">20</span>pt</label>
+            <div style="display: flex; gap: 5px;">
+              <input type="range" id="mnt_h1" min="20" max="100" value="45" oninput="updateEditorParams()">
+              <input type="range" id="mnt_f1" min="10" max="35" value="20" oninput="updateEditorParams()">
+            </div>
+          </div>
+          <div class="control-group">
+            <label>Смещение по вертикали (SN): <span id="val_mnt_v2">0</span>px | ШК: <span id="val_mnt_h2">60</span>px | Шрифт: <span id="val_mnt_f2">15</span>pt</label>
+            <div style="display: flex; gap: 5px;">
+              <input type="range" id="mnt_v2" min="-50" max="50" value="0" oninput="updateEditorParams()">
+              <input type="range" id="mnt_h2" min="20" max="100" value="60" oninput="updateEditorParams()">
+              <input type="range" id="mnt_f2" min="10" max="30" value="15" oninput="updateEditorParams()">
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
     <main class="card">
       <div class="table-container">
         <table class="data-table">
@@ -246,7 +326,7 @@
               <th>Serial Number (SN)</th>
               <th>Part Number (PN)</th>
               <th>Brand</th>
-              <th style="width: 140px; text-align: right;">Действия</th>
+              <th style="width: 150px; text-align: right;">Печать (CS / MNT)</th>
             </tr>
           </thead>
           <tbody id="productsTableBody">
@@ -260,7 +340,7 @@
   <div class="modal-backdrop" id="labelModal">
     <div class="modal-card">
       <div class="modal-header">
-        <h2 class="modal-title">Предпросмотр этикетки (100x80 мм)</h2>
+        <h2 class="modal-title" id="modalHeaderTitle">Предпросмотр этикетки</h2>
         <button class="modal-close-btn" id="closeModalCross">&times;</button>
       </div>
       <div class="modal-body" id="modalPreviewBody"></div>
@@ -279,22 +359,81 @@
     const SUPABASE_KEY = 'sb_publishable_MLyF6CMVplwDyDqSeDnSBA__RakJscC';
     const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
-    // Настройки таблиц и колонок
     const TABLE_NAME = 'products_db';
     const COLUMN_PN = 'tpv_pn';
     const COLUMN_SN = 'panel_sn';
     const COLUMN_BRAND = 'brand';
 
-    // --- GOOGLE SHEETS ---
     const SHEET_ID = '10W03bvKlVFlIUcxsHkzP_v_13gtnYRBmnrrO0ujB1bU';
     const GID = '0';
 
     let products = [];
+    let currentPrintPayload = null; // Данные для текущей печати/модалки
 
     const tableBody = document.getElementById('productsTableBody');
     const modal = document.getElementById('labelModal');
     const modalPreviewBody = document.getElementById('modalPreviewBody');
     const printContainer = document.getElementById('printContainer');
+
+    // Получение параметров из редакторов в реальном времени
+    function getParams(type) {
+      if (type === 'cs') {
+        return {
+          v1: parseInt(document.getElementById('cs_v1').value),
+          h1: parseInt(document.getElementById('cs_h1').value),
+          f1: parseInt(document.getElementById('cs_f1').value),
+          v2: parseInt(document.getElementById('cs_v2').value),
+          h2: parseInt(document.getElementById('cs_h2').value),
+          f2: parseInt(document.getElementById('cs_f2').value),
+        };
+      } else {
+        return {
+          bx: parseInt(document.getElementById('mnt_bx').value),
+          by: parseInt(document.getElementById('mnt_by').value),
+          bf: parseInt(document.getElementById('mnt_bf').value),
+          v1: parseInt(document.getElementById('mnt_v1').value),
+          h1: parseInt(document.getElementById('mnt_h1').value),
+          f1: parseInt(document.getElementById('mnt_f1').value),
+          v2: parseInt(document.getElementById('mnt_v2').value),
+          h2: parseInt(document.getElementById('mnt_h2').value),
+          f2: parseInt(document.getElementById('mnt_f2').value),
+        };
+      }
+    }
+
+    function updateEditorParams() {
+      // Обновление числовых меток в интерфейсе редактора
+      document.getElementById('val_cs_v1').innerText = document.getElementById('cs_v1').value;
+      document.getElementById('val_cs_h1').innerText = document.getElementById('cs_h1').value;
+      document.getElementById('val_cs_f1').innerText = document.getElementById('cs_f1').value;
+      document.getElementById('val_cs_v2').innerText = document.getElementById('cs_v2').value;
+      document.getElementById('val_cs_h2').innerText = document.getElementById('cs_h2').value;
+      document.getElementById('val_cs_f2').innerText = document.getElementById('cs_f2').value;
+
+      document.getElementById('val_mnt_bx').innerText = document.getElementById('mnt_bx').value;
+      document.getElementById('val_mnt_by').innerText = document.getElementById('mnt_by').value;
+      document.getElementById('val_mnt_bf').innerText = document.getElementById('mnt_bf').value;
+      document.getElementById('val_mnt_v1').innerText = document.getElementById('mnt_v1').value;
+      document.getElementById('val_mnt_h1').innerText = document.getElementById('mnt_h1').value;
+      document.getElementById('val_mnt_f1').innerText = document.getElementById('mnt_f1').value;
+      document.getElementById('val_mnt_v2').innerText = document.getElementById('mnt_v2').value;
+      document.getElementById('val_mnt_h2').innerText = document.getElementById('mnt_h2').value;
+      document.getElementById('val_mnt_f2').innerText = document.getElementById('mnt_f2').value;
+
+      // Если открыта модалка, динамически обновляем превью при движении ползунков
+      if (modal.classList.contains('is-open') && currentPrintPayload) {
+        renderModalAndPrintContainer(currentPrintPayload.type, currentPrintPayload.product, currentPrintPayload.suffix);
+      }
+    }
+
+    function resetEditors() {
+      document.getElementById('cs_v1').value = 0; document.getElementById('cs_h1').value = 52; document.getElementById('cs_f1').value = 22;
+      document.getElementById('cs_v2').value = 0; document.getElementById('cs_h2').value = 72; document.getElementById('cs_f2').value = 17;
+      document.getElementById('mnt_bx').value = 0; document.getElementById('mnt_by').value = 0; document.getElementById('mnt_bf').value = 16;
+      document.getElementById('mnt_v1').value = 0; document.getElementById('mnt_h1').value = 45; document.getElementById('mnt_f1').value = 20;
+      document.getElementById('mnt_v2').value = 0; document.getElementById('mnt_h2').value = 60; document.getElementById('mnt_f2').value = 15;
+      updateEditorParams();
+    }
 
     function parseCSV(str) {
       const arr = [];
@@ -322,13 +461,8 @@
           .eq(COLUMN_SN, sn)
           .single();
 
-        if (error || !data) {
-          return { pn: "NOT_FOUND_IN_DB", brand: "-" };
-        }
-        return { 
-          pn: data[COLUMN_PN] || "N/A", 
-          brand: data[COLUMN_BRAND] || "-" 
-        };
+        if (error || !data) return { pn: "NOT_FOUND_IN_DB", brand: "-" };
+        return { pn: data[COLUMN_PN] || "N/A", brand: data[COLUMN_BRAND] || "-" };
       } catch (e) {
         return { pn: "DB_ERROR", brand: "ERR" };
       }
@@ -338,8 +472,7 @@
       try {
         const url = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:csv&gid=${GID}&_nc=${Date.now()}`;
         const response = await fetch(url);
-        
-        if (!response.ok) throw new Error('Не удалось получить данные с сервера Google');
+        if (!response.ok) throw new Error('Ошибка сети Google Sheets');
         
         const csvText = await response.text();
         const rows = parseCSV(csvText);
@@ -348,11 +481,8 @@
         for (let i = 1; i < rows.length; i++) {
           const row = rows[i];
           if (!row || row.length < 3) continue;
-
           const sn = row[2] ? row[2].trim() : '';
-          if (sn && sn.toUpperCase() !== 'SERIAL NUMBER') {
-            rawSnList.push(sn);
-          }
+          if (sn && sn.toUpperCase() !== 'SERIAL NUMBER') rawSnList.push(sn);
         }
 
         const lastSnList = rawSnList.slice(-5).reverse();
@@ -360,11 +490,7 @@
 
         for (const sn of lastSnList) {
           const dbData = await getProductFromDatabase(sn);
-          validItems.push({ 
-            pn: dbData.pn, 
-            brand: dbData.brand, 
-            sn: sn 
-          });
+          validItems.push({ pn: dbData.pn, brand: dbData.brand, sn: sn });
         }
 
         products = validItems;
@@ -375,17 +501,17 @@
         badge.style.color = '#34D399';
         badge.innerText = `🟢 Синхронизировано (${new Date().toLocaleTimeString()})`;
       } catch (error) {
-        console.error('Ошибка загрузки данных:', error);
+        console.error(error);
         const badge = document.getElementById('statusBadge');
         badge.style.background = '#991B1B';
         badge.style.color = '#FCA5A5';
-        badge.innerText = '🔴 Ошибка доступа к данным';
+        badge.innerText = '🔴 Ошибка связи';
       }
     }
 
     function renderTable() {
       if (products.length === 0) {
-        tableBody.innerHTML = `<tr><td colspan="5" style="text-align: center; padding: 20px;">Записей в таблице не найдено</td></tr>`;
+        tableBody.innerHTML = `<tr><td colspan="5" style="text-align: center; padding: 20px;">Записей не найдено</td></tr>`;
         return;
       }
 
@@ -398,8 +524,8 @@
           <td class="code-text">${escapeHtml(product.pn)}</td>
           <td><span style="background: #374151; padding: 3px 8px; border-radius: 4px; font-size: 12px; font-weight: 600;">${escapeHtml(product.brand)}</span></td>
           <td class="actions-cell">
-            <button class="btn btn-secondary" onclick="openPrintModal(${index})" title="Просмотр">👁️</button>
-            <button class="btn" onclick="directPrint(${index})" title="Печать на TSC DA220">🖨️</button>
+            <button class="btn btn-secondary" onclick="openPrintModal(${index}, 'cs')" title="Обычная этикетка (CS)">CS</button>
+            <button class="btn btn-success" onclick="openPrintModal(${index}, 'mnt')" title="Этикетка с брендом (MNT)">MNT</button>
           </td>
         `;
         tableBody.appendChild(row);
@@ -412,60 +538,87 @@
       return div.innerHTML;
     }
 
-    function generateLabelHTML(pn, sn, suffix = '') {
-      return `
-        <div class="industrial-label">
-          <div class="label-block">
-            <span class="label-caption pn-caption">PN</span>
-            <div class="barcode-wrapper pn-bc-wrapper">
-              <svg id="barcodePN_${suffix}"></svg>
-            </div>
-            <span class="label-value-pn">${escapeHtml(pn)}</span>
-          </div>
+    // Генерация HTML разметки этикетки в зависимости от типа (CS или MNT)
+    function generateLabelHTML(type, product, suffix) {
+      const p = getParams(type);
 
-          <div class="label-spacer"></div>
-
-          <div class="label-block">
-            <span class="label-caption sn-caption">SN</span>
-            <div class="barcode-wrapper sn-bc-wrapper">
-              <svg id="barcodeSN_${suffix}"></svg>
+      if (type === 'cs') {
+        return `
+          <div class="industrial-label">
+            <div class="label-block" style="transform: translateY(${p.v1}px);">
+              <span class="label-caption">PN</span>
+              <div class="barcode-wrapper">
+                <svg id="barcodePN_${suffix}"></svg>
+              </div>
+              <span style="font-size: ${p.f1}pt; font-weight: 900; font-family: 'Consolas', monospace; line-height: 1.1;">${escapeHtml(product.pn)}</span>
             </div>
-            <span class="label-value-sn">${escapeHtml(sn)}</span>
+
+            <div style="height: 10px; width: 100%;"></div>
+
+            <div class="label-block" style="transform: translateY(${p.v2}px);">
+              <span class="label-caption">SN</span>
+              <div class="barcode-wrapper">
+                <svg id="barcodeSN_${suffix}"></svg>
+              </div>
+              <span style="font-size: ${p.f2}pt; font-weight: 900; font-family: 'Consolas', monospace; line-height: 1.1; transform: scaleY(1.5);">${escapeHtml(product.sn)}</span>
+            </div>
           </div>
-        </div>
-      `;
+        `;
+      } else {
+        // MNT с брендом
+        return `
+          <div class="industrial-label">
+            <div style="position: absolute; transform: translate(${p.bx}px, ${p.by}px); font-size: ${p.bf}pt; font-weight: 900; text-transform: uppercase;">
+              ${escapeHtml(product.brand)}
+            </div>
+
+            <div class="label-block" style="transform: translateY(${p.v1}px); margin-top: 12px;">
+              <span class="label-caption">PN</span>
+              <div class="barcode-wrapper">
+                <svg id="barcodePN_${suffix}"></svg>
+              </div>
+              <span style="font-size: ${p.f1}pt; font-weight: 900; font-family: 'Consolas', monospace; line-height: 1.1;">${escapeHtml(product.pn)}</span>
+            </div>
+
+            <div style="height: 5px; width: 100%;"></div>
+
+            <div class="label-block" style="transform: translateY(${p.v2}px);">
+              <span class="label-caption">SN</span>
+              <div class="barcode-wrapper">
+                <svg id="barcodeSN_${suffix}"></svg>
+              </div>
+              <span style="font-size: ${p.f2}pt; font-weight: 900; font-family: 'Consolas', monospace; line-height: 1.1; transform: scaleY(1.5);">${escapeHtml(product.sn)}</span>
+            </div>
+          </div>
+        `;
+      }
     }
 
-    function directPrint(index) {
+    function applyBarcodes(type, product, suffix) {
+      const p = getParams(type);
+      JsBarcode(`#barcodePN_${suffix}`, product.pn, { format: "CODE128", displayValue: false, margin: 0, height: p.h1, width: 2 });
+      JsBarcode(`#barcodeSN_${suffix}`, product.sn, { format: "CODE128", displayValue: false, margin: 0, height: p.h2, width: 2 });
+    }
+
+    function renderModalAndPrintContainer(type, product, suffixBase) {
+      const htmlPreview = generateLabelHTML(type, product, suffixBase + '_preview');
+      const htmlPrint = generateLabelHTML(type, product, suffixBase + '_print');
+
+      modalPreviewBody.innerHTML = htmlPreview;
+      printContainer.innerHTML = htmlPrint;
+
+      applyBarcodes(type, product, suffixBase + '_preview');
+      applyBarcodes(type, product, suffixBase + '_print');
+    }
+
+    function openPrintModal(index, type) {
       const product = products[index];
       if (!product) return;
 
-      printContainer.innerHTML = generateLabelHTML(product.pn, product.sn, 'print');
-
-      const barcodeOptsPN = { format: "CODE128", displayValue: false, margin: 0, height: 52, width: 2 };
-      const barcodeOptsSN = { format: "CODE128", displayValue: false, margin: 0, height: 72, width: 2 };
-
-      JsBarcode("#barcodePN_print", product.pn, barcodeOptsPN);
-      JsBarcode("#barcodeSN_print", product.sn, barcodeOptsSN);
-
-      window.print();
-    }
-
-    function openPrintModal(index) {
-      const product = products[index];
-      if (!product) return;
-
-      modalPreviewBody.innerHTML = generateLabelHTML(product.pn, product.sn, 'preview');
-      printContainer.innerHTML = generateLabelHTML(product.pn, product.sn, 'print');
-
-      const barcodeOptsPN = { format: "CODE128", displayValue: false, margin: 0, height: 52, width: 2 };
-      const barcodeOptsSN = { format: "CODE128", displayValue: false, margin: 0, height: 72, width: 2 };
-
-      JsBarcode("#barcodePN_preview", product.pn, barcodeOptsPN);
-      JsBarcode("#barcodePN_print", product.pn, barcodeOptsPN);
-
-      JsBarcode("#barcodeSN_preview", product.sn, barcodeOptsSN);
-      JsBarcode("#barcodeSN_print", product.sn, barcodeOptsSN);
+      currentPrintPayload = { product, type, suffix: 'modal' };
+      
+      document.getElementById('modalHeaderTitle').innerText = `Предпросмотр этикетки (${type.toUpperCase()})`;
+      renderModalAndPrintContainer(type, product, 'modal');
 
       modal.classList.add('is-open');
     }
