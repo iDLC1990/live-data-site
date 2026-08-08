@@ -5,12 +5,14 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Печать этикеток — TSC DA220</title>
   
+  <!-- Библиотеки -->
   <script src="https://cdn.jsdelivr.net/npm/jsbarcode@3.11.6/dist/JsBarcode.all.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
   <style>
     /* ==========================================
-       СТИЛИ ИНТЕРФЕЙСА (ТЕМНАЯ ТЕМА)
-       ========================================== */
+        СТИЛИ ИНТЕРФЕЙСА (ТЕМНАЯ ТЕМА)
+        ========================================== */
     :root {
       --bg-color: #111827;
       --card-bg: #1F2937;
@@ -154,8 +156,8 @@
     .modal-footer { padding: 16px 24px; border-top: 1px solid var(--border-color); display: flex; justify-content: flex-end; gap: 12px; }
 
     /* ==========================================
-       ЭТИКЕТКА 100x80 мм (Оптимизировано для TSC DA220)
-       ========================================== */
+        ЭТИКЕТКА 100x80 мм (Оптимизировано для TSC DA220)
+        ========================================== */
     .industrial-label {
       width: 100mm;
       height: 80mm;
@@ -197,8 +199,8 @@
     .label-spacer { height: 2mm; width: 100%; }
 
     /* ==========================================
-       НАСТРОЙКИ ДЛЯ ТЕРМОПЕЧАТИ TSC DA220
-       ========================================== */
+        НАСТРОЙКИ ДЛЯ ТЕРМОПЕЧАТИ TSC DA220
+        ========================================== */
     @page { 
       size: 100mm 80mm landscape; 
       margin: 0; 
@@ -227,8 +229,8 @@
     <header class="page-header">
       <div>
         <h1 class="page-title">🖨️ Друк етикеток (TSC DA220)</h1>
-        <p class="page-subtitle">Лист: FI Station KOVALCHYK Y. (Авто-обновление каждые 10 сек)</p>
-        <div class="status-badge" id="statusBadge">🟡 Подключение к Google Таблице...</div>
+        <p class="page-subtitle">Лист: FI Station KOVALCHYK Y. (Авто-обновление каждые 30 сек)</p>
+        <div class="status-badge" id="statusBadge">🟡 Подключение к базам данных...</div>
       </div>
       <div>
         <button class="btn btn-secondary" onclick="fetchDataFromGoogleSheet()">🔄 Обновить сейчас</button>
@@ -247,7 +249,7 @@
             </tr>
           </thead>
           <tbody id="productsTableBody">
-            <tr><td colspan="4" style="text-align: center; padding: 30px;">Загрузка данных из Гугл Таблицы...</td></tr>
+            <tr><td colspan="4" style="text-align: center; padding: 30px;">Загрузка данных...</td></tr>
           </tbody>
         </table>
       </div>
@@ -271,9 +273,19 @@
   <div id="printContainer" style="display: none;"></div>
 
   <script>
-    // GOOGLE SHEETS
+    // --- НАСТРОЙКИ SUPABASE ---
+    const SUPABASE_URL = 'https://xgjggfnfgrmkuclgjmih.supabase.co';
+    const SUPABASE_KEY = 'sb_publishable_MLyF6CMVplwDyDqSeDnSBA__RakJscC';
+    const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+    // Имена таблицы и колонок в Supabase
+    const TABLE_NAME = 'DBplik';
+    const COLUMN_PN = 'tpv_pn';
+    const COLUMN_SN = 'panel_sn';
+
+    // --- GOOGLE SHEETS ---
     const SHEET_ID = '10W03bvKlVFlIUcxsHkzP_v_13gtnYRBmnrrO0ujB1bU';
-    const GID = '0'; // Лист "FI Station KOVALCHYK Y."
+    const GID = '0';
 
     let products = [];
 
@@ -300,6 +312,22 @@
       return arr;
     }
 
+    // Функция поиска PN в базе Supabase (поиск по 580к+ строк)
+    async function getPnFromDatabase(sn) {
+      try {
+        const { data, error } = await supabase
+          .from(TABLE_NAME)
+          .select(COLUMN_PN)
+          .eq(COLUMN_SN, sn)
+          .single();
+
+        if (error || !data) return "NOT_FOUND_IN_DB";
+        return data[COLUMN_PN];
+      } catch (e) {
+        return "DB_ERROR";
+      }
+    }
+
     async function fetchDataFromGoogleSheet() {
       try {
         const url = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:csv&gid=${GID}&_nc=${Date.now()}`;
@@ -310,23 +338,28 @@
         const csvText = await response.text();
         const rows = parseCSV(csvText);
 
-        const validItems = [];
+        const rawSnList = [];
         for (let i = 1; i < rows.length; i++) {
           const row = rows[i];
           if (!row || row.length < 3) continue;
 
-          // Колонка C (индекс 2) содержит SERIAL NUMBER
           const sn = row[2] ? row[2].trim() : '';
-          
           if (sn && sn.toUpperCase() !== 'SERIAL NUMBER') {
-            const pn = extractPNFromSN(sn);
-            validItems.push({ pn, sn });
+            rawSnList.push(sn);
           }
         }
 
         // Берем 5 самых последних серийных номеров
-        products = validItems.slice(-5).reverse();
+        const lastSnList = rawSnList.slice(-5).reverse();
+        const validItems = [];
 
+        // Подтягиваем PN для каждого серийника из Supabase
+        for (const sn of lastSnList) {
+          const pn = await getPnFromDatabase(sn);
+          validItems.push({ pn, sn });
+        }
+
+        products = validItems;
         renderTable();
 
         const badge = document.getElementById('statusBadge');
@@ -334,19 +367,12 @@
         badge.style.color = '#34D399';
         badge.innerText = `🟢 Синхронизировано (${new Date().toLocaleTimeString()})`;
       } catch (error) {
-        console.error('Ошибка загрузки Google Таблицы:', error);
+        console.error('Ошибка загрузки данных:', error);
         const badge = document.getElementById('statusBadge');
         badge.style.background = '#991B1B';
         badge.style.color = '#FCA5A5';
-        badge.innerText = '🔴 Ошибка доступа к Google Таблице';
+        badge.innerText = '🔴 Ошибка доступа к данным';
       }
-    }
-
-    function extractPNFromSN(sn) {
-      if (sn.length >= 12) {
-        return "750" + sn.substring(0, 10) + "N000";
-      }
-      return sn;
     }
 
     function renderTable() {
@@ -401,15 +427,14 @@
       `;
     }
 
-    // Настройки ширины штрихкода оптимизированы под разрешение TSC DA220 (203 dpi)
     function directPrint(index) {
       const product = products[index];
       if (!product) return;
 
       printContainer.innerHTML = generateLabelHTML(product.pn, product.sn, 'print');
 
-      const barcodeOptsPN = { format: "CODE128", displayValue: false, margin: 0, height: 52, width: 1.5 };
-      const barcodeOptsSN = { format: "CODE128", displayValue: false, margin: 0, height: 72, width: 1.5 };
+      const barcodeOptsPN = { format: "CODE128", displayValue: false, margin: 0, height: 52, width: 2 };
+      const barcodeOptsSN = { format: "CODE128", displayValue: false, margin: 0, height: 72, width: 2 };
 
       JsBarcode("#barcodePN_print", product.pn, barcodeOptsPN);
       JsBarcode("#barcodeSN_print", product.sn, barcodeOptsSN);
@@ -424,8 +449,8 @@
       modalPreviewBody.innerHTML = generateLabelHTML(product.pn, product.sn, 'preview');
       printContainer.innerHTML = generateLabelHTML(product.pn, product.sn, 'print');
 
-      const barcodeOptsPN = { format: "CODE128", displayValue: false, margin: 0, height: 52, width: 1.5 };
-      const barcodeOptsSN = { format: "CODE128", displayValue: false, margin: 0, height: 72, width: 1.5 };
+      const barcodeOptsPN = { format: "CODE128", displayValue: false, margin: 0, height: 52, width: 2 };
+      const barcodeOptsSN = { format: "CODE128", displayValue: false, margin: 0, height: 72, width: 2 };
 
       JsBarcode("#barcodePN_preview", product.pn, barcodeOptsPN);
       JsBarcode("#barcodePN_print", product.pn, barcodeOptsPN);
@@ -444,7 +469,7 @@
 
     document.addEventListener('DOMContentLoaded', () => {
       fetchDataFromGoogleSheet();
-      setInterval(fetchDataFromGoogleSheet, 10000);
+      setInterval(fetchDataFromGoogleSheet, 30000); // Интервал обновлений 30 секунд для безопасности
     });
   </script>
 </body>
