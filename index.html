@@ -278,8 +278,8 @@
     const SUPABASE_KEY = 'sb_publishable_MLyF6CMVplwDyDqSeDnSBA__RakJscC';
     const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
-    // Имена таблицы и колонок в Supabase
-    const TABLE_NAME = 'DBplik';
+    // Исправлено имя таблицы на products_db
+    const TABLE_NAME = 'products_db';
     const COLUMN_PN = 'tpv_pn';
     const COLUMN_SN = 'panel_sn';
 
@@ -312,7 +312,7 @@
       return arr;
     }
 
-    // Функция поиска PN в базе Supabase (поиск по 580к+ строк)
+    // Функция поиска PN в базе Supabase (поиск по 560к+ строк)
     async function getPnFromDatabase(sn) {
       try {
         const { data, error } = await supabaseClient
