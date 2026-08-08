@@ -276,7 +276,7 @@
     // --- НАСТРОЙКИ SUPABASE ---
     const SUPABASE_URL = 'https://xgjggfnfgrmkuclgjmih.supabase.co';
     const SUPABASE_KEY = 'sb_publishable_MLyF6CMVplwDyDqSeDnSBA__RakJscC';
-    const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+    const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
     // Имена таблицы и колонок в Supabase
     const TABLE_NAME = 'DBplik';
@@ -315,7 +315,7 @@
     // Функция поиска PN в базе Supabase (поиск по 580к+ строк)
     async function getPnFromDatabase(sn) {
       try {
-        const { data, error } = await supabase
+        const { data, error } = await supabaseClient
           .from(TABLE_NAME)
           .select(COLUMN_PN)
           .eq(COLUMN_SN, sn)
@@ -469,7 +469,7 @@
 
     document.addEventListener('DOMContentLoaded', () => {
       fetchDataFromGoogleSheet();
-      setInterval(fetchDataFromGoogleSheet, 30000); // Интервал обновлений 30 секунд для безопасности
+      setInterval(fetchDataFromGoogleSheet, 30000);
     });
   </script>
 </body>
