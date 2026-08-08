@@ -169,7 +169,7 @@
     .editor-modal-body {
       padding: 24px;
       display: grid;
-      grid-template-columns: 400px 1fr;
+      grid-template-columns: 420px 1fr;
       gap: 24px;
       overflow-y: auto;
       background-color: #111827;
@@ -179,9 +179,10 @@
 
     .controls-pane { background: #1F2937; padding: 16px; border-radius: 8px; border: 1px solid var(--border-color); }
     .controls-pane h3 { font-size: 14px; margin-bottom: 12px; color: #60A5FA; text-transform: uppercase; letter-spacing: 0.05em; }
+    .controls-pane h4 { font-size: 13px; margin: 10px 0 6px 0; color: #34D399; border-bottom: 1px solid var(--border-color); padding-bottom: 4px; }
     
-    .control-group { margin-bottom: 12px; font-size: 12px; }
-    .control-group label { display: flex; justify-content: space-between; color: var(--text-muted); margin-bottom: 4px; }
+    .control-group { margin-bottom: 10px; font-size: 12px; }
+    .control-group label { display: flex; justify-content: space-between; color: var(--text-muted); margin-bottom: 2px; }
     .control-group input[type="range"] { width: 100%; accent-color: var(--accent-color); cursor: pointer; }
 
     .preview-pane {
@@ -195,7 +196,7 @@
     }
     .preview-pane span.hint { font-size: 12px; color: var(--text-muted); margin-bottom: 12px; text-transform: uppercase; letter-spacing: 0.05em; }
 
-    /* Блок для копирования параметров (то что скинешь мне) */
+    /* Блок для копирования параметров */
     .export-box {
       margin-top: 16px;
       background: #111827;
@@ -308,7 +309,7 @@
     </main>
   </div>
 
-  <!-- УНИВЕРСАЛЬНОЕ ОКНО РЕДАКТОРА С ЖИВЫМ ПРЕВЬЮ И ПОЛЕМ ДЛЯ ПЕРЕДАЧИ МНЕ -->
+  <!-- УНИВЕРСАЛЬНОЕ ОКНО РЕДАКТОРА -->
   <div class="modal-backdrop" id="editorModal">
     <div class="editor-modal-card">
       <div class="modal-header">
@@ -317,17 +318,15 @@
       </div>
       
       <div class="editor-modal-body">
-        <!-- Слева: Панель ползунков + блок параметров для отправки мне -->
         <div>
           <div class="controls-pane" id="controlsPaneContainer"></div>
           
           <div class="export-box">
-            <label>📋 Скопируй и скинь мне эти параметры после подгонки:</label>
+            <label>📋 Скопируй и скинь мне эти параметры:</label>
             <textarea id="paramsExportField" readonly onclick="this.select();"></textarea>
           </div>
         </div>
 
-        <!-- Справа: Живой визуальный макет этикетки -->
         <div class="preview-pane">
           <span class="hint">Живой предпросмотр (100x80 мм)</span>
           <div id="livePreviewContainer"></div>
@@ -396,69 +395,80 @@
       const container = document.getElementById('controlsPaneContainer');
       if (type === 'cs') {
         container.innerHTML = `
-          <h3>Редактор 1: CS (Обычная)</h3>
+          <h3>Редактор CS (Обычная)</h3>
+          
+          <h4>Верхний блок (PN)</h4>
           <div class="control-group">
-            <label><span>1. Перемещение по вертикали (Верх):</span> <strong id="lbl_cs_v1">0</strong>px</label>
+            <label><span>Перемещение по вертикали:</span> <strong id="lbl_cs_v1">0</strong>px</label>
             <input type="range" id="cs_v1" min="-50" max="50" value="0" oninput="onSliderInput('cs')">
           </div>
           <div class="control-group">
-            <label><span>2. Высота букв/штрихкода (Верх):</span> <strong id="lbl_cs_h1">52</strong>px</label>
+            <label><span>Высота штрихкода:</span> <strong id="lbl_cs_h1">52</strong>px</label>
             <input type="range" id="cs_h1" min="20" max="100" value="52" oninput="onSliderInput('cs')">
           </div>
           <div class="control-group">
-            <label><span>3. Размер шрифта (Верх):</span> <strong id="lbl_cs_f1">22</strong>pt</label>
+            <label><span>Размер шрифта текста:</span> <strong id="lbl_cs_f1">22</strong>pt</label>
             <input type="range" id="cs_f1" min="10" max="40" value="22" oninput="onSliderInput('cs')">
           </div>
-          <hr style="border-color: var(--border-color); margin: 12px 0;">
+
+          <h4>Нижний блок (SN)</h4>
           <div class="control-group">
-            <label><span>1. Перемещение по вертикали (Низ):</span> <strong id="lbl_cs_v2">0</strong>px</label>
+            <label><span>Перемещение по вертикали:</span> <strong id="lbl_cs_v2">0</strong>px</label>
             <input type="range" id="cs_v2" min="-50" max="50" value="0" oninput="onSliderInput('cs')">
           </div>
           <div class="control-group">
-            <label><span>2. Высота букв/штрихкода (Низ):</span> <strong id="lbl_cs_h2">72</strong>px</label>
+            <label><span>Высота штрихкода:</span> <strong id="lbl_cs_h2">72</strong>px</label>
             <input type="range" id="cs_h2" min="20" max="120" value="72" oninput="onSliderInput('cs')">
           </div>
           <div class="control-group">
-            <label><span>3. Размер шрифта (Низ):</span> <strong id="lbl_cs_f2">17</strong>pt</label>
+            <label><span>Размер шрифта текста:</span> <strong id="lbl_cs_f2">17</strong>pt</label>
             <input type="range" id="cs_f2" min="10" max="35" value="17" oninput="onSliderInput('cs')">
           </div>
         `;
       } else {
         container.innerHTML = `
-          <h3>Редактор 2: MNT (С брендом)</h3>
+          <h3>Редактор MNT (С брендом)</h3>
+          
+          <h4>Компонент: Brand</h4>
           <div class="control-group">
-            <label><span>4. Brand по горизонтали / вертикали:</span> <strong id="lbl_mnt_bx">0</strong> / <strong id="lbl_mnt_by">0</strong>px</label>
-            <div style="display: flex; gap: 6px;">
-              <input type="range" id="mnt_bx" min="-150" max="150" value="0" oninput="onSliderInput('mnt')" title="По горизонтали">
-              <input type="range" id="mnt_by" min="-50" max="50" value="0" oninput="onSliderInput('mnt')" title="По вертикали">
-            </div>
+            <label><span>По горизонтали:</span> <strong id="lbl_mnt_bx">0</strong>px</label>
+            <input type="range" id="mnt_bx" min="-150" max="150" value="0" oninput="onSliderInput('mnt')">
           </div>
           <div class="control-group">
-            <label><span>3. Размер шрифта Brand:</span> <strong id="lbl_mnt_bf">16</strong>pt</label>
+            <label><span>По вертикали:</span> <strong id="lbl_mnt_by">0</strong>px</label>
+            <input type="range" id="mnt_by" min="-50" max="50" value="0" oninput="onSliderInput('mnt')">
+          </div>
+          <div class="control-group">
+            <label><span>Размер шрифта:</span> <strong id="lbl_mnt_bf">16</strong>pt</label>
             <input type="range" id="mnt_bf" min="10" max="35" value="16" oninput="onSliderInput('mnt')">
           </div>
-          <hr style="border-color: var(--border-color); margin: 12px 0;">
+
+          <h4>Верхний блок (PN)</h4>
           <div class="control-group">
-            <label><span>1. Перемещение по вертикали (Верх):</span> <strong id="lbl_mnt_v1">0</strong>px</label>
+            <label><span>Перемещение по вертикали:</span> <strong id="lbl_mnt_v1">0</strong>px</label>
             <input type="range" id="mnt_v1" min="-50" max="50" value="0" oninput="onSliderInput('mnt')">
           </div>
           <div class="control-group">
-            <label><span>2. Высота ШК / 3. Шрифт (Верх):</span> <strong id="lbl_mnt_h1">45</strong>px / <strong id="lbl_mnt_f1">20</strong>pt</label>
-            <div style="display: flex; gap: 6px;">
-              <input type="range" id="mnt_h1" min="20" max="100" value="45" oninput="onSliderInput('mnt')">
-              <input type="range" id="mnt_f1" min="10" max="35" value="20" oninput="onSliderInput('mnt')">
-            </div>
+            <label><span>Высота штрихкода:</span> <strong id="lbl_mnt_h1">45</strong>px</label>
+            <input type="range" id="mnt_h1" min="20" max="100" value="45" oninput="onSliderInput('mnt')">
           </div>
           <div class="control-group">
-            <label><span>1. Перемещение по вертикали (Низ):</span> <strong id="lbl_mnt_v2">0</strong>px</label>
+            <label><span>Размер шрифта текста:</span> <strong id="lbl_mnt_f1">20</strong>pt</label>
+            <input type="range" id="mnt_f1" min="10" max="35" value="20" oninput="onSliderInput('mnt')">
+          </div>
+
+          <h4>Нижний блок (SN)</h4>
+          <div class="control-group">
+            <label><span>Перемещение по вертикали:</span> <strong id="lbl_mnt_v2">0</strong>px</label>
             <input type="range" id="mnt_v2" min="-50" max="50" value="0" oninput="onSliderInput('mnt')">
           </div>
           <div class="control-group">
-            <label><span>2. Высота ШК / 3. Шрифт (Низ):</span> <strong id="lbl_mnt_h2">60</strong>px / <strong id="lbl_mnt_f2">15</strong>pt</label>
-            <div style="display: flex; gap: 6px;">
-              <input type="range" id="mnt_h2" min="20" max="100" value="60" oninput="onSliderInput('mnt')">
-              <input type="range" id="mnt_f2" min="10" max="30" value="15" oninput="onSliderInput('mnt')">
-            </div>
+            <label><span>Высота штрихкода:</span> <strong id="lbl_mnt_h2">60</strong>px</label>
+            <input type="range" id="mnt_h2" min="20" max="100" value="60" oninput="onSliderInput('mnt')">
+          </div>
+          <div class="control-group">
+            <label><span>Размер шрифта текста:</span> <strong id="lbl_mnt_f2">15</strong>pt</label>
+            <input type="range" id="mnt_f2" min="10" max="30" value="15" oninput="onSliderInput('mnt')">
           </div>
         `;
       }
@@ -514,7 +524,6 @@
         JsBarcode("#live_bc_sn", prod.sn, { format: "CODE128", displayValue: false, margin: 0, height: p.h2, width: 2 });
       } catch (e) {}
 
-      // Автоматическое обновление текста в поле для отправки мне
       document.getElementById('paramsExportField').value = JSON.stringify({ type: activeEditorType, ...p }, null, 2);
     }
 
@@ -548,8 +557,11 @@
       }
       document.getElementById('editorModalTitle').innerText = type === 'cs' ? 'Редактор этикетки: CS (Обычная)' : 'Редактор этикетки: MNT (С брендом)';
       renderControlsPane(type);
-      updateLivePreview(sampleProduct);
+      
       editorModal.classList.add('is-open');
+      setTimeout(() => {
+        updateLivePreview(sampleProduct);
+      }, 50);
     }
 
     function closeEditor() {
