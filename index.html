@@ -243,9 +243,9 @@
           <thead>
             <tr>
               <th>#</th>
-              <th>Brand</th>
-              <th>Part Number (PN)</th>
               <th>Serial Number (SN)</th>
+              <th>Part Number (PN)</th>
+              <th>Brand</th>
               <th style="width: 140px; text-align: right;">Действия</th>
             </tr>
           </thead>
@@ -283,7 +283,7 @@
     const TABLE_NAME = 'products_db';
     const COLUMN_PN = 'tpv_pn';
     const COLUMN_SN = 'panel_sn';
-    const COLUMN_BRAND = 'brand'; // Добавлена колонка бренда
+    const COLUMN_BRAND = 'brand';
 
     // --- GOOGLE SHEETS ---
     const SHEET_ID = '10W03bvKlVFlIUcxsHkzP_v_13gtnYRBmnrrO0ujB1bU';
@@ -314,7 +314,6 @@
       return arr;
     }
 
-    // Функция запроса PN и Brand из базы Supabase по серийнику
     async function getProductFromDatabase(sn) {
       try {
         const { data, error } = await supabaseClient
@@ -356,11 +355,9 @@
           }
         }
 
-        // Берем 5 самых последних серийных номеров
         const lastSnList = rawSnList.slice(-5).reverse();
         const validItems = [];
 
-        // Подтягиваем данные для каждого серийника из Supabase
         for (const sn of lastSnList) {
           const dbData = await getProductFromDatabase(sn);
           validItems.push({ 
@@ -397,9 +394,9 @@
         const row = document.createElement('tr');
         row.innerHTML = `
           <td><strong>${index + 1}</strong></td>
-          <td><span style="background: #374151; padding: 3px 8px; border-radius: 4px; font-size: 12px; font-weight: 600;">${escapeHtml(product.brand)}</span></td>
-          <td class="code-text">${escapeHtml(product.pn)}</td>
           <td class="code-text">${escapeHtml(product.sn)}</td>
+          <td class="code-text">${escapeHtml(product.pn)}</td>
+          <td><span style="background: #374151; padding: 3px 8px; border-radius: 4px; font-size: 12px; font-weight: 600;">${escapeHtml(product.brand)}</span></td>
           <td class="actions-cell">
             <button class="btn btn-secondary" onclick="openPrintModal(${index})" title="Просмотр">👁️</button>
             <button class="btn" onclick="directPrint(${index})" title="Печать на TSC DA220">🖨️</button>
