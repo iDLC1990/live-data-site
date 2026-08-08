@@ -163,7 +163,7 @@
     .editor-modal-body {
       padding: 24px;
       display: grid;
-      grid-template-columns: 460px 1fr;
+      grid-template-columns: 480px 1fr;
       gap: 24px;
       overflow-y: auto;
       background-color: #111827;
@@ -173,9 +173,34 @@
 
     .controls-pane { background: #1F2937; padding: 16px; border-radius: 8px; border: 1px solid var(--border-color); max-height: 60vh; overflow-y: auto; }
     .controls-pane h3 { font-size: 14px; margin-bottom: 12px; color: #60A5FA; text-transform: uppercase; letter-spacing: 0.05em; }
-    .controls-pane h4 { font-size: 13px; margin: 12px 0 6px 0; color: #34D399; border-bottom: 1px solid var(--border-color); padding-bottom: 4px; }
     
-    .control-group { margin-bottom: 8px; font-size: 12px; }
+    .component-section {
+      background: #111827;
+      border: 1px solid var(--border-color);
+      border-radius: 6px;
+      padding: 10px;
+      margin-bottom: 10px;
+    }
+    .component-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-bottom: 1px solid var(--border-color);
+      padding-bottom: 6px;
+      margin-bottom: 8px;
+    }
+    .component-header h4 { font-size: 13px; color: #34D399; margin: 0; }
+    .lock-label {
+      font-size: 11px;
+      color: var(--text-muted);
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      cursor: pointer;
+    }
+    .lock-label input { cursor: pointer; }
+
+    .control-group { margin-bottom: 6px; font-size: 11px; }
     .control-group label { display: flex; justify-content: space-between; color: var(--text-muted); margin-bottom: 2px; }
     .control-group input[type="range"] { width: 100%; accent-color: var(--accent-color); cursor: pointer; }
 
@@ -187,6 +212,8 @@
       padding: 20px;
       border-radius: 8px;
       border: 1px dashed var(--border-color);
+      position: sticky;
+      top: 0;
     }
     .preview-pane span.hint { font-size: 12px; color: var(--text-muted); margin-bottom: 12px; text-transform: uppercase; letter-spacing: 0.05em; }
 
@@ -232,7 +259,13 @@
       overflow: hidden;
     }
 
-    .label-block { display: flex; flex-direction: column; align-items: center; width: 100%; position: relative; }
+    .label-element {
+      width: 100%;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      position: relative;
+    }
     .barcode-wrapper { width: 100%; display: flex; justify-content: center; align-items: center; }
     .barcode-wrapper svg { max-width: 100%; display: block; }
 
@@ -353,65 +386,90 @@
     function getParams(type) {
       if (type === 'cs') {
         return {
-          // Шапка PN
+          h_pn_locked: document.getElementById('cs_h_pn_locked')?.checked || false,
+          h_pn_x: parseInt(document.getElementById('cs_h_pn_x')?.value || 0),
           h_pn_v: parseInt(document.getElementById('cs_h_pn_v')?.value || 0),
           h_pn_h: parseInt(document.getElementById('cs_h_pn_h')?.value || 12),
           h_pn_f: parseInt(document.getElementById('cs_h_pn_f')?.value || 12),
-          // Штрихкод PN
+          h_pn_sy: parseFloat(document.getElementById('cs_h_pn_sy')?.value || 1.0),
+          
+          bc_pn_locked: document.getElementById('cs_bc_pn_locked')?.checked || false,
+          bc_pn_x: parseInt(document.getElementById('cs_bc_pn_x')?.value || 0),
           bc_pn_v: parseInt(document.getElementById('cs_bc_pn_v')?.value || 0),
           bc_pn_h: parseInt(document.getElementById('cs_bc_pn_h')?.value || 52),
-          bc_pn_f: parseInt(document.getElementById('cs_bc_pn_f')?.value || 0), // для штрихкода шрифт не используется, но сохраняем структуру
-          // Буквенный PN
+          
+          txt_pn_locked: document.getElementById('cs_txt_pn_locked')?.checked || false,
+          txt_pn_x: parseInt(document.getElementById('cs_txt_pn_x')?.value || 0),
           txt_pn_v: parseInt(document.getElementById('cs_txt_pn_v')?.value || 0),
           txt_pn_h: parseInt(document.getElementById('cs_txt_pn_h')?.value || 15),
           txt_pn_f: parseInt(document.getElementById('cs_txt_pn_f')?.value || 22),
+          txt_pn_sy: parseFloat(document.getElementById('cs_txt_pn_sy')?.value || 1.0),
 
-          // Шапка SN
+          h_sn_locked: document.getElementById('cs_h_sn_locked')?.checked || false,
+          h_sn_x: parseInt(document.getElementById('cs_h_sn_x')?.value || 0),
           h_sn_v: parseInt(document.getElementById('cs_h_sn_v')?.value || 0),
           h_sn_h: parseInt(document.getElementById('cs_h_sn_h')?.value || 12),
           h_sn_f: parseInt(document.getElementById('cs_h_sn_f')?.value || 12),
-          // Штрихкод SN
+          h_sn_sy: parseFloat(document.getElementById('cs_h_sn_sy')?.value || 1.0),
+          
+          bc_sn_locked: document.getElementById('cs_bc_sn_locked')?.checked || false,
+          bc_sn_x: parseInt(document.getElementById('cs_bc_sn_x')?.value || 0),
           bc_sn_v: parseInt(document.getElementById('cs_bc_sn_v')?.value || 0),
           bc_sn_h: parseInt(document.getElementById('cs_bc_sn_h')?.value || 72),
-          bc_sn_f: parseInt(document.getElementById('cs_bc_sn_f')?.value || 0),
-          // Буквенный SN
+          
+          txt_sn_locked: document.getElementById('cs_txt_sn_locked')?.checked || false,
+          txt_sn_x: parseInt(document.getElementById('cs_txt_sn_x')?.value || 0),
           txt_sn_v: parseInt(document.getElementById('cs_txt_sn_v')?.value || 0),
           txt_sn_h: parseInt(document.getElementById('cs_txt_sn_h')?.value || 15),
           txt_sn_f: parseInt(document.getElementById('cs_txt_sn_f')?.value || 17),
+          txt_sn_sy: parseFloat(document.getElementById('cs_txt_sn_sy')?.value || 1.5),
         };
       } else {
         return {
-          // Brand (дополнительно есть горизонталь)
+          brand_locked: document.getElementById('mnt_brand_locked')?.checked || false,
           brand_x: parseInt(document.getElementById('mnt_brand_x')?.value || 0),
           brand_v: parseInt(document.getElementById('mnt_brand_v')?.value || 0),
           brand_h: parseInt(document.getElementById('mnt_brand_h')?.value || 15),
           brand_f: parseInt(document.getElementById('mnt_brand_f')?.value || 16),
+          brand_sy: parseFloat(document.getElementById('mnt_brand_sy')?.value || 1.0),
 
-          // Шапка PN
+          h_pn_locked: document.getElementById('mnt_h_pn_locked')?.checked || false,
+          h_pn_x: parseInt(document.getElementById('mnt_h_pn_x')?.value || 0),
           h_pn_v: parseInt(document.getElementById('mnt_h_pn_v')?.value || 0),
           h_pn_h: parseInt(document.getElementById('mnt_h_pn_h')?.value || 10),
           h_pn_f: parseInt(document.getElementById('mnt_h_pn_f')?.value || 12),
-          // Штрихкод PN
+          h_pn_sy: parseFloat(document.getElementById('mnt_h_pn_sy')?.value || 1.0),
+          
+          bc_pn_locked: document.getElementById('mnt_bc_pn_locked')?.checked || false,
+          bc_pn_x: parseInt(document.getElementById('mnt_bc_pn_x')?.value || 0),
           bc_pn_v: parseInt(document.getElementById('mnt_bc_pn_v')?.value || 0),
           bc_pn_h: parseInt(document.getElementById('mnt_bc_pn_h')?.value || 45),
-          bc_pn_f: 0,
-          // Буквенный PN
+          
+          txt_pn_locked: document.getElementById('mnt_txt_pn_locked')?.checked || false,
+          txt_pn_x: parseInt(document.getElementById('mnt_txt_pn_x')?.value || 0),
           txt_pn_v: parseInt(document.getElementById('mnt_txt_pn_v')?.value || 0),
           txt_pn_h: parseInt(document.getElementById('mnt_txt_pn_h')?.value || 12),
           txt_pn_f: parseInt(document.getElementById('mnt_txt_pn_f')?.value || 20),
+          txt_pn_sy: parseFloat(document.getElementById('mnt_txt_pn_sy')?.value || 1.0),
 
-          // Шапка SN
+          h_sn_locked: document.getElementById('mnt_h_sn_locked')?.checked || false,
+          h_sn_x: parseInt(document.getElementById('mnt_h_sn_x')?.value || 0),
           h_sn_v: parseInt(document.getElementById('mnt_h_sn_v')?.value || 0),
           h_sn_h: parseInt(document.getElementById('mnt_h_sn_h')?.value || 10),
           h_sn_f: parseInt(document.getElementById('mnt_h_sn_f')?.value || 12),
-          // Штрихкод SN
+          h_sn_sy: parseFloat(document.getElementById('mnt_h_sn_sy')?.value || 1.0),
+          
+          bc_sn_locked: document.getElementById('mnt_bc_sn_locked')?.checked || false,
+          bc_sn_x: parseInt(document.getElementById('mnt_bc_sn_x')?.value || 0),
           bc_sn_v: parseInt(document.getElementById('mnt_bc_sn_v')?.value || 0),
           bc_sn_h: parseInt(document.getElementById('mnt_bc_sn_h')?.value || 60),
-          bc_sn_f: 0,
-          // Буквенный SN
+          
+          txt_sn_locked: document.getElementById('mnt_txt_sn_locked')?.checked || false,
+          txt_sn_x: parseInt(document.getElementById('mnt_txt_sn_x')?.value || 0),
           txt_sn_v: parseInt(document.getElementById('mnt_txt_sn_v')?.value || 0),
           txt_sn_h: parseInt(document.getElementById('mnt_txt_sn_h')?.value || 12),
           txt_sn_f: parseInt(document.getElementById('mnt_txt_sn_f')?.value || 15),
+          txt_sn_sy: parseFloat(document.getElementById('mnt_txt_sn_sy')?.value || 1.5),
         };
       }
     }
@@ -420,75 +478,59 @@
       const container = document.getElementById('controlsPaneContainer');
       if (type === 'cs') {
         container.innerHTML = `
-          <h3>Редактор CS (Все компоненты)</h3>
-          
-          <h4>1. Шапка PN</h4>
-          <div class="control-group"><label><span>Вертикаль:</span> <strong id="lbl_cs_h_pn_v">0</strong>px</label><input type="range" id="cs_h_pn_v" min="-30" max="30" value="0" oninput="onSliderInput('cs')"></div>
-          <div class="control-group"><label><span>Высота (отступ):</span> <strong id="lbl_cs_h_pn_h">12</strong>px</label><input type="range" id="cs_h_pn_h" min="0" max="40" value="12" oninput="onSliderInput('cs')"></div>
-          <div class="control-group"><label><span>Размер шрифта:</span> <strong id="lbl_cs_h_pn_f">12</strong>pt</label><input type="range" id="cs_h_pn_f" min="8" max="25" value="12" oninput="onSliderInput('cs')"></div>
-
-          <h4>2. Штрихкод PN</h4>
-          <div class="control-group"><label><span>Вертикаль:</span> <strong id="lbl_cs_bc_pn_v">0</strong>px</label><input type="range" id="cs_bc_pn_v" min="-30" max="30" value="0" oninput="onSliderInput('cs')"></div>
-          <div class="control-group"><label><span>Высота штрихкода:</span> <strong id="lbl_cs_bc_pn_h">52</strong>px</label><input type="range" id="cs_bc_pn_h" min="20" max="100" value="52" oninput="onSliderInput('cs')"></div>
-
-          <h4>3. Буквенный PN</h4>
-          <div class="control-group"><label><span>Вертикаль:</span> <strong id="lbl_cs_txt_pn_v">0</strong>px</label><input type="range" id="cs_txt_pn_v" min="-30" max="30" value="0" oninput="onSliderInput('cs')"></div>
-          <div class="control-group"><label><span>Высота (отступ):</span> <strong id="lbl_cs_txt_pn_h">15</strong>px</label><input type="range" id="cs_txt_pn_h" min="0" max="40" value="15" oninput="onSliderInput('cs')"></div>
-          <div class="control-group"><label><span>Размер шрифта:</span> <strong id="lbl_cs_txt_pn_f">22</strong>pt</label><input type="range" id="cs_txt_pn_f" min="10" max="40" value="22" oninput="onSliderInput('cs')"></div>
-
-          <h4>4. Шапка SN</h4>
-          <div class="control-group"><label><span>Вертикаль:</span> <strong id="lbl_cs_h_sn_v">0</strong>px</label><input type="range" id="cs_h_sn_v" min="-30" max="30" value="0" oninput="onSliderInput('cs')"></div>
-          <div class="control-group"><label><span>Высота (отступ):</span> <strong id="lbl_cs_h_sn_h">12</strong>px</label><input type="range" id="cs_h_sn_h" min="0" max="40" value="12" oninput="onSliderInput('cs')"></div>
-          <div class="control-group"><label><span>Размер шрифта:</span> <strong id="lbl_cs_h_sn_f">12</strong>pt</label><input type="range" id="cs_h_sn_f" min="8" max="25" value="12" oninput="onSliderInput('cs')"></div>
-
-          <h4>5. Штрихкод SN</h4>
-          <div class="control-group"><label><span>Вертикаль:</span> <strong id="lbl_cs_bc_sn_v">0</strong>px</label><input type="range" id="cs_bc_sn_v" min="-30" max="30" value="0" oninput="onSliderInput('cs')"></div>
-          <div class="control-group"><label><span>Высота штрихкода:</span> <strong id="lbl_cs_bc_sn_h">72</strong>px</label><input type="range" id="cs_bc_sn_h" min="20" max="120" value="72" oninput="onSliderInput('cs')"></div>
-
-          <h4>6. Буквенный SN</h4>
-          <div class="control-group"><label><span>Вертикаль:</span> <strong id="lbl_cs_txt_sn_v">0</strong>px</label><input type="range" id="cs_txt_sn_v" min="-30" max="30" value="0" oninput="onSliderInput('cs')"></div>
-          <div class="control-group"><label><span>Высота (отступ):</span> <strong id="lbl_cs_txt_sn_h">15</strong>px</label><input type="range" id="cs_txt_sn_h" min="0" max="40" value="15" oninput="onSliderInput('cs')"></div>
-          <div class="control-group"><label><span>Размер шрифта:</span> <strong id="lbl_cs_txt_sn_f">17</strong>pt</label><input type="range" id="cs_txt_sn_f" min="10" max="35" value="17" oninput="onSliderInput('cs')"></div>
+          <h3>Редактор CS (Обычные)</h3>
+          ${renderComponentControl('cs', 'h_pn', 'Шапка PN', true, true, true, true)}
+          ${renderComponentControl('cs', 'bc_pn', 'Штрихкод PN', true, true, false, false)}
+          ${renderComponentControl('cs', 'txt_pn', 'Текст PN', true, true, true, true)}
+          ${renderComponentControl('cs', 'h_sn', 'Шапка SN', true, true, true, true)}
+          ${renderComponentControl('cs', 'bc_sn', 'Штрихкод SN', true, true, false, false)}
+          ${renderComponentControl('cs', 'txt_sn', 'Текст SN', true, true, true, true)}
         `;
       } else {
         container.innerHTML = `
           <h3>Редактор MNT (С брендом)</h3>
-          
-          <h4>Brand (Доп. горизонталь)</h4>
-          <div class="control-group"><label><span>По горизонтали:</span> <strong id="lbl_mnt_brand_x">0</strong>px</label><input type="range" id="mnt_brand_x" min="-150" max="150" value="0" oninput="onSliderInput('mnt')"></div>
-          <div class="control-group"><label><span>Вертикаль:</span> <strong id="lbl_mnt_brand_v">0</strong>px</label><input type="range" id="mnt_brand_v" min="-30" max="30" value="0" oninput="onSliderInput('mnt')"></div>
-          <div class="control-group"><label><span>Высота (отступ):</span> <strong id="lbl_mnt_brand_h">15</strong>px</label><input type="range" id="mnt_brand_h" min="0" max="40" value="15" oninput="onSliderInput('mnt')"></div>
-          <div class="control-group"><label><span>Размер шрифта:</span> <strong id="lbl_mnt_brand_f">16</strong>pt</label><input type="range" id="mnt_brand_f" min="10" max="35" value="16" oninput="onSliderInput('mnt')"></div>
-
-          <h4>1. Шапка PN</h4>
-          <div class="control-group"><label><span>Вертикаль:</span> <strong id="lbl_mnt_h_pn_v">0</strong>px</label><input type="range" id="mnt_h_pn_v" min="-30" max="30" value="0" oninput="onSliderInput('mnt')"></div>
-          <div class="control-group"><label><span>Высота (отступ):</span> <strong id="lbl_mnt_h_pn_h">10</strong>px</label><input type="range" id="mnt_h_pn_h" min="0" max="40" value="10" oninput="onSliderInput('mnt')"></div>
-          <div class="control-group"><label><span>Размер шрифта:</span> <strong id="lbl_mnt_h_pn_f">12</strong>pt</label><input type="range" id="mnt_h_pn_f" min="8" max="25" value="12" oninput="onSliderInput('mnt')"></div>
-
-          <h4>2. Штрихкод PN</h4>
-          <div class="control-group"><label><span>Вертикаль:</span> <strong id="lbl_mnt_bc_pn_v">0</strong>px</label><input type="range" id="mnt_bc_pn_v" min="-30" max="30" value="0" oninput="onSliderInput('mnt')"></div>
-          <div class="control-group"><label><span>Высота штрихкода:</span> <strong id="lbl_mnt_bc_pn_h">45</strong>px</label><input type="range" id="mnt_bc_pn_h" min="20" max="100" value="45" oninput="onSliderInput('mnt')"></div>
-
-          <h4>3. Буквенный PN</h4>
-          <div class="control-group"><label><span>Вертикаль:</span> <strong id="lbl_mnt_txt_pn_v">0</strong>px</label><input type="range" id="mnt_txt_pn_v" min="-30" max="30" value="0" oninput="onSliderInput('mnt')"></div>
-          <div class="control-group"><label><span>Высота (отступ):</span> <strong id="lbl_mnt_txt_pn_h">12</strong>px</label><input type="range" id="mnt_txt_pn_h" min="0" max="40" value="12" oninput="onSliderInput('mnt')"></div>
-          <div class="control-group"><label><span>Размер шрифта:</span> <strong id="lbl_mnt_txt_pn_f">20</strong>pt</label><input type="range" id="mnt_txt_pn_f" min="10" max="35" value="20" oninput="onSliderInput('mnt')"></div>
-
-          <h4>4. Шапка SN</h4>
-          <div class="control-group"><label><span>Вертикаль:</span> <strong id="lbl_mnt_h_sn_v">0</strong>px</label><input type="range" id="mnt_h_sn_v" min="-30" max="30" value="0" oninput="onSliderInput('mnt')"></div>
-          <div class="control-group"><label><span>Высота (отступ):</span> <strong id="lbl_mnt_h_sn_h">10</strong>px</label><input type="range" id="mnt_h_sn_h" min="0" max="40" value="10" oninput="onSliderInput('mnt')"></div>
-          <div class="control-group"><label><span>Размер шрифта:</span> <strong id="lbl_mnt_h_sn_f">12</strong>pt</label><input type="range" id="mnt_h_sn_f" min="8" max="25" value="12" oninput="onSliderInput('mnt')"></div>
-
-          <h4>5. Штрихкод SN</h4>
-          <div class="control-group"><label><span>Вертикаль:</span> <strong id="lbl_mnt_bc_sn_v">0</strong>px</label><input type="range" id="mnt_bc_sn_v" min="-30" max="30" value="0" oninput="onSliderInput('mnt')"></div>
-          <div class="control-group"><label><span>Высота штрихкода:</span> <strong id="lbl_mnt_bc_sn_h">60</strong>px</label><input type="range" id="mnt_bc_sn_h" min="20" max="100" value="60" oninput="onSliderInput('mnt')"></div>
-
-          <h4>6. Буквенный SN</h4>
-          <div class="control-group"><label><span>Вертикаль:</span> <strong id="lbl_mnt_txt_sn_v">0</strong>px</label><input type="range" id="mnt_txt_sn_v" min="-30" max="30" value="0" oninput="onSliderInput('mnt')"></div>
-          <div class="control-group"><label><span>Высота (отступ):</span> <strong id="lbl_mnt_txt_sn_h">12</strong>px</label><input type="range" id="mnt_txt_sn_h" min="0" max="40" value="12" oninput="onSliderInput('mnt')"></div>
-          <div class="control-group"><label><span>Размер шрифта:</span> <strong id="lbl_mnt_txt_sn_f">15</strong>pt</label><input type="range" id="mnt_txt_sn_f" min="10" max="30" value="15" oninput="onSliderInput('mnt')"></div>
+          ${renderComponentControl('mnt', 'brand', 'Brand', true, true, true, true)}
+          ${renderComponentControl('mnt', 'h_pn', 'Шапка PN', true, true, true, true)}
+          ${renderComponentControl('mnt', 'bc_pn', 'Штрихкод PN', true, true, false, false)}
+          ${renderComponentControl('mnt', 'txt_pn', 'Текст PN', true, true, true, true)}
+          ${renderComponentControl('mnt', 'h_sn', 'Шапка SN', true, true, true, true)}
+          ${renderComponentControl('mnt', 'bc_sn', 'Штрихкод SN', true, true, false, false)}
+          ${renderComponentControl('mnt', 'txt_sn', 'Текст SN', true, true, true, true)}
         `;
       }
+    }
+
+    function renderComponentControl(type, idPrefix, title, hasX, hasV, hasFont, hasScaleY) {
+      return `
+        <div class="component-section" id="sec_${type}_${idPrefix}">
+          <div class="component-header">
+            <h4>${title}</h4>
+            <label class="lock-label">
+              <input type="checkbox" id="${type}_${idPrefix}_locked" onchange="toggleLock('${type}', '${idPrefix}')"> Заблокировать
+            </label>
+          </div>
+          <div class="component-fields" id="fields_${type}_${idPrefix}">
+            ${hasX ? `<div class="control-group"><label><span>По горизонтали (X):</span> <strong id="lbl_${type}_${idPrefix}_x">0</strong>px</label><input type="range" id="${type}_${idPrefix}_x" min="-150" max="150" value="0" oninput="onSliderInput('${type}')"></div>` : ''}
+            ${hasV ? `<div class="control-group"><label><span>Вертикаль (смещение):</span> <strong id="lbl_${type}_${idPrefix}_v">0</strong>px</label><input type="range" id="${type}_${idPrefix}_v" min="-30" max="30" value="0" oninput="onSliderInput('${type}')"></div>` : ''}
+            <div class="control-group"><label><span>Высота / Отступ:</span> <strong id="lbl_${type}_${idPrefix}_h">${idPrefix.includes('bc') ? '52' : '12'}</strong>px</label><input type="range" id="${type}_${idPrefix}_h" min="${idPrefix.includes('bc') ? 20 : 0}" max="${idPrefix.includes('bc') ? 120 : 40}" value="${idPrefix.includes('bc') ? (idPrefix === 'bc_sn' ? 72 : 52) : 12}" oninput="onSliderInput('${type}')"></div>
+            ${hasFont ? `<div class="control-group"><label><span>Размер шрифта:</span> <strong id="lbl_${type}_${idPrefix}_f">14</strong>pt</label><input type="range" id="${type}_${idPrefix}_f" min="8" max="35" value="14" oninput="onSliderInput('${type}')"></div>` : ''}
+            ${hasScaleY ? `<div class="control-group"><label><span>Растянуть в высоту (ScaleY):</span> <strong id="lbl_${type}_${idPrefix}_sy">1.0</strong></label><input type="range" id="${type}_${idPrefix}_sy" min="0.5" max="3.0" step="0.1" value="1.0" oninput="onSliderInput('${type}')"></div>` : ''}
+          </div>
+        </div>
+      `;
+    }
+
+    function toggleLock(type, idPrefix) {
+      const isLocked = document.getElementById(`${type}_${idPrefix}_locked`).checked;
+      const fieldsContainer = document.getElementById(`fields_${type}_${idPrefix}`);
+      const inputs = fieldsContainer.querySelectorAll('input');
+      
+      inputs.forEach(input => {
+        if (input.type !== 'checkbox') {
+          input.disabled = isLocked;
+        }
+      });
+      fieldsContainer.style.opacity = isLocked ? '0.4' : '1';
     }
 
     function generateLabelMarkup(type, product) {
@@ -497,29 +539,29 @@
         return `
           <div class="industrial-label">
             <!-- Шапка PN -->
-            <div style="transform: translateY(${p.h_pn_v}px); margin-bottom: ${p.h_pn_h}px; width: 100%;">
-              <span style="font-size: ${p.h_pn_f}pt; font-weight: 900; letter-spacing: 1px; text-transform: uppercase;">PN</span>
+            <div class="label-element" style="transform: translate(${p.h_pn_x}px, ${p.h_pn_v}px); margin-bottom: ${p.h_pn_h}px;">
+              <span style="font-size: ${p.h_pn_f}pt; transform: scaleY(${p.h_pn_sy}); font-weight: 900; letter-spacing: 1px; text-transform: uppercase; display: inline-block;">PN</span>
             </div>
             <!-- Штрихкод PN -->
-            <div style="transform: translateY(${p.bc_pn_v}px); width: 100%;">
+            <div class="label-element" style="transform: translate(${p.bc_pn_x}px, ${p.bc_pn_v}px);">
               <div class="barcode-wrapper"><svg id="live_bc_pn"></svg></div>
             </div>
             <!-- Буквенный PN -->
-            <div style="transform: translateY(${p.txt_pn_v}px); margin-top: ${p.txt_pn_h}px; width: 100%;">
-              <span style="font-size: ${p.txt_pn_f}pt; font-weight: 900; font-family: 'Consolas', monospace; line-height: 1.1;">${escapeHtml(product.pn)}</span>
+            <div class="label-element" style="transform: translate(${p.txt_pn_x}px, ${p.txt_pn_v}px); margin-top: ${p.txt_pn_h}px;">
+              <span style="font-size: ${p.txt_pn_f}pt; transform: scaleY(${p.txt_pn_sy}); font-weight: 900; font-family: 'Consolas', monospace; line-height: 1.1; display: inline-block;">${escapeHtml(product.pn)}</span>
             </div>
 
             <!-- Шапка SN -->
-            <div style="transform: translateY(${p.h_sn_v}px); margin-top: 15px; margin-bottom: ${p.h_sn_h}px; width: 100%;">
-              <span style="font-size: ${p.h_sn_f}pt; font-weight: 900; letter-spacing: 1px; text-transform: uppercase;">SN</span>
+            <div class="label-element" style="transform: translate(${p.h_sn_x}px, ${p.h_sn_v}px); margin-top: 15px; margin-bottom: ${p.h_sn_h}px;">
+              <span style="font-size: ${p.h_sn_f}pt; transform: scaleY(${p.h_sn_sy}); font-weight: 900; letter-spacing: 1px; text-transform: uppercase; display: inline-block;">SN</span>
             </div>
             <!-- Штрихкод SN -->
-            <div style="transform: translateY(${p.bc_sn_v}px); width: 100%;">
+            <div class="label-element" style="transform: translate(${p.bc_sn_x}px, ${p.bc_sn_v}px);">
               <div class="barcode-wrapper"><svg id="live_bc_sn"></svg></div>
             </div>
             <!-- Буквенный SN -->
-            <div style="transform: translateY(${p.txt_sn_v}px); margin-top: ${p.txt_sn_h}px; width: 100%;">
-              <span style="font-size: ${p.txt_sn_f}pt; font-weight: 900; font-family: 'Consolas', monospace; line-height: 1.1; transform: scaleY(1.5); display: inline-block;">${escapeHtml(product.sn)}</span>
+            <div class="label-element" style="transform: translate(${p.txt_sn_x}px, ${p.txt_sn_v}px); margin-top: ${p.txt_sn_h}px;">
+              <span style="font-size: ${p.txt_sn_f}pt; transform: scaleY(${p.txt_sn_sy}); font-weight: 900; font-family: 'Consolas', monospace; line-height: 1.1; display: inline-block;">${escapeHtml(product.sn)}</span>
             </div>
           </div>
         `;
@@ -527,34 +569,34 @@
         return `
           <div class="industrial-label">
             <!-- Brand -->
-            <div style="transform: translate(${p.brand_x}px, ${p.brand_v}px); margin-bottom: ${p.brand_h}px; font-size: ${p.brand_f}pt; font-weight: 900; text-transform: uppercase; width: 100%;">
-              ${escapeHtml(product.brand)}
+            <div class="label-element" style="transform: translate(${p.brand_x}px, ${p.brand_v}px); margin-bottom: ${p.brand_h}px;">
+              <span style="font-size: ${p.brand_f}pt; transform: scaleY(${p.brand_sy}); font-weight: 900; text-transform: uppercase; display: inline-block;">${escapeHtml(product.brand)}</span>
             </div>
 
             <!-- Шапка PN -->
-            <div style="transform: translateY(${p.h_pn_v}px); margin-bottom: ${p.h_pn_h}px; width: 100%;">
-              <span style="font-size: ${p.h_pn_f}pt; font-weight: 900; letter-spacing: 1px; text-transform: uppercase;">PN</span>
+            <div class="label-element" style="transform: translate(${p.h_pn_x}px, ${p.h_pn_v}px); margin-bottom: ${p.h_pn_h}px;">
+              <span style="font-size: ${p.h_pn_f}pt; transform: scaleY(${p.h_pn_sy}); font-weight: 900; letter-spacing: 1px; text-transform: uppercase; display: inline-block;">PN</span>
             </div>
             <!-- Штрихкод PN -->
-            <div style="transform: translateY(${p.bc_pn_v}px); width: 100%;">
+            <div class="label-element" style="transform: translate(${p.bc_pn_x}px, ${p.bc_pn_v}px);">
               <div class="barcode-wrapper"><svg id="live_bc_pn"></svg></div>
             </div>
             <!-- Буквенный PN -->
-            <div style="transform: translateY(${p.txt_pn_v}px); margin-top: ${p.txt_pn_h}px; width: 100%;">
-              <span style="font-size: ${p.txt_pn_f}pt; font-weight: 900; font-family: 'Consolas', monospace; line-height: 1.1;">${escapeHtml(product.pn)}</span>
+            <div class="label-element" style="transform: translate(${p.txt_pn_x}px, ${p.txt_pn_v}px); margin-top: ${p.txt_pn_h}px;">
+              <span style="font-size: ${p.txt_pn_f}pt; transform: scaleY(${p.txt_pn_sy}); font-weight: 900; font-family: 'Consolas', monospace; line-height: 1.1; display: inline-block;">${escapeHtml(product.pn)}</span>
             </div>
 
             <!-- Шапка SN -->
-            <div style="transform: translateY(${p.h_sn_v}px); margin-top: 10px; margin-bottom: ${p.h_sn_h}px; width: 100%;">
-              <span style="font-size: ${p.h_sn_f}pt; font-weight: 900; letter-spacing: 1px; text-transform: uppercase;">SN</span>
+            <div class="label-element" style="transform: translate(${p.h_sn_x}px, ${p.h_sn_v}px); margin-top: 10px; margin-bottom: ${p.h_sn_h}px;">
+              <span style="font-size: ${p.h_sn_f}pt; transform: scaleY(${p.h_sn_sy}); font-weight: 900; letter-spacing: 1px; text-transform: uppercase; display: inline-block;">SN</span>
             </div>
             <!-- Штрихкод SN -->
-            <div style="transform: translateY(${p.bc_sn_v}px); width: 100%;">
+            <div class="label-element" style="transform: translate(${p.bc_sn_x}px, ${p.bc_sn_v}px);">
               <div class="barcode-wrapper"><svg id="live_bc_sn"></svg></div>
             </div>
             <!-- Буквенный SN -->
-            <div style="transform: translateY(${p.txt_sn_v}px); margin-top: ${p.txt_sn_h}px; width: 100%;">
-              <span style="font-size: ${p.txt_sn_f}pt; font-weight: 900; font-family: 'Consolas', monospace; line-height: 1.1; transform: scaleY(1.5); display: inline-block;">${escapeHtml(product.sn)}</span>
+            <div class="label-element" style="transform: translate(${p.txt_sn_x}px, ${p.txt_sn_v}px); margin-top: ${p.txt_sn_h}px;">
+              <span style="font-size: ${p.txt_sn_f}pt; transform: scaleY(${p.txt_sn_sy}); font-weight: 900; font-family: 'Consolas', monospace; line-height: 1.1; display: inline-block;">${escapeHtml(product.sn)}</span>
             </div>
           </div>
         `;
@@ -576,11 +618,12 @@
 
     function onSliderInput(type) {
       const p = getParams(type);
-      const keys = Object.keys(p);
-      keys.forEach(k => {
-        const el = document.getElementById(`lbl_${type}_${k}`);
-        if (el) el.innerText = p[k];
-      });
+      // Динамическое обновление меток значений на слайдерах без полной перерисовки панели управления
+      for (let key in p) {
+        if (key.endsWith('_locked')) continue;
+        const el = document.getElementById(`lbl_${type}_${key}`);
+        if (el) el.innerText = p[key];
+      }
       updateLivePreview(sampleProduct);
     }
 
@@ -721,8 +764,8 @@
     }
 
     document.addEventListener('DOMContentLoaded', () => {
-      fetchDataFromGoogleSheet();
-      setInterval(fetchDataFromGoogleSheet, 30000);
+      fetchDataFromGoogleScript();
+      setInterval(fetchDataFromGoogleScript, 30000);
     });
   </script>
 </body>
