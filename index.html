@@ -206,14 +206,31 @@
       display: block; 
     }
 
+    .label-row-bottom {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      width: 100%;
+      padding: 0 4mm;
+      margin-top: 1mm;
+    }
+
     .label-value-pn {
       font-size: 24pt; 
       font-weight: 900;
       font-family: 'Consolas', monospace; 
       color: #000;
       line-height: 1.1; 
-      margin-top: 1mm;
-      transform: scaleY(1.3); /* Растягивание текста PN по вертикали */
+      transform: scaleY(1.3);
+    }
+
+    .label-value-brand {
+      font-size: 20pt; 
+      font-weight: 900;
+      font-family: 'Segoe UI', Arial, sans-serif; 
+      color: #000;
+      line-height: 1.1; 
+      transform: scaleY(1.3);
     }
 
     .label-value-sn {
@@ -223,7 +240,7 @@
       color: #000;
       line-height: 1.1; 
       margin-top: 1mm;
-      transform: scaleY(1.3); /* Растягивание текста SN по вертикали */
+      transform: scaleY(1.3);
     }
 
     /* ==========================================
@@ -440,7 +457,7 @@
       return div.innerHTML;
     }
 
-    function generateLabelHTML(pn, sn, suffix = '') {
+    function generateLabelHTML(pn, brand, sn, suffix = '') {
       return `
         <div class="industrial-label">
           <div class="label-block">
@@ -448,7 +465,10 @@
             <div class="barcode-wrapper">
               <svg id="barcodePN_${suffix}"></svg>
             </div>
-            <span class="label-value-pn">${escapeHtml(pn)}</span>
+            <div class="label-row-bottom">
+              <span class="label-value-pn">${escapeHtml(pn)}</span>
+              <span class="label-value-brand">${escapeHtml(brand)}</span>
+            </div>
           </div>
 
           <div class="label-block">
@@ -466,7 +486,7 @@
       const product = products[index];
       if (!product) return;
 
-      printContainer.innerHTML = generateLabelHTML(product.pn, product.sn, 'print');
+      printContainer.innerHTML = generateLabelHTML(product.pn, product.brand, product.sn, 'print');
 
       const barcodeOptsPN = { format: "CODE128", displayValue: false, margin: 0, height: 60, width: 2 };
       const barcodeOptsSN = { format: "CODE128", displayValue: false, margin: 0, height: 95, width: 2 };
@@ -481,8 +501,8 @@
       const product = products[index];
       if (!product) return;
 
-      modalPreviewBody.innerHTML = generateLabelHTML(product.pn, product.sn, 'preview');
-      printContainer.innerHTML = generateLabelHTML(product.pn, product.sn, 'print');
+      modalPreviewBody.innerHTML = generateLabelHTML(product.pn, product.brand, product.sn, 'preview');
+      printContainer.innerHTML = generateLabelHTML(product.pn, product.brand, product.sn, 'print');
 
       const barcodeOptsPN = { format: "CODE128", displayValue: false, margin: 0, height: 60, width: 2 };
       const barcodeOptsSN = { format: "CODE128", displayValue: false, margin: 0, height: 95, width: 2 };
