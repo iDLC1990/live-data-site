@@ -52,6 +52,29 @@
     }
     .page-title { font-size: 26px; font-weight: 700; color: #FFFFFF; }
 
+    .batch-actions-bar {
+      background: var(--card-bg);
+      border: 1px solid var(--border-color);
+      padding: 14px 20px;
+      border-radius: var(--radius);
+      margin-bottom: 20px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      box-shadow: var(--shadow-lg);
+    }
+
+    .batch-info {
+      font-size: 14px;
+      font-weight: 500;
+      color: var(--text-muted);
+    }
+
+    .batch-buttons {
+      display: flex;
+      gap: 12px;
+    }
+
     .card {
       background-color: var(--card-bg);
       border-radius: var(--radius);
@@ -68,13 +91,13 @@
       font-size: 12px;
       text-transform: uppercase;
       letter-spacing: 0.08em;
-      padding: 16px 24px;
+      padding: 16px 20px;
       font-weight: 600;
       border-bottom: 1px solid var(--border-color);
     }
 
     .data-table td {
-      padding: 16px 24px;
+      padding: 16px 20px;
       font-size: 14px;
       color: #E5E7EB;
       border-bottom: 1px solid var(--border-color);
@@ -87,6 +110,14 @@
       font-family: 'Consolas', 'Courier New', monospace;
       font-weight: 600;
       letter-spacing: 0.5px;
+    }
+
+    /* Чекбоксы */
+    .custom-checkbox {
+      width: 18px;
+      height: 18px;
+      cursor: pointer;
+      accent-color: var(--accent-color);
     }
 
     /* Кнопки и группы действий */
@@ -121,6 +152,7 @@
     }
 
     .btn:hover { background-color: var(--accent-hover); transform: translateY(-1px); }
+    .btn:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
     .btn-secondary { background-color: #374151; color: #F3F4F6; }
     .btn-secondary:hover { background-color: #4B5563; }
 
@@ -174,6 +206,11 @@
       align-items: center;
       text-align: center;
       border: 1px solid #D1D5DB;
+      page-break-after: always;
+    }
+
+    .industrial-label:last-child {
+      page-break-after: avoid;
     }
 
     .label-block { 
@@ -261,12 +298,10 @@
       .app-container, .modal-backdrop { display: none !important; }
       #printContainer, #printContainer * { visibility: visible !important; }
       #printContainer {
-        display: flex !important;
-        justify-content: center !important;
-        align-items: center !important;
+        display: block !important;
         position: absolute !important;
         left: 0 !important; top: 0 !important;
-        width: 100mm !important; height: 80mm !important;
+        width: 100mm !important;
         background: #FFFFFF !important;
       }
       #printContainer .industrial-label { border: none !important; box-shadow: none !important; }
@@ -285,20 +320,30 @@
       </div>
     </header>
 
+    <!-- Панель массовой печати выбранных -->
+    <div class="batch-actions-bar">
+      <div class="batch-info" id="selectedCountText">Выбрано позиций: 0</div>
+      <div class="batch-buttons">
+        <button class="btn btn-secondary" id="batchPrintNormalBtn" disabled onclick="printBatch(false)">🖨️ Печать выбранных (х2)</button>
+        <button class="btn btn-brand" id="batchPrintBrandBtn" disabled onclick="printBatch(true)">🖨️ Печать выбранных с Brand (х2)</button>
+      </div>
+    </div>
+
     <main class="card">
       <div class="table-container">
         <table class="data-table">
           <thead>
             <tr>
+              <th style="width: 40px;"><input type="checkbox" class="custom-checkbox" id="selectAllCheckbox" onclick="toggleSelectAll(this)"></th>
               <th>#</th>
               <th>Serial Number (SN)</th>
               <th>Part Number (PN)</th>
               <th>Brand</th>
-              <th style="width: 280px; text-align: right;">Действия (Обычная / С Brand)</th>
+              <th style="width: 250px; text-align: right;">Печать (х2) / Просмотр</th>
             </tr>
           </thead>
           <tbody id="productsTableBody">
-            <tr><td colspan="5" style="text-align: center; padding: 30px;">Загрузка данных...</td></tr>
+            <tr><td colspan="6" style="text-align: center; padding: 30px;">Загрузка данных...</td></tr>
           </tbody>
         </table>
       </div>
@@ -314,7 +359,7 @@
       <div class="modal-body" id="modalPreviewBody"></div>
       <div class="modal-footer">
         <button class="btn btn-secondary" id="closeModalBtn">Закрыть</button>
-        <button class="btn" id="printLabelBtn">🖨️ Печать</button>
+        <button class="btn" id="printModalBtn">🖨️ Печать</button>
       </div>
     </div>
   </div>
@@ -327,18 +372,18 @@
     const SUPABASE_KEY = 'sb_publishable_MLyF6CMVplwDyDqSeDnSBA__RakJscC';
     const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
-    // Настройки таблиц и колонок
     const TABLE_NAME = 'products_db';
     const COLUMN_PN = 'tpv_pn';
     const COLUMN_SN = 'panel_sn';
     const COLUMN_BRAND = 'brand';
 
-    // --- GOOGLE SHEETS ---
     const SHEET_ID = '10W03bvKlVFlIUcxsHkzP_v_13gtnYRBmnrrO0ujB1bU';
     const GID = '0';
 
     let products = [];
-    let currentPrintAction = null;
+    let selectedIndices = new Set();
+    let modalActiveItem = null;
+    let modalActiveBrand = false;
 
     const tableBody = document.getElementById('productsTableBody');
     const modal = document.getElementById('labelModal');
@@ -417,7 +462,9 @@
         }
 
         products = validItems;
+        selectedIndices.clear();
         renderTable();
+        updateBatchBar();
       } catch (error) {
         console.error('Ошибка загрузки данных:', error);
       }
@@ -425,33 +472,72 @@
 
     function renderTable() {
       if (products.length === 0) {
-        tableBody.innerHTML = `<tr><td colspan="5" style="text-align: center; padding: 20px;">Записей в таблице не найдено</td></tr>`;
+        tableBody.innerHTML = `<tr><td colspan="6" style="text-align: center; padding: 20px;">Записей в таблице не найдено</td></tr>`;
         return;
       }
 
       tableBody.innerHTML = '';
       products.forEach((product, index) => {
+        const isChecked = selectedIndices.has(index);
         const row = document.createElement('tr');
         row.innerHTML = `
+          <td><input type="checkbox" class="custom-checkbox" ${isChecked ? 'checked' : ''} onchange="toggleRowSelection(${index}, this)"></td>
           <td><strong>${index + 1}</strong></td>
           <td class="code-text">${escapeHtml(product.sn)}</td>
           <td class="code-text">${escapeHtml(product.pn)}</td>
           <td><span style="background: #374151; padding: 3px 8px; border-radius: 4px; font-size: 12px; font-weight: 600;">${escapeHtml(product.brand)}</span></td>
           <td class="actions-cell">
-            <!-- Обычная этикетка (Слева) -->
+            <!-- Обычная печать (х2) -->
             <div class="action-group">
-              <button class="btn btn-secondary" onclick="openPrintModal(${index}, false)" title="Предпросмотр обычной">👁️</button>
-              <button class="btn" onclick="directPrint(${index}, false)" title="Печать обычной">🖨️</button>
+              <button class="btn btn-secondary" onclick="openPreview(${index}, false)" title="Предпросмотр">👁️</button>
+              <button class="btn" onclick="printSingle(${index}, false)" title="Сразу печать 2 копии">🖨️ х2</button>
             </div>
-            <!-- Этикетка с Brand (Справа) -->
+            <!-- Печать с Brand (х2) -->
             <div class="action-group">
-              <button class="btn btn-secondary" onclick="openPrintModal(${index}, true)" title="Предпросмотр с Brand">👁️</button>
-              <button class="btn btn-brand" onclick="directPrint(${index}, true)" title="Печать с Brand">🖨️</button>
+              <button class="btn btn-secondary" onclick="openPreview(${index}, true)" title="Предпросмотр с Brand">👁️</button>
+              <button class="btn btn-brand" onclick="printSingle(${index}, true)" title="Сразу печать 2 копии с Brand">🖨️ х2</button>
             </div>
           </td>
         `;
         tableBody.appendChild(row);
       });
+    }
+
+    function toggleRowSelection(index, checkbox) {
+      if (checkbox.checked) {
+        selectedIndices.add(index);
+      } else {
+        selectedIndices.delete(index);
+      }
+      updateBatchBar();
+    }
+
+    function toggleSelectAll(selectAllCheckbox) {
+      const checkboxes = document.querySelectorAll('#productsTableBody input[type="checkbox"]');
+      checkboxes.forEach((cb, idx) => {
+        cb.checked = selectAllCheckbox.checked;
+        if (selectAllCheckbox.checked) {
+          selectedIndices.add(idx);
+        } else {
+          selectedIndices.delete(idx);
+        }
+      });
+      updateBatchBar();
+    }
+
+    function updateBatchBar() {
+      const count = selectedIndices.size;
+      document.getElementById('selectedCountText').innerText = `Выбрано позиций: ${count}`;
+      const btnNorm = document.getElementById('batchPrintNormalBtn');
+      const btnBrand = document.getElementById('batchPrintBrandBtn');
+      
+      if (count > 0) {
+        btnNorm.removeAttribute('disabled');
+        btnBrand.removeAttribute('disabled');
+      } else {
+        btnNorm.setAttribute('disabled', 'true');
+        btnBrand.setAttribute('disabled', 'true');
+      }
     }
 
     function escapeHtml(text) {
@@ -460,67 +546,92 @@
       return div.innerHTML;
     }
 
-    function generateLabelHTML(pn, sn, brand, includeBrand = false, suffix = '') {
-      return `
-        <div class="industrial-label">
-          <div class="label-block">
-            <div class="label-header-row">
-              <span class="label-caption">PN</span>
-              ${includeBrand ? `<span class="label-brand-right">${escapeHtml(brand)}</span>` : ''}
-            </div>
-            <div class="barcode-wrapper">
-              <svg id="barcodePN_${suffix}"></svg>
-            </div>
-            <span class="label-value-pn">${escapeHtml(pn)}</span>
-          </div>
+    // Генерация HTML для списка товаров (по 2 копии каждого)
+    function buildLabelsHTML(itemsList, includeBrand) {
+      let html = '';
+      itemsList.forEach((product, idx) => {
+        // Каждую позицию печатаем 2 раза
+        for (let copy = 0; copy < 2; copy++) {
+          html += `
+            <div class="industrial-label">
+              <div class="label-block">
+                <div class="label-header-row">
+                  <span class="label-caption">PN</span>
+                  ${includeBrand ? `<span class="label-brand-right">${escapeHtml(product.brand)}</span>` : ''}
+                </div>
+                <div class="barcode-wrapper">
+                  <svg class="barcode-pn" data-index="${idx}_${copy}" data-value="${escapeHtml(product.pn)}"></svg>
+                </div>
+                <span class="label-value-pn">${escapeHtml(product.pn)}</span>
+              </div>
 
-          <div class="label-block">
-            <div class="label-header-row">
-              <span class="label-caption">SN</span>
+              <div class="label-block">
+                <div class="label-header-row">
+                  <span class="label-caption">SN</span>
+                </div>
+                <div class="barcode-wrapper">
+                  <svg class="barcode-sn" data-index="${idx}_${copy}" data-value="${escapeHtml(product.sn)}"></svg>
+                </div>
+                <span class="label-value-sn">${escapeHtml(product.sn)}</span>
+              </div>
             </div>
-            <div class="barcode-wrapper">
-              <svg id="barcodeSN_${suffix}"></svg>
-            </div>
-            <span class="label-value-sn">${escapeHtml(sn)}</span>
-          </div>
-        </div>
-      `;
+          `;
+        }
+      });
+      return html;
     }
 
-    function directPrint(index, includeBrand) {
+    function renderBarcodesInContainer(containerSelector) {
+      const container = document.querySelector(containerSelector);
+      if (!container) return;
+
+      container.querySelectorAll('.barcode-pn').forEach(svg => {
+        const val = svg.getAttribute('data-value');
+        JsBarcode(svg, val, { format: "CODE128", displayValue: false, margin: 0, height: 60, width: 2 });
+      });
+
+      container.querySelectorAll('.barcode-sn').forEach(svg => {
+        const val = svg.getAttribute('data-value');
+        JsBarcode(svg, val, { format: "CODE128", displayValue: false, margin: 0, height: 95, width: 2 });
+      });
+    }
+
+    // Мгновенная печать 1 товара (2 копии)
+    function printSingle(index, includeBrand) {
       const product = products[index];
       if (!product) return;
 
-      printContainer.innerHTML = generateLabelHTML(product.pn, product.sn, product.brand, includeBrand, 'print');
-
-      const barcodeOptsPN = { format: "CODE128", displayValue: false, margin: 0, height: 60, width: 2 };
-      const barcodeOptsSN = { format: "CODE128", displayValue: false, margin: 0, height: 95, width: 2 };
-
-      JsBarcode("#barcodePN_print", product.pn, barcodeOptsPN);
-      JsBarcode("#barcodeSN_print", product.sn, barcodeOptsSN);
-
+      printContainer.innerHTML = buildLabelsHTML([product], includeBrand);
+      renderBarcodesInContainer('#printContainer');
       window.print();
     }
 
-    function openPrintModal(index, includeBrand) {
+    // Массовая печать выбранных товаров (по 2 копии каждого)
+    function printBatch(includeBrand) {
+      if (selectedIndices.size === 0) return;
+
+      const itemsToPrint = [];
+      selectedIndices.forEach(idx => {
+        if (products[idx]) itemsToPrint.push(products[idx]);
+      });
+
+      printContainer.innerHTML = buildLabelsHTML(itemsToPrint, includeBrand);
+      renderBarcodesInContainer('#printContainer');
+      window.print();
+    }
+
+    function openPreview(index, includeBrand) {
       const product = products[index];
       if (!product) return;
 
-      document.getElementById('modalTitleText').innerText = includeBrand ? 'Предпросмотр (с Brand)' : 'Предпросмотр (Обычная)';
+      modalActiveItem = product;
+      modalActiveBrand = includeBrand;
 
-      modalPreviewBody.innerHTML = generateLabelHTML(product.pn, product.sn, product.brand, includeBrand, 'preview');
-      printContainer.innerHTML = generateLabelHTML(product.pn, product.sn, product.brand, includeBrand, 'print');
+      document.getElementById('modalTitleText').innerText = includeBrand ? 'Предпросмотр (с Brand - 2 копии)' : 'Предпросмотр (Обычная - 2 копии)';
 
-      const barcodeOptsPN = { format: "CODE128", displayValue: false, margin: 0, height: 60, width: 2 };
-      const barcodeOptsSN = { format: "CODE128", displayValue: false, margin: 0, height: 95, width: 2 };
+      modalPreviewBody.innerHTML = buildLabelsHTML([product], includeBrand);
+      renderBarcodesInContainer('#modalPreviewBody');
 
-      JsBarcode("#barcodePN_preview", product.pn, barcodeOptsPN);
-      JsBarcode("#barcodePN_print", product.pn, barcodeOptsPN);
-
-      JsBarcode("#barcodeSN_preview", product.sn, barcodeOptsSN);
-      JsBarcode("#barcodeSN_print", product.sn, barcodeOptsSN);
-
-      currentPrintAction = () => directPrint(index, includeBrand);
       modal.classList.add('is-open');
     }
 
@@ -528,8 +639,11 @@
 
     document.getElementById('closeModalCross').addEventListener('click', closeModal);
     document.getElementById('closeModalBtn').addEventListener('click', closeModal);
-    document.getElementById('printLabelBtn').addEventListener('click', () => {
-      if (currentPrintAction) currentPrintAction();
+    document.getElementById('printModalBtn').addEventListener('click', () => {
+      if (modalActiveItem) {
+        printSingle(products.indexOf(modalActiveItem), modalActiveBrand);
+        closeModal();
+      }
     });
 
     document.addEventListener('DOMContentLoaded', () => {
