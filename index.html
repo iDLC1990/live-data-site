@@ -18,6 +18,8 @@
       --card-bg: #1F2937;
       --accent-color: #2563EB;
       --accent-hover: #1D4ED8;
+      --brand-color: #059669;
+      --brand-hover: #047857;
       --text-main: #F9FAFB;
       --text-muted: #9CA3AF;
       --border-color: #374151;
@@ -101,19 +103,38 @@
       letter-spacing: 0.5px;
     }
 
-    /* Кнопки */
-    .actions-cell { display: flex; gap: 8px; justify-content: flex-end; }
+    /* Кнопки и группы действий */
+    .actions-cell { 
+      display: flex; 
+      gap: 16px; 
+      justify-content: flex-end; 
+      align-items: center;
+    }
+
+    .action-group {
+      display: flex;
+      gap: 6px;
+      align-items: center;
+    }
+
+    .action-group-title {
+      font-size: 11px;
+      font-weight: 600;
+      color: var(--text-muted);
+      margin-bottom: 2px;
+      text-transform: uppercase;
+    }
 
     .btn {
       display: inline-flex;
       align-items: center;
       justify-content: center;
-      gap: 8px;
+      gap: 6px;
       background-color: var(--accent-color);
       color: #FFFFFF;
       border: none;
       border-radius: 8px;
-      padding: 8px 14px;
+      padding: 8px 12px;
       font-size: 13px;
       font-weight: 600;
       cursor: pointer;
@@ -124,6 +145,9 @@
     .btn:hover { background-color: var(--accent-hover); transform: translateY(-1px); }
     .btn-secondary { background-color: #374151; color: #F3F4F6; }
     .btn-secondary:hover { background-color: #4B5563; }
+
+    .btn-brand { background-color: var(--brand-color); }
+    .btn-brand:hover { background-color: var(--brand-hover); }
 
     /* Модальное окно просмотра */
     .modal-backdrop {
@@ -181,6 +205,16 @@
       justify-content: center;
       width: 100%; 
       height: 48%; 
+      position: relative;
+    }
+
+    .label-header-row {
+      width: 100%;
+      position: relative;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      margin-bottom: 1mm;
     }
 
     .label-caption { 
@@ -190,7 +224,17 @@
       letter-spacing: 1px; 
       text-transform: uppercase; 
       line-height: 1;
-      margin-bottom: 1mm;
+    }
+
+    .label-brand-right {
+      position: absolute;
+      right: 0;
+      top: 50%;
+      transform: translateY(-50%) scaleY(1.3);
+      font-weight: 900;
+      font-size: 18pt;
+      color: #000000;
+      line-height: 1;
     }
 
     .barcode-wrapper { 
@@ -206,30 +250,13 @@
       display: block; 
     }
 
-    .label-row-bottom {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      width: 100%;
-      padding: 0 4mm;
-      margin-top: 1mm;
-    }
-
     .label-value-pn {
       font-size: 24pt; 
       font-weight: 900;
       font-family: 'Consolas', monospace; 
       color: #000;
       line-height: 1.1; 
-      transform: scaleY(1.3);
-    }
-
-    .label-value-brand {
-      font-size: 20pt; 
-      font-weight: 900;
-      font-family: 'Segoe UI', Arial, sans-serif; 
-      color: #000;
-      line-height: 1.1; 
+      margin-top: 1mm;
       transform: scaleY(1.3);
     }
 
@@ -291,7 +318,7 @@
               <th>Serial Number (SN)</th>
               <th>Part Number (PN)</th>
               <th>Brand</th>
-              <th style="width: 140px; text-align: right;">Действия</th>
+              <th style="width: 280px; text-align: right;">Действия (Обычная / С Brand)</th>
             </tr>
           </thead>
           <tbody id="productsTableBody">
@@ -305,7 +332,7 @@
   <div class="modal-backdrop" id="labelModal">
     <div class="modal-card">
       <div class="modal-header">
-        <h2 class="modal-title">Предпросмотр этикетки (100x80 мм)</h2>
+        <h2 class="modal-title" id="modalTitleText">Предпросмотр этикетки</h2>
         <button class="modal-close-btn" id="closeModalCross">&times;</button>
       </div>
       <div class="modal-body" id="modalPreviewBody"></div>
@@ -335,6 +362,7 @@
     const GID = '0';
 
     let products = [];
+    let currentPrintAction = null;
 
     const tableBody = document.getElementById('productsTableBody');
     const modal = document.getElementById('labelModal');
@@ -443,8 +471,16 @@
           <td class="code-text">${escapeHtml(product.pn)}</td>
           <td><span style="background: #374151; padding: 3px 8px; border-radius: 4px; font-size: 12px; font-weight: 600;">${escapeHtml(product.brand)}</span></td>
           <td class="actions-cell">
-            <button class="btn btn-secondary" onclick="openPrintModal(${index})" title="Просмотр">👁️</button>
-            <button class="btn" onclick="directPrint(${index})" title="Печать на TSC DA220">🖨️</button>
+            <!-- Обычная этикетка (Слева) -->
+            <div class="action-group">
+              <button class="btn btn-secondary" onclick="openPrintModal(${index}, false)" title="Предпросмотр обычной">👁️</button>
+              <button class="btn" onclick="directPrint(${index}, false)" title="Печать обычной">🖨️</button>
+            </div>
+            <!-- Этикетка с Brand (Справа) -->
+            <div class="action-group">
+              <button class="btn btn-secondary" onclick="openPrintModal(${index}, true)" title="Предпросмотр с Brand">👁️</button>
+              <button class="btn btn-brand" onclick="directPrint(${index}, true)" title="Печать с Brand">🖨️</button>
+            </div>
           </td>
         `;
         tableBody.appendChild(row);
@@ -457,22 +493,24 @@
       return div.innerHTML;
     }
 
-    function generateLabelHTML(pn, brand, sn, suffix = '') {
+    function generateLabelHTML(pn, sn, brand, includeBrand = false, suffix = '') {
       return `
         <div class="industrial-label">
           <div class="label-block">
-            <span class="label-caption">PN</span>
+            <div class="label-header-row">
+              <span class="label-caption">PN</span>
+              ${includeBrand ? `<span class="label-brand-right">${escapeHtml(brand)}</span>` : ''}
+            </div>
             <div class="barcode-wrapper">
               <svg id="barcodePN_${suffix}"></svg>
             </div>
-            <div class="label-row-bottom">
-              <span class="label-value-pn">${escapeHtml(pn)}</span>
-              <span class="label-value-brand">${escapeHtml(brand)}</span>
-            </div>
+            <span class="label-value-pn">${escapeHtml(pn)}</span>
           </div>
 
           <div class="label-block">
-            <span class="label-caption">SN</span>
+            <div class="label-header-row">
+              <span class="label-caption">SN</span>
+            </div>
             <div class="barcode-wrapper">
               <svg id="barcodeSN_${suffix}"></svg>
             </div>
@@ -482,11 +520,11 @@
       `;
     }
 
-    function directPrint(index) {
+    function directPrint(index, includeBrand) {
       const product = products[index];
       if (!product) return;
 
-      printContainer.innerHTML = generateLabelHTML(product.pn, product.brand, product.sn, 'print');
+      printContainer.innerHTML = generateLabelHTML(product.pn, product.sn, product.brand, includeBrand, 'print');
 
       const barcodeOptsPN = { format: "CODE128", displayValue: false, margin: 0, height: 60, width: 2 };
       const barcodeOptsSN = { format: "CODE128", displayValue: false, margin: 0, height: 95, width: 2 };
@@ -497,12 +535,14 @@
       window.print();
     }
 
-    function openPrintModal(index) {
+    function openPrintModal(index, includeBrand) {
       const product = products[index];
       if (!product) return;
 
-      modalPreviewBody.innerHTML = generateLabelHTML(product.pn, product.brand, product.sn, 'preview');
-      printContainer.innerHTML = generateLabelHTML(product.pn, product.brand, product.sn, 'print');
+      document.getElementById('modalTitleText').innerText = includeBrand ? 'Предпросмотр (с Brand)' : 'Предпросмотр (Обычная)';
+
+      modalPreviewBody.innerHTML = generateLabelHTML(product.pn, product.sn, product.brand, includeBrand, 'preview');
+      printContainer.innerHTML = generateLabelHTML(product.pn, product.sn, product.brand, includeBrand, 'print');
 
       const barcodeOptsPN = { format: "CODE128", displayValue: false, margin: 0, height: 60, width: 2 };
       const barcodeOptsSN = { format: "CODE128", displayValue: false, margin: 0, height: 95, width: 2 };
@@ -513,6 +553,7 @@
       JsBarcode("#barcodeSN_preview", product.sn, barcodeOptsSN);
       JsBarcode("#barcodeSN_print", product.sn, barcodeOptsSN);
 
+      currentPrintAction = () => directPrint(index, includeBrand);
       modal.classList.add('is-open');
     }
 
@@ -520,7 +561,9 @@
 
     document.getElementById('closeModalCross').addEventListener('click', closeModal);
     document.getElementById('closeModalBtn').addEventListener('click', closeModal);
-    document.getElementById('printLabelBtn').addEventListener('click', () => window.print());
+    document.getElementById('printLabelBtn').addEventListener('click', () => {
+      if (currentPrintAction) currentPrintAction();
+    });
 
     document.addEventListener('DOMContentLoaded', () => {
       fetchDataFromGoogleSheet();
