@@ -52,6 +52,40 @@
     }
     .page-title { font-size: 26px; font-weight: 700; color: #FFFFFF; }
 
+    /* Переключатель листов */
+    .sheet-tabs {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 20px;
+    }
+
+    .sheet-tab-btn {
+      background-color: #374151;
+      color: var(--text-muted);
+      border: 1px solid var(--border-color);
+      padding: 10px 18px;
+      border-radius: 8px;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .sheet-tab-btn.active {
+      background-color: var(--accent-color);
+      color: #FFFFFF;
+      border-color: var(--accent-color);
+    }
+
+    .sheet-tab-btn kbd {
+      background: rgba(0, 0, 0, 0.3);
+      padding: 2px 6px;
+      border-radius: 4px;
+      font-size: 11px;
+      margin-left: 6px;
+      border: 1px solid rgba(255, 255, 255, 0.2);
+    }
+
     .batch-actions-bar {
       background: var(--card-bg);
       border: 1px solid var(--border-color);
@@ -320,6 +354,12 @@
       </div>
     </header>
 
+    <!-- Панель переключения листов -->
+    <div class="sheet-tabs">
+      <button class="sheet-tab-btn active" id="tabBtn0" onclick="switchSheet('0')">Лист 1 <kbd>Alt + 1</kbd></button>
+      <button class="sheet-tab-btn" id="tabBtn193025884" onclick="switchSheet('193025884')">Лист 2 <kbd>Alt + 2</kbd></button>
+    </div>
+
     <!-- Панель массовой печати выбранных -->
     <div class="batch-actions-bar">
       <div class="batch-info" id="selectedCountText">Выбрано позиций: 0</div>
@@ -378,7 +418,9 @@
     const COLUMN_BRAND = 'brand';
 
     const SHEET_ID = '10W03bvKlVFlIUcxsHkzP_v_13gtnYRBmnrrO0ujB1bU';
-    const GID = '0';
+    
+    // Активный GID (по умолчанию первый лист)
+    let currentGid = '0';
 
     let products = [];
     let selectedIndices = new Set();
@@ -428,9 +470,22 @@
       }
     }
 
+    async function switchSheet(gid) {
+      currentGid = gid;
+      
+      // Обновляем визуальное состояние кнопок листов
+      document.querySelectorAll('.sheet-tab-btn').forEach(btn => btn.classList.remove('active'));
+      const activeBtn = document.getElementById(`tabBtn${gid}`);
+      if (activeBtn) activeBtn.classList.add('active');
+
+      await fetchDataFromGoogleSheet();
+    }
+
     async function fetchDataFromGoogleSheet() {
       try {
-        const url = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:csv&gid=${GID}&_nc=${Date.now()}`;
+        tableBody.innerHTML = `<tr><td colspan="6" style="text-align: center; padding: 30px;">Загрузка данных с листа...</td></tr>`;
+        
+        const url = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:csv&gid=${currentGid}&_nc=${Date.now()}`;
         const response = await fetch(url);
         
         if (!response.ok) throw new Error('Не удалось получить данные с сервера Google');
@@ -467,6 +522,7 @@
         updateBatchBar();
       } catch (error) {
         console.error('Ошибка загрузки данных:', error);
+        tableBody.innerHTML = `<tr><td colspan="6" style="text-align: center; padding: 30px; color: #FCA5A5;">Ошибка загрузки данных с листа</td></tr>`;
       }
     }
 
@@ -546,11 +602,9 @@
       return div.innerHTML;
     }
 
-    // Генерация HTML для списка товаров (по 2 копии каждого)
     function buildLabelsHTML(itemsList, includeBrand) {
       let html = '';
       itemsList.forEach((product, idx) => {
-        // Каждую позицию печатаем 2 раза
         for (let copy = 0; copy < 2; copy++) {
           html += `
             <div class="industrial-label">
@@ -596,7 +650,6 @@
       });
     }
 
-    // Мгновенная печать 1 товара (2 копии)
     function printSingle(index, includeBrand) {
       const product = products[index];
       if (!product) return;
@@ -606,7 +659,6 @@
       window.print();
     }
 
-    // Массовая печать выбранных товаров (по 2 копии каждого)
     function printBatch(includeBrand) {
       if (selectedIndices.size === 0) return;
 
@@ -636,6 +688,19 @@
     }
 
     function closeModal() { modal.classList.remove('is-open'); }
+
+    // Глобальный слушатель комбинаций клавиш Alt + 1 и Alt + 2
+    document.addEventListener('keydown', (e) => {
+      if (e.altKey) {
+        if (e.key === '1') {
+          e.preventDefault();
+          switchSheet('0');
+        } else if (e.key === '2') {
+          e.preventDefault();
+          switchSheet('193025884');
+        }
+      }
+    });
 
     document.getElementById('closeModalCross').addEventListener('click', closeModal);
     document.getElementById('closeModalBtn').addEventListener('click', closeModal);
