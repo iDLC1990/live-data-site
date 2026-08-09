@@ -240,7 +240,7 @@
 
     .modal-footer { padding: 16px 24px; border-top: 1px solid var(--border-color); display: flex; justify-content: space-between; align-items: center; background: #111827; }
 
-    /* Этикетка 100x80 мм с абсолютным позиционированием для полной свободы */
+    /* Этикетка 100x80 мм с абсолютным центрированным позиционированием */
     .industrial-label {
       width: 100mm;
       height: 80mm;
@@ -255,22 +255,30 @@
 
     .label-element {
       position: absolute;
-      left: 0;
-      width: 100%;
+      left: 50%;
+      transform: translateX(-50%);
       display: flex;
       flex-direction: column;
       align-items: center;
+      white-space: nowrap;
     }
     
-    /* Текстовые элементы с белым фоном для чистого наложения поверх штрихкодов */
+    /* Текстовые элементы с белым фоном */
     .text-layer span {
       background-color: #FFFFFF;
-      padding: 0 6px; /* Небольшой отступ по бокам, чтобы перекрыть линии */
+      padding: 0 4px;
       display: inline-block;
     }
 
-    .barcode-wrapper { width: 100%; display: flex; justify-content: center; align-items: center; }
-    .barcode-wrapper svg { max-width: 100%; display: block; }
+    .barcode-wrapper {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+    .barcode-wrapper svg {
+      display: block;
+      height: 100%;
+    }
 
     @page { size: 100mm 80mm landscape; margin: 0; }
 
@@ -494,7 +502,6 @@
       }
     }
 
-    // Изменили минимальное значение Y на -100 и максимальное на 400
     function renderComponentControl(type, idPrefix, title, hasX, hasY, hasFont, hasScaleY) {
       return `
         <div class="component-section" id="sec_${type}_${idPrefix}">
@@ -528,36 +535,34 @@
       fieldsContainer.style.opacity = isLocked ? '0.4' : '1';
     }
 
-    // Текстам добавлен класс text-layer и z-index: 10
-    // Штрихкодам задан z-index: 1
     function generateLabelMarkup(type, product) {
       const p = getParams(type);
       if (type === 'cs') {
         return `
           <div class="industrial-label">
-            <!-- Штрихкод PN (z-index 1) -->
-            <div class="label-element" style="z-index: 1; top: ${p.bc_pn_y}px; transform: translateX(${p.bc_pn_x}px);">
+            <!-- Штрихкод PN -->
+            <div class="label-element" style="z-index: 1; top: ${p.bc_pn_y}px; transform: translateX(calc(-50% + ${p.bc_pn_x}px));">
               <div class="barcode-wrapper"><svg id="live_bc_pn"></svg></div>
             </div>
-            <!-- Шапка PN (z-index 10) -->
-            <div class="label-element text-layer" style="z-index: 10; top: ${p.h_pn_y}px; transform: translateX(${p.h_pn_x}px);">
+            <!-- Шапка PN -->
+            <div class="label-element text-layer" style="z-index: 10; top: ${p.h_pn_y}px; transform: translateX(calc(-50% + ${p.h_pn_x}px));">
               <span style="font-size: ${p.h_pn_f}pt; transform: scaleY(${p.h_pn_sy}); font-weight: 900; letter-spacing: 1px; text-transform: uppercase;">PN</span>
             </div>
-            <!-- Буквенный PN (z-index 10) -->
-            <div class="label-element text-layer" style="z-index: 10; top: ${p.txt_pn_y}px; transform: translateX(${p.txt_pn_x}px);">
+            <!-- Буквенный PN -->
+            <div class="label-element text-layer" style="z-index: 10; top: ${p.txt_pn_y}px; transform: translateX(calc(-50% + ${p.txt_pn_x}px));">
               <span style="font-size: ${p.txt_pn_f}pt; transform: scaleY(${p.txt_pn_sy}); font-weight: 900; font-family: 'Consolas', monospace; line-height: 1.1;">${escapeHtml(product.pn)}</span>
             </div>
 
-            <!-- Штрихкод SN (z-index 1) -->
-            <div class="label-element" style="z-index: 1; top: ${p.bc_sn_y}px; transform: translateX(${p.bc_sn_x}px);">
+            <!-- Штрихкод SN -->
+            <div class="label-element" style="z-index: 1; top: ${p.bc_sn_y}px; transform: translateX(calc(-50% + ${p.bc_sn_x}px));">
               <div class="barcode-wrapper"><svg id="live_bc_sn"></svg></div>
             </div>
-            <!-- Шапка SN (z-index 10) -->
-            <div class="label-element text-layer" style="z-index: 10; top: ${p.h_sn_y}px; transform: translateX(${p.h_sn_x}px);">
+            <!-- Шапка SN -->
+            <div class="label-element text-layer" style="z-index: 10; top: ${p.h_sn_y}px; transform: translateX(calc(-50% + ${p.h_sn_x}px));">
               <span style="font-size: ${p.h_sn_f}pt; transform: scaleY(${p.h_sn_sy}); font-weight: 900; letter-spacing: 1px; text-transform: uppercase;">SN</span>
             </div>
-            <!-- Буквенный SN (z-index 10) -->
-            <div class="label-element text-layer" style="z-index: 10; top: ${p.txt_sn_y}px; transform: translateX(${p.txt_sn_x}px);">
+            <!-- Буквенный SN -->
+            <div class="label-element text-layer" style="z-index: 10; top: ${p.txt_sn_y}px; transform: translateX(calc(-50% + ${p.txt_sn_x}px));">
               <span style="font-size: ${p.txt_sn_f}pt; transform: scaleY(${p.txt_sn_sy}); font-weight: 900; font-family: 'Consolas', monospace; line-height: 1.1;">${escapeHtml(product.sn)}</span>
             </div>
           </div>
@@ -566,33 +571,33 @@
         return `
           <div class="industrial-label">
             <!-- Brand -->
-            <div class="label-element text-layer" style="z-index: 10; top: ${p.brand_y}px; transform: translateX(${p.brand_x}px);">
+            <div class="label-element text-layer" style="z-index: 10; top: ${p.brand_y}px; transform: translateX(calc(-50% + ${p.brand_x}px));">
               <span style="font-size: ${p.brand_f}pt; transform: scaleY(${p.brand_sy}); font-weight: 900; text-transform: uppercase;">${escapeHtml(product.brand)}</span>
             </div>
 
-            <!-- Штрихкод PN (z-index 1) -->
-            <div class="label-element" style="z-index: 1; top: ${p.bc_pn_y}px; transform: translateX(${p.bc_pn_x}px);">
+            <!-- Штрихкод PN -->
+            <div class="label-element" style="z-index: 1; top: ${p.bc_pn_y}px; transform: translateX(calc(-50% + ${p.bc_pn_x}px));">
               <div class="barcode-wrapper"><svg id="live_bc_pn"></svg></div>
             </div>
-            <!-- Шапка PN (z-index 10) -->
-            <div class="label-element text-layer" style="z-index: 10; top: ${p.h_pn_y}px; transform: translateX(${p.h_pn_x}px);">
+            <!-- Шапка PN -->
+            <div class="label-element text-layer" style="z-index: 10; top: ${p.h_pn_y}px; transform: translateX(calc(-50% + ${p.h_pn_x}px));">
               <span style="font-size: ${p.h_pn_f}pt; transform: scaleY(${p.h_pn_sy}); font-weight: 900; letter-spacing: 1px; text-transform: uppercase;">PN</span>
             </div>
-            <!-- Буквенный PN (z-index 10) -->
-            <div class="label-element text-layer" style="z-index: 10; top: ${p.txt_pn_y}px; transform: translateX(${p.txt_pn_x}px);">
+            <!-- Буквенный PN -->
+            <div class="label-element text-layer" style="z-index: 10; top: ${p.txt_pn_y}px; transform: translateX(calc(-50% + ${p.txt_pn_x}px));">
               <span style="font-size: ${p.txt_pn_f}pt; transform: scaleY(${p.txt_pn_sy}); font-weight: 900; font-family: 'Consolas', monospace; line-height: 1.1;">${escapeHtml(product.pn)}</span>
             </div>
 
-            <!-- Штрихкод SN (z-index 1) -->
-            <div class="label-element" style="z-index: 1; top: ${p.bc_sn_y}px; transform: translateX(${p.bc_sn_x}px);">
+            <!-- Штрихкод SN -->
+            <div class="label-element" style="z-index: 1; top: ${p.bc_sn_y}px; transform: translateX(calc(-50% + ${p.bc_sn_x}px));">
               <div class="barcode-wrapper"><svg id="live_bc_sn"></svg></div>
             </div>
-            <!-- Шапка SN (z-index 10) -->
-            <div class="label-element text-layer" style="z-index: 10; top: ${p.h_sn_y}px; transform: translateX(${p.h_sn_x}px);">
+            <!-- Шапка SN -->
+            <div class="label-element text-layer" style="z-index: 10; top: ${p.h_sn_y}px; transform: translateX(calc(-50% + ${p.h_sn_x}px));">
               <span style="font-size: ${p.h_sn_f}pt; transform: scaleY(${p.h_sn_sy}); font-weight: 900; letter-spacing: 1px; text-transform: uppercase;">SN</span>
             </div>
-            <!-- Буквенный SN (z-index 10) -->
-            <div class="label-element text-layer" style="z-index: 10; top: ${p.txt_sn_y}px; transform: translateX(${p.txt_sn_x}px);">
+            <!-- Буквенный SN -->
+            <div class="label-element text-layer" style="z-index: 10; top: ${p.txt_sn_y}px; transform: translateX(calc(-50% + ${p.txt_sn_x}px));">
               <span style="font-size: ${p.txt_sn_f}pt; transform: scaleY(${p.txt_sn_sy}); font-weight: 900; font-family: 'Consolas', monospace; line-height: 1.1;">${escapeHtml(product.sn)}</span>
             </div>
           </div>
@@ -600,7 +605,6 @@
       }
     }
 
-    // Для штрихкодов добавлен background: "transparent", чтобы они не закрашивали элементы под собой
     function updateLivePreview(prod = sampleProduct) {
       const previewPaneContainer = document.getElementById('livePreviewContainer');
       previewPaneContainer.innerHTML = generateLabelMarkup(activeEditorType, prod);
