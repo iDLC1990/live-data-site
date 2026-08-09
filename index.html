@@ -57,6 +57,7 @@
       display: flex;
       gap: 10px;
       margin-bottom: 20px;
+      align-items: center;
     }
 
     .sheet-tab-btn {
@@ -85,6 +86,29 @@
       margin-left: 6px;
       border: 1px solid rgba(255, 255, 255, 0.2);
     }
+
+    /* Индикатор фонового обновления */
+    .sync-indicator {
+      margin-left: auto;
+      font-size: 13px;
+      color: var(--text-muted);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      opacity: 0;
+      transition: opacity 0.3s ease;
+    }
+    .sync-indicator.visible { opacity: 1; }
+    
+    .spinner {
+      width: 14px;
+      height: 14px;
+      border: 2px solid var(--border-color);
+      border-top-color: var(--accent-color);
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
 
     .batch-actions-bar {
       background: var(--card-bg);
@@ -350,14 +374,19 @@
         <h1 class="page-title">🖨️ Друк етикеток (TSC DA220)</h1>
       </div>
       <div>
-        <button class="btn btn-secondary" onclick="fetchDataFromGoogleSheet()">🔄 Обновить сейчас</button>
+        <button class="btn btn-secondary" onclick="fetchDataFromGoogleSheet(true)">🔄 Обновить сейчас</button>
       </div>
     </header>
 
-    <!-- Панель переключения листов -->
+    <!-- Панель переключения листов и индикатор фоновой синхронизации -->
     <div class="sheet-tabs">
       <button class="sheet-tab-btn active" id="tabBtn0" onclick="switchSheet('0')">Лист 1 <kbd>Alt + 1</kbd></button>
       <button class="sheet-tab-btn" id="tabBtn193025884" onclick="switchSheet('193025884')">Лист 2 <kbd>Alt + 2</kbd></button>
+      
+      <div class="sync-indicator" id="syncIndicator">
+        <div class="spinner"></div>
+        <span>Синхронизация...</span>
+      </div>
     </div>
 
     <!-- Панель массовой печати выбранных -->
@@ -419,18 +448,18 @@
 
     const SHEET_ID = '10W03bvKlVFlIUcxsHkzP_v_13gtnYRBmnrrO0ujB1bU';
     
-    // Активный GID (по умолчанию первый лист)
     let currentGid = '0';
-
     let products = [];
     let selectedIndices = new Set();
     let modalActiveItem = null;
     let modalActiveBrand = false;
+    let isInitialLoad = true;
 
     const tableBody = document.getElementById('productsTableBody');
     const modal = document.getElementById('labelModal');
     const modalPreviewBody = document.getElementById('modalPreviewBody');
     const printContainer = document.getElementById('printContainer');
+    const syncIndicator = document.getElementById('syncIndicator');
 
     function parseCSV(str) {
       const arr = [];
@@ -471,20 +500,27 @@
     }
 
     async function switchSheet(gid) {
+      if (currentGid === gid) return;
       currentGid = gid;
       
-      // Обновляем визуальное состояние кнопок листов
       document.querySelectorAll('.sheet-tab-btn').forEach(btn => btn.classList.remove('active'));
       const activeBtn = document.getElementById(`tabBtn${gid}`);
       if (activeBtn) activeBtn.classList.add('active');
 
-      await fetchDataFromGoogleSheet();
+      // При переключении показываем индикатор загрузки только если таблица пустая
+      if (products.length === 0) {
+        tableBody.innerHTML = `<tr><td colspan="6" style="text-align: center; padding: 30px;">Загрузка данных с листа...</td></tr>`;
+      }
+
+      await fetchDataFromGoogleSheet(false);
     }
 
-    async function fetchDataFromGoogleSheet() {
+    async function fetchDataFromGoogleSheet(showIndicator = false) {
       try {
-        tableBody.innerHTML = `<tr><td colspan="6" style="text-align: center; padding: 30px;">Загрузка данных с листа...</td></tr>`;
-        
+        if (showIndicator || isInitialLoad) {
+          syncIndicator.classList.add('visible');
+        }
+
         const url = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:csv&gid=${currentGid}&_nc=${Date.now()}`;
         const response = await fetch(url);
         
@@ -521,8 +557,10 @@
         renderTable();
         updateBatchBar();
       } catch (error) {
-        console.error('Ошибка загрузки данных:', error);
-        tableBody.innerHTML = `<tr><td colspan="6" style="text-align: center; padding: 30px; color: #FCA5A5;">Ошибка загрузки данных с листа</td></tr>`;
+        console.error('Ошибка фонового обновления:', error);
+      } finally {
+        isInitialLoad = false;
+        syncIndicator.classList.remove('visible');
       }
     }
 
@@ -689,7 +727,7 @@
 
     function closeModal() { modal.classList.remove('is-open'); }
 
-    // Глобальный слушатель комбинаций клавиш Alt + 1 и Alt + 2
+    // Клавиши быстрого доступа Alt + 1 и Alt + 2
     document.addEventListener('keydown', (e) => {
       if (e.altKey) {
         if (e.key === '1') {
@@ -712,8 +750,9 @@
     });
 
     document.addEventListener('DOMContentLoaded', () => {
-      fetchDataFromGoogleSheet();
-      setInterval(fetchDataFromGoogleSheet, 5000);
+      fetchDataFromGoogleSheet(true);
+      // Фоновое обновление каждые 30 секунд без сброса интерфейса/мигания
+      setInterval(() => fetchDataFromGoogleSheet(false), 10000);
     });
   </script>
 </body>
