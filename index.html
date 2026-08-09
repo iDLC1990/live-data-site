@@ -227,7 +227,7 @@
     .export-box label { display: block; font-size: 11px; color: var(--text-muted); margin-bottom: 6px; text-transform: uppercase; }
     .export-box textarea {
       width: 100%;
-      height: 120px;
+      height: 60px;
       background: #1F2937;
       border: 1px solid var(--border-color);
       color: #34D399;
@@ -240,7 +240,7 @@
 
     .modal-footer { padding: 16px 24px; border-top: 1px solid var(--border-color); display: flex; justify-content: space-between; align-items: center; background: #111827; }
 
-    /* Этикетка 100x80 мм */
+    /* Этикетка 100x80 мм с абсолютным позиционированием для полной свободы */
     .industrial-label {
       width: 100mm;
       height: 80mm;
@@ -262,9 +262,10 @@
       align-items: center;
     }
     
+    /* Текстовые элементы с белым фоном для чистого наложения поверх штрихкодов */
     .text-layer span {
       background-color: #FFFFFF;
-      padding: 0 6px;
+      padding: 0 6px; /* Небольшой отступ по бокам, чтобы перекрыть линии */
       display: inline-block;
     }
 
@@ -329,6 +330,7 @@
     </main>
   </div>
 
+  <!-- Модальное окно редактора -->
   <div class="modal-backdrop" id="editorModal">
     <div class="editor-modal-card">
       <div class="modal-header">
@@ -384,77 +386,86 @@
     const tableBody = document.getElementById('productsTableBody');
     const editorModal = document.getElementById('editorModal');
 
-    // ТОЧНЫЕ И ЕДИНЫЕ ИСТОЧНИКИ ПРАВДЫ ДЛЯ КООРДИНАТ
-    const defaultConfigs = {
-      cs: {
-        h_pn_locked: true, h_pn_x: 0, h_pn_y: -10, h_pn_h: 0, h_pn_f: 17, h_pn_sy: 1.3,
-        bc_pn_locked: true, bc_pn_x: 0, bc_pn_y: -17, bc_pn_h: 60,
-        txt_pn_locked: true, txt_pn_x: 0, txt_pn_y: -30, txt_pn_h: 12, txt_pn_f: 20, txt_pn_sy: 1.3,
-        h_sn_locked: true, h_sn_x: 0, h_sn_y: -30, h_sn_h: 0, h_sn_f: 18, h_sn_sy: 1.4,
-        bc_sn_locked: true, bc_sn_x: 0, bc_sn_y: -40, bc_sn_h: 90,
-        txt_sn_locked: false, txt_sn_x: 0, txt_sn_y: -40, txt_sn_h: 0, txt_sn_f: 17, txt_sn_sy: 1.3
-      },
-      mnt: {
-        brand_locked: true,
-        brand_x: 119,
-        brand_y: 3,
-        brand_h: 0,
-        brand_f: 14,
-        brand_sy: 1.6,
-        h_pn_locked: true,
-        h_pn_x: 0,
-        h_pn_y: -30,
-        h_pn_h: 0,
-        h_pn_f: 18,
-        h_pn_sy: 1.2,
-        bc_pn_locked: true,
-        bc_pn_x: 0,
-        bc_pn_y: -30,
-        bc_pn_h: 60,
-        txt_pn_locked: true,
-        txt_pn_x: 0,
-        txt_pn_y: -30,
-        txt_pn_h: 3,
-        txt_pn_f: 20,
-        txt_pn_sy: 1.6,
-        h_sn_locked: false,
-        h_sn_x: 0,
-        h_sn_y: -20,
-        h_sn_h: 0,
-        h_sn_f: 18,
-        h_sn_sy: 1.4,
-        bc_sn_locked: true,
-        bc_sn_x: 0,
-        bc_sn_y: -30,
-        bc_sn_h: 80,
-        txt_sn_locked: true,
-        txt_sn_x: 0,
-        txt_sn_y: -40,
-        txt_sn_h: 0,
-        txt_sn_f: 17,
-        txt_sn_sy: 1.8
-      }
-    };
-
-    // Функция всегда возвращает актуальные параметры (сначала проверяя DOM-инпуты, а при их отсутствии — дефолтный конфиг)
     function getParams(type) {
-      const cfg = defaultConfigs[type];
-      const p = {};
-      for (const key in cfg) {
-        const el = document.getElementById(`${type}_${key}`);
-        if (el) {
-          if (el.type === 'checkbox') {
-            p[key] = el.checked;
-          } else if (key.endsWith('_sy')) {
-            p[key] = parseFloat(el.value);
-          } else {
-            p[key] = parseInt(el.value);
-          }
-        } else {
-          p[key] = cfg[key];
-        }
+      if (type === 'cs') {
+        return {
+          h_pn_locked: document.getElementById('cs_h_pn_locked')?.checked || false,
+          h_pn_x: parseInt(document.getElementById('cs_h_pn_x')?.value || 0),
+          h_pn_y: parseInt(document.getElementById('cs_h_pn_y')?.value || 10),
+          h_pn_f: parseInt(document.getElementById('cs_h_pn_f')?.value || 12),
+          h_pn_sy: parseFloat(document.getElementById('cs_h_pn_sy')?.value || 1.0),
+          
+          bc_pn_locked: document.getElementById('cs_bc_pn_locked')?.checked || false,
+          bc_pn_x: parseInt(document.getElementById('cs_bc_pn_x')?.value || 0),
+          bc_pn_y: parseInt(document.getElementById('cs_bc_pn_y')?.value || 35),
+          bc_pn_h: parseInt(document.getElementById('cs_bc_pn_h')?.value || 52),
+          
+          txt_pn_locked: document.getElementById('cs_txt_pn_locked')?.checked || false,
+          txt_pn_x: parseInt(document.getElementById('cs_txt_pn_x')?.value || 0),
+          txt_pn_y: parseInt(document.getElementById('cs_txt_pn_y')?.value || 95),
+          txt_pn_f: parseInt(document.getElementById('cs_txt_pn_f')?.value || 22),
+          txt_pn_sy: parseFloat(document.getElementById('cs_txt_pn_sy')?.value || 1.0),
+
+          h_sn_locked: document.getElementById('cs_h_sn_locked')?.checked || false,
+          h_sn_x: parseInt(document.getElementById('cs_h_sn_x')?.value || 0),
+          h_sn_y: parseInt(document.getElementById('cs_h_sn_y')?.value || 150),
+          h_sn_f: parseInt(document.getElementById('cs_h_sn_f')?.value || 12),
+          h_sn_sy: parseFloat(document.getElementById('cs_h_sn_sy')?.value || 1.0),
+          
+          bc_sn_locked: document.getElementById('cs_bc_sn_locked')?.checked || false,
+          bc_sn_x: parseInt(document.getElementById('cs_bc_sn_x')?.value || 0),
+          bc_sn_y: parseInt(document.getElementById('cs_bc_sn_y')?.value || 175),
+          bc_sn_h: parseInt(document.getElementById('cs_bc_sn_h')?.value || 72),
+          
+          txt_sn_locked: document.getElementById('cs_txt_sn_locked')?.checked || false,
+          txt_sn_x: parseInt(document.getElementById('cs_txt_sn_x')?.value || 0),
+          txt_sn_y: parseInt(document.getElementById('cs_txt_sn_y')?.value || 255),
+          txt_sn_f: parseInt(document.getElementById('cs_txt_sn_f')?.value || 17),
+          txt_sn_sy: parseFloat(document.getElementById('cs_txt_sn_sy')?.value || 1.5),
+        };
+      } else {
+        return {
+          brand_locked: document.getElementById('mnt_brand_locked')?.checked || false,
+          brand_x: parseInt(document.getElementById('mnt_brand_x')?.value || 0),
+          brand_y: parseInt(document.getElementById('mnt_brand_y')?.value || 10),
+          brand_f: parseInt(document.getElementById('mnt_brand_f')?.value || 16),
+          brand_sy: parseFloat(document.getElementById('mnt_brand_sy')?.value || 1.0),
+
+          h_pn_locked: document.getElementById('mnt_h_pn_locked')?.checked || false,
+          h_pn_x: parseInt(document.getElementById('mnt_h_pn_x')?.value || 0),
+          h_pn_y: parseInt(document.getElementById('mnt_h_pn_y')?.value || 50),
+          h_pn_f: parseInt(document.getElementById('mnt_h_pn_f')?.value || 12),
+          h_pn_sy: parseFloat(document.getElementById('mnt_h_pn_sy')?.value || 1.0),
+          
+          bc_pn_locked: document.getElementById('mnt_bc_pn_locked')?.checked || false,
+          bc_pn_x: parseInt(document.getElementById('mnt_bc_pn_x')?.value || 0),
+          bc_pn_y: parseInt(document.getElementById('mnt_bc_pn_y')?.value || 75),
+          bc_pn_h: parseInt(document.getElementById('mnt_bc_pn_h')?.value || 45),
+          
+          txt_pn_locked: document.getElementById('mnt_txt_pn_locked')?.checked || false,
+          txt_pn_x: parseInt(document.getElementById('mnt_txt_pn_x')?.value || 0),
+          txt_pn_y: parseInt(document.getElementById('mnt_txt_pn_y')?.value || 130),
+          txt_pn_f: parseInt(document.getElementById('mnt_txt_pn_f')?.value || 20),
+          txt_pn_sy: parseFloat(document.getElementById('mnt_txt_pn_sy')?.value || 1.0),
+
+          h_sn_locked: document.getElementById('mnt_h_sn_locked')?.checked || false,
+          h_sn_x: parseInt(document.getElementById('mnt_h_sn_x')?.value || 0),
+          h_sn_y: parseInt(document.getElementById('mnt_h_sn_y')?.value || 175),
+          h_sn_f: parseInt(document.getElementById('mnt_h_sn_f')?.value || 12),
+          h_sn_sy: parseFloat(document.getElementById('mnt_h_sn_sy')?.value || 1.0),
+          
+          bc_sn_locked: document.getElementById('mnt_bc_sn_locked')?.checked || false,
+          bc_sn_x: parseInt(document.getElementById('mnt_bc_sn_x')?.value || 0),
+          bc_sn_y: parseInt(document.getElementById('mnt_bc_sn_y')?.value || 200),
+          bc_sn_h: parseInt(document.getElementById('mnt_bc_sn_h')?.value || 60),
+          
+          txt_sn_locked: document.getElementById('mnt_txt_sn_locked')?.checked || false,
+          txt_sn_x: parseInt(document.getElementById('mnt_txt_sn_x')?.value || 0),
+          txt_sn_y: parseInt(document.getElementById('mnt_txt_sn_y')?.value || 270),
+          txt_sn_f: parseInt(document.getElementById('mnt_txt_sn_f')?.value || 15),
+          txt_sn_sy: parseFloat(document.getElementById('mnt_txt_sn_sy')?.value || 1.5),
+        };
       }
-      return p;
     }
 
     function renderControlsPane(type) {
@@ -483,30 +494,22 @@
       }
     }
 
+    // Изменили минимальное значение Y на -100 и максимальное на 400
     function renderComponentControl(type, idPrefix, title, hasX, hasY, hasFont, hasScaleY) {
-      const cfg = defaultConfigs[type];
-      const isLockedBool = cfg[`${idPrefix}_locked`];
-      const locked = isLockedBool ? 'checked' : '';
-      const x = cfg[`${idPrefix}_x`] !== undefined ? cfg[`${idPrefix}_x`] : 0;
-      const y = cfg[`${idPrefix}_y`] !== undefined ? cfg[`${idPrefix}_y`] : 0;
-      const h = cfg[`${idPrefix}_h`] !== undefined ? cfg[`${idPrefix}_h`] : 12;
-      const f = cfg[`${idPrefix}_f`] !== undefined ? cfg[`${idPrefix}_f`] : 14;
-      const sy = cfg[`${idPrefix}_sy`] !== undefined ? cfg[`${idPrefix}_sy`] : 1.0;
-
       return `
         <div class="component-section" id="sec_${type}_${idPrefix}">
           <div class="component-header">
             <h4>${title}</h4>
             <label class="lock-label">
-              <input type="checkbox" id="${type}_${idPrefix}_locked" ${locked} onchange="toggleLock('${type}', '${idPrefix}')"> Заблокировать
+              <input type="checkbox" id="${type}_${idPrefix}_locked" onchange="toggleLock('${type}', '${idPrefix}')"> Заблокировать
             </label>
           </div>
-          <div class="component-fields" id="fields_${type}_${idPrefix}" style="opacity: ${isLockedBool ? '0.4' : '1'};">
-            ${hasX ? `<div class="control-group"><label><span>По горизонтали (X):</span> <strong id="lbl_${type}_${idPrefix}_x">${x}</strong>px</label><input type="range" id="${type}_${idPrefix}_x" min="-150" max="150" value="${x}" oninput="onSliderInput('${type}')" ${isLockedBool ? 'disabled' : ''}></div>` : ''}
-            ${hasY ? `<div class="control-group"><label><span>Вертикальная позиция (Y от верха):</span> <strong id="lbl_${type}_${idPrefix}_y">${y}</strong>px</label><input type="range" id="${type}_${idPrefix}_y" min="-100" max="400" value="${y}" oninput="onSliderInput('${type}')" ${isLockedBool ? 'disabled' : ''}></div>` : ''}
-            <div class="control-group"><label><span>Высота блока / Отступ:</span> <strong id="lbl_${type}_${idPrefix}_h">${h}</strong>px</label><input type="range" id="${type}_${idPrefix}_h" min="0" max="150" value="${h}" oninput="onSliderInput('${type}')" ${isLockedBool ? 'disabled' : ''}></div>
-            ${hasFont ? `<div class="control-group"><label><span>Размер шрифта:</span> <strong id="lbl_${type}_${idPrefix}_f">${f}</strong>pt</label><input type="range" id="${type}_${idPrefix}_f" min="8" max="45" value="${f}" oninput="onSliderInput('${type}')" ${isLockedBool ? 'disabled' : ''}></div>` : ''}
-            ${hasScaleY ? `<div class="control-group"><label><span>Растянуть в высоту (ScaleY):</span> <strong id="lbl_${type}_${idPrefix}_sy">${sy}</strong></label><input type="range" id="${type}_${idPrefix}_sy" min="0.5" max="3.0" step="0.1" value="${sy}" oninput="onSliderInput('${type}')" ${isLockedBool ? 'disabled' : ''}></div>` : ''}
+          <div class="component-fields" id="fields_${type}_${idPrefix}">
+            ${hasX ? `<div class="control-group"><label><span>По горизонтали (X):</span> <strong id="lbl_${type}_${idPrefix}_x">0</strong>px</label><input type="range" id="${type}_${idPrefix}_x" min="-150" max="150" value="0" oninput="onSliderInput('${type}')"></div>` : ''}
+            ${hasY ? `<div class="control-group"><label><span>Вертикальная позиция (Y от верха):</span> <strong id="lbl_${type}_${idPrefix}_y">0</strong>px</label><input type="range" id="${type}_${idPrefix}_y" min="-100" max="400" value="0" oninput="onSliderInput('${type}')"></div>` : ''}
+            <div class="control-group"><label><span>Высота блока / Отступ:</span> <strong id="lbl_${type}_${idPrefix}_h">${idPrefix.includes('bc') ? '52' : '12'}</strong>px</label><input type="range" id="${type}_${idPrefix}_h" min="${idPrefix.includes('bc') ? 20 : 120}" max="${idPrefix.includes('bc') ? 150 : 40}" value="${idPrefix.includes('bc') ? (idPrefix === 'bc_sn' ? 72 : 52) : 12}" oninput="onSliderInput('${type}')"></div>
+            ${hasFont ? `<div class="control-group"><label><span>Размер шрифта:</span> <strong id="lbl_${type}_${idPrefix}_f">14</strong>pt</label><input type="range" id="${type}_${idPrefix}_f" min="8" max="45" value="14" oninput="onSliderInput('${type}')"></div>` : ''}
+            ${hasScaleY ? `<div class="control-group"><label><span>Растянуть в высоту (ScaleY):</span> <strong id="lbl_${type}_${idPrefix}_sy">1.0</strong></label><input type="range" id="${type}_${idPrefix}_sy" min="0.5" max="3.0" step="0.1" value="1.0" oninput="onSliderInput('${type}')"></div>` : ''}
           </div>
         </div>
       `;
@@ -525,27 +528,35 @@
       fieldsContainer.style.opacity = isLocked ? '0.4' : '1';
     }
 
+    // Текстам добавлен класс text-layer и z-index: 10
+    // Штрихкодам задан z-index: 1
     function generateLabelMarkup(type, product) {
       const p = getParams(type);
       if (type === 'cs') {
         return `
           <div class="industrial-label">
+            <!-- Штрихкод PN (z-index 1) -->
             <div class="label-element" style="z-index: 1; top: ${p.bc_pn_y}px; transform: translateX(${p.bc_pn_x}px);">
               <div class="barcode-wrapper"><svg id="live_bc_pn"></svg></div>
             </div>
+            <!-- Шапка PN (z-index 10) -->
             <div class="label-element text-layer" style="z-index: 10; top: ${p.h_pn_y}px; transform: translateX(${p.h_pn_x}px);">
               <span style="font-size: ${p.h_pn_f}pt; transform: scaleY(${p.h_pn_sy}); font-weight: 900; letter-spacing: 1px; text-transform: uppercase;">PN</span>
             </div>
+            <!-- Буквенный PN (z-index 10) -->
             <div class="label-element text-layer" style="z-index: 10; top: ${p.txt_pn_y}px; transform: translateX(${p.txt_pn_x}px);">
               <span style="font-size: ${p.txt_pn_f}pt; transform: scaleY(${p.txt_pn_sy}); font-weight: 900; font-family: 'Consolas', monospace; line-height: 1.1;">${escapeHtml(product.pn)}</span>
             </div>
 
+            <!-- Штрихкод SN (z-index 1) -->
             <div class="label-element" style="z-index: 1; top: ${p.bc_sn_y}px; transform: translateX(${p.bc_sn_x}px);">
               <div class="barcode-wrapper"><svg id="live_bc_sn"></svg></div>
             </div>
+            <!-- Шапка SN (z-index 10) -->
             <div class="label-element text-layer" style="z-index: 10; top: ${p.h_sn_y}px; transform: translateX(${p.h_sn_x}px);">
               <span style="font-size: ${p.h_sn_f}pt; transform: scaleY(${p.h_sn_sy}); font-weight: 900; letter-spacing: 1px; text-transform: uppercase;">SN</span>
             </div>
+            <!-- Буквенный SN (z-index 10) -->
             <div class="label-element text-layer" style="z-index: 10; top: ${p.txt_sn_y}px; transform: translateX(${p.txt_sn_x}px);">
               <span style="font-size: ${p.txt_sn_f}pt; transform: scaleY(${p.txt_sn_sy}); font-weight: 900; font-family: 'Consolas', monospace; line-height: 1.1;">${escapeHtml(product.sn)}</span>
             </div>
@@ -554,26 +565,33 @@
       } else {
         return `
           <div class="industrial-label">
+            <!-- Brand -->
             <div class="label-element text-layer" style="z-index: 10; top: ${p.brand_y}px; transform: translateX(${p.brand_x}px);">
               <span style="font-size: ${p.brand_f}pt; transform: scaleY(${p.brand_sy}); font-weight: 900; text-transform: uppercase;">${escapeHtml(product.brand)}</span>
             </div>
 
+            <!-- Штрихкод PN (z-index 1) -->
             <div class="label-element" style="z-index: 1; top: ${p.bc_pn_y}px; transform: translateX(${p.bc_pn_x}px);">
               <div class="barcode-wrapper"><svg id="live_bc_pn"></svg></div>
             </div>
+            <!-- Шапка PN (z-index 10) -->
             <div class="label-element text-layer" style="z-index: 10; top: ${p.h_pn_y}px; transform: translateX(${p.h_pn_x}px);">
               <span style="font-size: ${p.h_pn_f}pt; transform: scaleY(${p.h_pn_sy}); font-weight: 900; letter-spacing: 1px; text-transform: uppercase;">PN</span>
             </div>
+            <!-- Буквенный PN (z-index 10) -->
             <div class="label-element text-layer" style="z-index: 10; top: ${p.txt_pn_y}px; transform: translateX(${p.txt_pn_x}px);">
               <span style="font-size: ${p.txt_pn_f}pt; transform: scaleY(${p.txt_pn_sy}); font-weight: 900; font-family: 'Consolas', monospace; line-height: 1.1;">${escapeHtml(product.pn)}</span>
             </div>
 
+            <!-- Штрихкод SN (z-index 1) -->
             <div class="label-element" style="z-index: 1; top: ${p.bc_sn_y}px; transform: translateX(${p.bc_sn_x}px);">
               <div class="barcode-wrapper"><svg id="live_bc_sn"></svg></div>
             </div>
+            <!-- Шапка SN (z-index 10) -->
             <div class="label-element text-layer" style="z-index: 10; top: ${p.h_sn_y}px; transform: translateX(${p.h_sn_x}px);">
               <span style="font-size: ${p.h_sn_f}pt; transform: scaleY(${p.h_sn_sy}); font-weight: 900; letter-spacing: 1px; text-transform: uppercase;">SN</span>
             </div>
+            <!-- Буквенный SN (z-index 10) -->
             <div class="label-element text-layer" style="z-index: 10; top: ${p.txt_sn_y}px; transform: translateX(${p.txt_sn_x}px);">
               <span style="font-size: ${p.txt_sn_f}pt; transform: scaleY(${p.txt_sn_sy}); font-weight: 900; font-family: 'Consolas', monospace; line-height: 1.1;">${escapeHtml(product.sn)}</span>
             </div>
@@ -582,6 +600,7 @@
       }
     }
 
+    // Для штрихкодов добавлен background: "transparent", чтобы они не закрашивали элементы под собой
     function updateLivePreview(prod = sampleProduct) {
       const previewPaneContainer = document.getElementById('livePreviewContainer');
       previewPaneContainer.innerHTML = generateLabelMarkup(activeEditorType, prod);
@@ -609,8 +628,8 @@
       activeEditorType = type;
       if (productFromTable) sampleProduct = productFromTable;
       document.getElementById('editorModalTitle').innerText = type === 'cs' ? 'Редактор этикетки: CS (Обычная)' : 'Редактор этикетки: MNT (С брендом)';
-      
       renderControlsPane(type);
+      
       editorModal.classList.add('is-open');
       setTimeout(() => { updateLivePreview(sampleProduct); }, 50);
     }
