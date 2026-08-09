@@ -207,12 +207,13 @@
     }
 
     .label-value-pn {
-      font-size: 20pt; 
+      font-size: 24pt; 
       font-weight: 900;
       font-family: 'Consolas', monospace; 
       color: #000;
       line-height: 1.1; 
       margin-top: 1mm;
+      transform: scaleY(1.3); /* Растягивание текста PN по вертикали */
     }
 
     .label-value-sn {
@@ -222,6 +223,7 @@
       color: #000;
       line-height: 1.1; 
       margin-top: 1mm;
+      transform: scaleY(1.3); /* Растягивание текста SN по вертикали */
     }
 
     /* ==========================================
@@ -466,10 +468,11 @@
 
       printContainer.innerHTML = generateLabelHTML(product.pn, product.sn, 'print');
 
-      const barcodeOpts = { format: "CODE128", displayValue: false, margin: 0, height: 95, width: 2 };
+      const barcodeOptsPN = { format: "CODE128", displayValue: false, margin: 0, height: 60, width: 2 };
+      const barcodeOptsSN = { format: "CODE128", displayValue: false, margin: 0, height: 95, width: 2 };
 
-      JsBarcode("#barcodePN_print", product.pn, barcodeOpts);
-      JsBarcode("#barcodeSN_print", product.sn, barcodeOpts);
+      JsBarcode("#barcodePN_print", product.pn, barcodeOptsPN);
+      JsBarcode("#barcodeSN_print", product.sn, barcodeOptsSN);
 
       window.print();
     }
@@ -481,13 +484,14 @@
       modalPreviewBody.innerHTML = generateLabelHTML(product.pn, product.sn, 'preview');
       printContainer.innerHTML = generateLabelHTML(product.pn, product.sn, 'print');
 
-      const barcodeOpts = { format: "CODE128", displayValue: false, margin: 0, height: 95, width: 2 };
+      const barcodeOptsPN = { format: "CODE128", displayValue: false, margin: 0, height: 60, width: 2 };
+      const barcodeOptsSN = { format: "CODE128", displayValue: false, margin: 0, height: 95, width: 2 };
 
-      JsBarcode("#barcodePN_preview", product.pn, barcodeOpts);
-      JsBarcode("#barcodePN_print", product.pn, barcodeOpts);
+      JsBarcode("#barcodePN_preview", product.pn, barcodeOptsPN);
+      JsBarcode("#barcodePN_print", product.pn, barcodeOptsPN);
 
-      JsBarcode("#barcodeSN_preview", product.sn, barcodeOpts);
-      JsBarcode("#barcodeSN_print", product.sn, barcodeOpts);
+      JsBarcode("#barcodeSN_preview", product.sn, barcodeOptsSN);
+      JsBarcode("#barcodeSN_print", product.sn, barcodeOptsSN);
 
       modal.classList.add('is-open');
     }
