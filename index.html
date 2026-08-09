@@ -168,35 +168,52 @@
       font-family: 'Segoe UI', Arial, sans-serif;
       display: flex;
       flex-direction: column;
-      justify-content: center;
+      justify-content: space-between;
       align-items: center;
       text-align: center;
       border: 1px solid #D1D5DB;
     }
 
-    .label-block { display: flex; flex-direction: column; align-items: center; width: 100%; }
-    .label-caption { font-weight: 900; color: #000000; letter-spacing: 1px; text-transform: uppercase; line-height: 1; }
-    .pn-caption { transform: translateY(-11px); }
-    .sn-caption { transform: translateY(12px); }
-
-    .barcode-wrapper { width: 100%; display: flex; justify-content: center; align-items: center; }
-    .barcode-wrapper svg { max-width: 100%; display: block; }
-    .pn-bc-wrapper { transform: translateY(-1px); }
-    .sn-bc-wrapper { transform: translateY(12px); }
-
-    .label-value-pn {
-      font-size: 22pt; font-weight: 900;
-      font-family: 'Consolas', monospace; color: #000;
-      line-height: 1.1; transform: translateY(6px);
+    .label-block { 
+      display: flex; 
+      flex-direction: column; 
+      align-items: center; 
+      justify-content: center;
+      width: 100%; 
+      height: 48%; 
     }
 
-    .label-value-sn {
-      font-size: 17pt; font-weight: 900;
-      font-family: 'Consolas', monospace; color: #000;
-      line-height: 1.1; transform: translateY(15px) scaleY(1.8);
+    .label-caption { 
+      font-weight: 900; 
+      font-size: 12pt;
+      color: #000000; 
+      letter-spacing: 1px; 
+      text-transform: uppercase; 
+      line-height: 1;
+      margin-bottom: 1mm;
     }
 
-    .label-spacer { height: 2mm; width: 100%; }
+    .barcode-wrapper { 
+      width: 100%; 
+      display: flex; 
+      justify-content: center; 
+      align-items: center; 
+    }
+    
+    .barcode-wrapper svg { 
+      max-width: 100%; 
+      height: 20mm; /* Растягиваем штрихкод по высоте */
+      display: block; 
+    }
+
+    .label-value-pn, .label-value-sn {
+      font-size: 18pt; 
+      font-weight: 900;
+      font-family: 'Consolas', monospace; 
+      color: #000;
+      line-height: 1.1; 
+      margin-top: 1mm;
+    }
 
     /* ==========================================
         НАСТРОЙКИ ДЛЯ ТЕРМОПЕЧАТИ TSC DA220
@@ -416,18 +433,16 @@
       return `
         <div class="industrial-label">
           <div class="label-block">
-            <span class="label-caption pn-caption">PN</span>
-            <div class="barcode-wrapper pn-bc-wrapper">
+            <span class="label-caption">PN</span>
+            <div class="barcode-wrapper">
               <svg id="barcodePN_${suffix}"></svg>
             </div>
             <span class="label-value-pn">${escapeHtml(pn)}</span>
           </div>
 
-          <div class="label-spacer"></div>
-
           <div class="label-block">
-            <span class="label-caption sn-caption">SN</span>
-            <div class="barcode-wrapper sn-bc-wrapper">
+            <span class="label-caption">SN</span>
+            <div class="barcode-wrapper">
               <svg id="barcodeSN_${suffix}"></svg>
             </div>
             <span class="label-value-sn">${escapeHtml(sn)}</span>
@@ -442,11 +457,10 @@
 
       printContainer.innerHTML = generateLabelHTML(product.pn, product.sn, 'print');
 
-      const barcodeOptsPN = { format: "CODE128", displayValue: false, margin: 0, height: 52, width: 2 };
-      const barcodeOptsSN = { format: "CODE128", displayValue: false, margin: 0, height: 72, width: 2 };
+      const barcodeOpts = { format: "CODE128", displayValue: false, margin: 0, height: 95, width: 2 };
 
-      JsBarcode("#barcodePN_print", product.pn, barcodeOptsPN);
-      JsBarcode("#barcodeSN_print", product.sn, barcodeOptsSN);
+      JsBarcode("#barcodePN_print", product.pn, barcodeOpts);
+      JsBarcode("#barcodeSN_print", product.sn, barcodeOpts);
 
       window.print();
     }
@@ -458,14 +472,13 @@
       modalPreviewBody.innerHTML = generateLabelHTML(product.pn, product.sn, 'preview');
       printContainer.innerHTML = generateLabelHTML(product.pn, product.sn, 'print');
 
-      const barcodeOptsPN = { format: "CODE128", displayValue: false, margin: 0, height: 52, width: 2 };
-      const barcodeOptsSN = { format: "CODE128", displayValue: false, margin: 0, height: 72, width: 2 };
+      const barcodeOpts = { format: "CODE128", displayValue: false, margin: 0, height: 95, width: 2 };
 
-      JsBarcode("#barcodePN_preview", product.pn, barcodeOptsPN);
-      JsBarcode("#barcodePN_print", product.pn, barcodeOptsPN);
+      JsBarcode("#barcodePN_preview", product.pn, barcodeOpts);
+      JsBarcode("#barcodePN_print", product.pn, barcodeOpts);
 
-      JsBarcode("#barcodeSN_preview", product.sn, barcodeOptsSN);
-      JsBarcode("#barcodeSN_print", product.sn, barcodeOptsSN);
+      JsBarcode("#barcodeSN_preview", product.sn, barcodeOpts);
+      JsBarcode("#barcodeSN_print", product.sn, barcodeOpts);
 
       modal.classList.add('is-open');
     }
