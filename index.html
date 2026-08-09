@@ -117,14 +117,6 @@
       align-items: center;
     }
 
-    .action-group-title {
-      font-size: 11px;
-      font-weight: 600;
-      color: var(--text-muted);
-      margin-bottom: 2px;
-      text-transform: uppercase;
-    }
-
     .btn {
       display: inline-flex;
       align-items: center;
@@ -428,7 +420,8 @@
           }
         }
 
-        const lastSnList = rawSnList.slice(-5).reverse();
+        // Изменили с 5 на 10 последних записей
+        const lastSnList = rawSnList.slice(-10).reverse();
         const validItems = [];
 
         for (const sn of lastSnList) {
@@ -567,7 +560,7 @@
 
     document.addEventListener('DOMContentLoaded', () => {
       fetchDataFromGoogleSheet();
-      setInterval(fetchDataFromGoogleSheet, 5000);
+      setInterval(fetchDataFromGoogleSheet, 30000);
     });
   </script>
 </body>
