@@ -51,20 +51,6 @@
       align-items: flex-end; 
     }
     .page-title { font-size: 26px; font-weight: 700; color: #FFFFFF; }
-    .page-subtitle { font-size: 14px; color: var(--text-muted); margin-top: 4px; }
-
-    .status-badge {
-      display: inline-flex;
-      align-items: center;
-      gap: 6px;
-      font-size: 12px;
-      background: #065F46;
-      color: #34D399;
-      padding: 4px 10px;
-      border-radius: 20px;
-      margin-top: 6px;
-      font-weight: 500;
-    }
 
     .card {
       background-color: var(--card-bg);
@@ -293,8 +279,6 @@
     <header class="page-header">
       <div>
         <h1 class="page-title">🖨️ Друк етикеток (TSC DA220)</h1>
-        <p class="page-subtitle">Лист: FI Station KOVALCHYK Y. (Авто-обновление каждые 30 сек)</p>
-        <div class="status-badge" id="statusBadge">🟡 Подключение к базам данных...</div>
       </div>
       <div>
         <button class="btn btn-secondary" onclick="fetchDataFromGoogleSheet()">🔄 Обновить сейчас</button>
@@ -420,7 +404,6 @@
           }
         }
 
-        // Изменили с 5 на 10 последних записей
         const lastSnList = rawSnList.slice(-10).reverse();
         const validItems = [];
 
@@ -435,17 +418,8 @@
 
         products = validItems;
         renderTable();
-
-        const badge = document.getElementById('statusBadge');
-        badge.style.background = '#065F46';
-        badge.style.color = '#34D399';
-        badge.innerText = `🟢 Синхронизировано (${new Date().toLocaleTimeString()})`;
       } catch (error) {
         console.error('Ошибка загрузки данных:', error);
-        const badge = document.getElementById('statusBadge');
-        badge.style.background = '#991B1B';
-        badge.style.color = '#FCA5A5';
-        badge.innerText = '🔴 Ошибка доступа к данным';
       }
     }
 
