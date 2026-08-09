@@ -185,7 +185,7 @@
 
     .label-caption { 
       font-weight: 900; 
-      font-size: 12pt;
+      font-size: 20pt;
       color: #000000; 
       letter-spacing: 1px; 
       text-transform: uppercase; 
@@ -202,11 +202,20 @@
     
     .barcode-wrapper svg { 
       max-width: 100%; 
-      height: 20mm; /* Растягиваем штрихкод по высоте */
+      height: 20mm;
       display: block; 
     }
 
-    .label-value-pn, .label-value-sn {
+    .label-value-pn {
+      font-size: 20pt; 
+      font-weight: 900;
+      font-family: 'Consolas', monospace; 
+      color: #000;
+      line-height: 1.1; 
+      margin-top: 1mm;
+    }
+
+    .label-value-sn {
       font-size: 18pt; 
       font-weight: 900;
       font-family: 'Consolas', monospace; 
