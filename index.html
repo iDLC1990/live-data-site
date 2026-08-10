@@ -247,12 +247,12 @@
     .modal-footer { padding: 16px 24px; border-top: 1px solid var(--border-color); display: flex; justify-content: flex-end; gap: 12px; }
 
     /* ==========================================
-        ЭТИКЕТКА 100x80 мм (Ландшафт - Точный размер под TSC DA220)
+        ЭТИКЕТКА 100x80 мм (Ландшафт - Полное заполнение по вертикали)
         ========================================== */
     .industrial-label {
       width: 100mm;
       height: 80mm;
-      padding: 5mm 6mm;
+      padding: 6mm 8mm;
       background-color: #FFFFFF;
       color: #000000;
       box-sizing: border-box;
@@ -283,12 +283,12 @@
       display: flex;
       justify-content: flex-start;
       align-items: center;
-      margin-bottom: 1mm;
+      margin-bottom: 1.5mm;
     }
 
     .label-caption { 
       font-weight: 900; 
-      font-size: 16pt;
+      font-size: 18pt;
       color: #000000; 
       letter-spacing: 0.5px; 
       text-transform: uppercase; 
@@ -301,7 +301,7 @@
       top: 50%;
       transform: translateY(-50%);
       font-weight: 900;
-      font-size: 15pt;
+      font-size: 17pt;
       color: #000000;
       line-height: 1;
     }
@@ -316,17 +316,17 @@
     .barcode-wrapper svg { 
       width: 100% !important;
       max-width: 100%; 
-      height: 18mm;
+      height: 21mm;
       display: block; 
     }
 
     .label-value-text {
-      font-size: 20pt; 
+      font-size: 22pt; 
       font-weight: 900;
       font-family: 'Consolas', monospace; 
       color: #000;
       line-height: 1.1; 
-      margin-top: 1mm;
+      margin-top: 1.5mm;
       text-align: left;
       letter-spacing: 0.5px;
       white-space: nowrap;
@@ -663,12 +663,12 @@
 
       container.querySelectorAll('.barcode-pn').forEach(svg => {
         const val = svg.getAttribute('data-value');
-        JsBarcode(svg, val, { format: "CODE128", displayValue: false, margin: 0, height: 50, width: 2 });
+        JsBarcode(svg, val, { format: "CODE128", displayValue: false, margin: 0, height: 60, width: 2 });
       });
 
       container.querySelectorAll('.barcode-sn').forEach(svg => {
         const val = svg.getAttribute('data-value');
-        JsBarcode(svg, val, { format: "CODE128", displayValue: false, margin: 0, height: 50, width: 2 });
+        JsBarcode(svg, val, { format: "CODE128", displayValue: false, margin: 0, height: 60, width: 2 });
       });
     }
 
