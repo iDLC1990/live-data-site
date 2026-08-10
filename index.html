@@ -527,6 +527,23 @@
           .single();
 
         if (error || !data) {
+          // Якщо в базі даних не знайдено, перевіряємо префікс сеійного номера
+          const upperSn = sn.toUpperCase();
+          if (upperSn.startsWith('TBV') && upperSn.length >= 12) {
+            // Витягуємо перші 12 символів (наприклад, TBV500412M8)
+            const prefix = upperSn.substring(0, 12);
+            return {
+              pn: `750${prefix}N000`,
+              brand: "PHP"
+            };
+          } else if (upperSn.startsWith('TOV') && upperSn.length >= 12) {
+            const prefix = upperSn.substring(0, 12);
+            return {
+              pn: `730${prefix}N000`,
+              brand: "PHP"
+            };
+          }
+
           return { pn: "NOT_FOUND_IN_DB", brand: "-" };
         }
         return { 
@@ -835,7 +852,7 @@
       }
     });
 
-    document.addEventListener('DOMContentLoaded', () => {
+    document.getElementById('DOMContentLoaded', () => {
       fetchDataFromGoogleSheet(true);
       setInterval(() => fetchDataFromGoogleSheet(false), 10000);
     });
