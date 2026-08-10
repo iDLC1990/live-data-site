@@ -51,10 +51,7 @@
     }
     .page-title { font-size: 26px; font-weight: 700; color: #FFFFFF; }
     
-    .header-buttons {
-      display: flex;
-      gap: 10px;
-    }
+    .header-buttons { display: flex; gap: 10px; }
 
     .sheet-tabs {
       display: flex;
@@ -124,16 +121,8 @@
       box-shadow: var(--shadow-lg);
     }
 
-    .batch-info {
-      font-size: 14px;
-      font-weight: 500;
-      color: var(--text-muted);
-    }
-
-    .batch-buttons {
-      display: flex;
-      gap: 12px;
-    }
+    .batch-info { font-size: 14px; font-weight: 500; color: var(--text-muted); }
+    .batch-buttons { display: flex; gap: 12px; }
 
     .card {
       background-color: var(--card-bg);
@@ -186,11 +175,7 @@
       align-items: center;
     }
 
-    .action-group {
-      display: flex;
-      gap: 6px;
-      align-items: center;
-    }
+    .action-group { display: flex; gap: 6px; align-items: center; }
 
     .btn {
       display: inline-flex;
@@ -249,60 +234,37 @@
     .modal-footer { padding: 16px 24px; border-top: 1px solid var(--border-color); display: flex; justify-content: flex-end; gap: 12px; }
 
     /* ==========================================
-        ТОЧНИЙ МАКЕТ ЕТИКЕТКИ
+        ОНОВЛЕНИЙ МАКЕТ ЕТИКЕТКИ (ЗБАЛАНСОВАНИЙ)
         ========================================== */
     .industrial-label {
       width: 100mm;
       height: 78mm;
       background-color: #FFFFFF;
       color: #000000;
-      padding: 3mm 5mm 2mm 5mm;
+      padding: 3mm 4mm 4mm 4mm;
       box-sizing: border-box;
       font-family: Arial, sans-serif;
       display: flex;
       flex-direction: column;
-      align-items: center;
-      justify-content: flex-start;
+      justify-content: space-between; /* Рівномірний розподіл по всій висоті */
       border: 1px solid #D1D5DB;
       box-shadow: 0 10px 25px rgba(0, 0, 0, 0.5);
       overflow: hidden;
     }
 
-    /* Стиль для суцільного тестового друку */
     .test-fill-label {
       width: 100mm !important;
       height: 78mm !important;
-      background-color: #000000 !important;
-      color: #FFFFFF !important;
       padding: 0 !important;
       margin: 0 !important;
-      display: flex !important;
-      flex-direction: column !important;
-      align-items: center !important;
-      justify-content: center !important;
       border: none !important;
-    }
-
-    .test-fill-box {
-      width: 100%;
-      height: 100%;
-      background: #000000;
-      border: 2px solid #FFFFFF;
-      box-sizing: border-box;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      color: #FFFFFF;
-      font-weight: 900;
-      font-size: 18pt;
-      text-align: center;
+      overflow: hidden !important;
     }
 
     .top-border {
       width: 100%;
-      border-top: 2px solid #000000;
-      margin-bottom: 2mm;
+      border-top: 3px solid #000000;
+      margin-bottom: 1mm;
     }
 
     .label-block { 
@@ -318,6 +280,7 @@
       display: flex;
       justify-content: center;
       align-items: center;
+      margin-bottom: 1mm;
     }
 
     .label-caption { 
@@ -348,37 +311,29 @@
     }
     
     .barcode-wrapper svg { 
-      width: 90%; 
-      height: 14mm; 
+      width: 96%; 
+      height: 18mm; /* Збільшено висоту штрихкоду */
       display: block; 
     }
 
-    .label-value-pn {
-      font-size: 18pt;
-      font-weight: 900;
+    /* Вирівняний та однаковий розмір тексту для PN та SN */
+    .label-value-pn,
+    .label-value-sn {
+      font-size: 16pt;
+      font-weight: 800;
       color: #000000;
       line-height: 1.1;
       text-align: center;
       margin-top: 1mm;
-      margin-bottom: 2mm;
-    }
-
-    .label-value-sn {
-      font-size: 16pt;
-      font-weight: 900;
-      color: #000000;
-      line-height: 1;
-      text-align: center;
-      margin-top: 1mm;
-      transform: scaleX(0.85);
-      display: inline-block;
+      letter-spacing: -0.2px;
+      word-break: break-all;
     }
 
     /* ==========================================
         ДРУК НА TSC DA220
         ========================================== */
     @page { 
-      size: 100mm 80mm landscape; 
+      size: 100mm 78mm landscape; 
       margin: 0 !important; 
     }
 
@@ -420,7 +375,7 @@
         height: 78mm !important;
         max-width: 100mm !important;
         max-height: 78mm !important;
-        padding: 3mm 5mm 2mm 5mm !important;
+        padding: 3mm 4mm 4mm 4mm !important;
         margin: 0 !important;
         border: none !important; 
         box-shadow: none !important; 
@@ -437,9 +392,7 @@
         width: 100mm !important;
         height: 78mm !important;
         padding: 0 !important;
-        background-color: #000000 !important;
-        -webkit-print-color-adjust: exact !important;
-        print-color-adjust: exact !important;
+        margin: 0 !important;
       }
 
       #printContainer .industrial-label:last-child {
@@ -718,14 +671,15 @@
       return div.innerHTML;
     }
 
-    /* ФУНКЦІЯ ТЕСТОВОГО СУЦІЛЬНОГО ДРУКУ */
     function printTestLabel() {
       printContainer.innerHTML = `
         <div class="industrial-label test-fill-label">
-          <div class="test-fill-box">
-            <span>TEST PRINT</span>
-            <span style="font-size: 12pt; margin-top: 4mm;">100 x 78 mm</span>
-          </div>
+          <svg width="100mm" height="78mm" viewBox="0 0 100 78" xmlns="http://www.w3.org/2000/svg">
+            <rect width="100" height="78" fill="#000000" />
+            <rect x="2" y="2" width="96" height="74" fill="none" stroke="#ffffff" stroke-width="1" />
+            <text x="50" y="38" fill="#ffffff" font-size="7" font-weight="900" font-family="Arial" text-anchor="middle">TEST PRINT</text>
+            <text x="50" y="48" fill="#ffffff" font-size="5" font-weight="bold" font-family="Arial" text-anchor="middle">100 x 78 mm</text>
+          </svg>
         </div>
       `;
       window.print();
@@ -737,20 +691,21 @@
         for (let copy = 0; copy < 2; copy++) {
           html += `
             <div class="industrial-label">
-              <div class="top-border"></div>
-
-              <div class="label-block">
-                <div class="label-header-row">
-                  <span class="label-caption">PN:</span>
-                  ${includeBrand ? `<span class="label-brand-right">${escapeHtml(product.brand)}</span>` : ''}
+              <div>
+                <div class="top-border"></div>
+                <div class="label-block">
+                  <div class="label-header-row">
+                    <span class="label-caption">PN:</span>
+                    ${includeBrand ? `<span class="label-brand-right">${escapeHtml(product.brand)}</span>` : ''}
+                  </div>
+                  <div class="barcode-wrapper">
+                    <svg id="barcodePN_${idx}_${copy}"></svg>
+                  </div>
+                  <span class="label-value-pn">${escapeHtml(product.pn)}</span>
                 </div>
-                <div class="barcode-wrapper">
-                  <svg id="barcodePN_${idx}_${copy}"></svg>
-                </div>
-                <span class="label-value-pn">${escapeHtml(product.pn)}</span>
               </div>
 
-              <div class="label-block">
+              <div class="label-block" style="margin-top: 2mm;">
                 <div class="label-header-row">
                   <span class="label-caption">SN:</span>
                 </div>
@@ -782,7 +737,7 @@
             format: "CODE128",
             displayValue: false,
             margin: 0,
-            height: 40,
+            height: 48,
             width: 1.8,
             lineColor: "#000000"
           });
@@ -791,8 +746,8 @@
             format: "CODE128",
             displayValue: false,
             margin: 0,
-            height: 40,
-            width: 1.25,
+            height: 48,
+            width: 1.35,
             lineColor: "#000000"
           });
         }
