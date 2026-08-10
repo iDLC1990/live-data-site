@@ -247,23 +247,23 @@
     .modal-footer { padding: 16px 24px; border-top: 1px solid var(--border-color); display: flex; justify-content: flex-end; gap: 12px; }
 
     /* ==========================================
-        ЭТИКЕТКА 100x80 мм (ОНОВЛЕНІ СТИЛІ)
+        ЕКРАННА ВЕРСТКА ЕТИКЕТКИ (100x80 мм)
         ========================================== */
     .industrial-label {
       width: 100mm;
       height: 80mm;
       background-color: #FFFFFF;
       color: #000000;
-      padding: 5mm 6mm;
+      padding: 5mm 6mm; /* ТОЧНО 5мм ЗВЕРХУ ТА ЗНИЗУ */
       box-sizing: border-box;
       font-family: Arial, 'Helvetica Neue', sans-serif;
       display: flex;
       flex-direction: column;
-      justify-content: space-between; /* Рівномірне розтягування блоків по висоті */
+      justify-content: space-between; /* Рівномірний розподіл у межах 70мм корисного простору */
       align-items: center;
       border: 1px solid #D1D5DB;
       box-shadow: 0 10px 25px rgba(0, 0, 0, 0.5);
-      overflow: hidden;
+      overflow: hidden; /* Захист від вилазіння контенту */
     }
 
     .label-block { 
@@ -271,7 +271,6 @@
       flex-direction: column; 
       align-items: center; 
       width: 100%;
-      position: relative;
     }
 
     .label-header-row {
@@ -280,16 +279,16 @@
       display: flex;
       justify-content: center;
       align-items: center;
-      margin-bottom: 2px;
+      margin-bottom: 1mm;
     }
 
     .label-caption { 
-      font-size: 18pt; 
+      font-size: 15pt; 
       font-weight: 900;
       color: #000000; 
-      letter-spacing: 1.5px; 
+      letter-spacing: 1px; 
       text-transform: uppercase; 
-      line-height: 1.2; /* Збільшена інтерлінія */
+      line-height: 1.1; 
     }
 
     .label-brand-right {
@@ -298,9 +297,9 @@
       top: 50%;
       transform: translateY(-50%);
       font-weight: 900;
-      font-size: 16pt;
+      font-size: 13pt;
       color: #000000;
-      line-height: 1.2;
+      line-height: 1.1;
       text-transform: uppercase;
     }
 
@@ -314,27 +313,22 @@
     
     .barcode-wrapper svg { 
       max-width: 100%; 
-      height: 22mm; /* Збільшена висота штрихкоду */
+      height: 18mm; /* Скоригована висота для точного вміщення */
       display: block; 
     }
 
     .label-value-text {
-      font-size: 17pt; /* Збільшений розмір значення */
+      font-size: 14pt;
       font-weight: 900;
       font-family: 'Consolas', 'Courier New', monospace; 
       color: #000000;
-      letter-spacing: 1px;
-      line-height: 1.3; /* Вища інтерлінія для жирного тексту */
+      letter-spacing: 0.5px;
+      line-height: 1.1;
       text-align: center;
     }
 
-    .label-spacer {
-      height: 2mm;
-      width: 100%;
-    }
-
     /* ==========================================
-        НАСТРОЙКИ ДЛЯ ТЕРМОПЕЧАТИ TSC DA220
+        НАЛАШТУВАННЯ ДЛЯ ТЕРМОДРУКУ TSC DA220
         ========================================== */
     @page { 
       size: 100mm 80mm landscape; 
@@ -344,13 +338,13 @@
     @media print {
       html, body {
         width: 100mm !important;
-        height: auto !important;
+        height: 80mm !important;
         margin: 0 !important;
         padding: 0 !important;
         background: #ffffff !important;
         color: #000000 !important;
         display: block !important;
-        overflow: visible !important;
+        overflow: hidden !important;
       }
 
       .app-container, 
@@ -377,7 +371,7 @@
         height: 80mm !important;
         max-width: 100mm !important;
         max-height: 80mm !important;
-        padding: 5mm 6mm !important;
+        padding: 5mm 6mm !important; /* Рівно 5мм відступи при друку */
         margin: 0 !important;
         border: none !important; 
         box-shadow: none !important; 
@@ -682,8 +676,6 @@
                 <span class="label-value-text">${escapeHtml(product.pn)}</span>
               </div>
 
-              <div class="label-spacer"></div>
-
               <div class="label-block">
                 <div class="label-header-row">
                   <span class="label-caption">SN</span>
@@ -708,8 +700,8 @@
         format: "CODE128",
         displayValue: false,
         margin: 0,
-        height: 52, /* Трохи збільшено товщину штрихів штрихкоду */
-        width: 1.6,
+        height: 42, /* Висота штрихкоду підібрана для точного вміщення у 80мм */
+        width: 1.5,
         lineColor: "#000000",
         background: "transparent"
       };
@@ -720,7 +712,7 @@
         
         if (svgPn && svgSn) {
           const pnVal = label.children[0].querySelector('.label-value-text').innerText;
-          const snVal = label.children[2].querySelector('.label-value-text').innerText;
+          const snVal = label.children[1].querySelector('.label-value-text').innerText;
           
           JsBarcode(svgPn, pnVal, barcodeOptions);
           JsBarcode(svgSn, snVal, barcodeOptions);
