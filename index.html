@@ -307,7 +307,14 @@
       display: block; 
     }
 
-    /* Специфичные размеры текста для PN и SN */
+    /* Высота штрихкода для SN увеличена на 40% (28mm вместо 20mm) */
+    .barcode-wrapper-sn svg { 
+      max-width: 100%; 
+      height: 28mm;
+      display: block; 
+    }
+
+    /* Размеры текста для PN и SN */
     .label-value-pn {
       font-size: 22pt !important;
       font-weight: 900;
@@ -329,7 +336,7 @@
     }
 
     .label-spacer {
-      height: 3mm;
+      height: 2mm;
       width: 100%;
     }
 
@@ -685,7 +692,7 @@
                 <div class="label-header-row">
                   <span class="label-caption">SN</span>
                 </div>
-                <div class="barcode-wrapper">
+                <div class="barcode-wrapper barcode-wrapper-sn">
                   <svg id="barcodeSN_${idx}_${copy}"></svg>
                 </div>
                 <span class="label-value-sn">${escapeHtml(product.sn)}</span>
@@ -701,11 +708,22 @@
       const container = document.querySelector(containerSelector);
       if (!container) return;
 
-      const barcodeOptions = {
+      const barcodeOptionsPN = {
         format: "CODE128",
         displayValue: false,
         margin: 0,
         height: 48,
+        width: 1.55,
+        lineColor: "#000000",
+        background: "transparent"
+      };
+
+      // Штрихкод SN увеличен по высоте (параметр height пропорционален увеличению на 40%)
+      const barcodeOptionsSN = {
+        format: "CODE128",
+        displayValue: false,
+        margin: 0,
+        height: 67,
         width: 1.55,
         lineColor: "#000000",
         background: "transparent"
@@ -719,8 +737,8 @@
           const pnVal = label.children[0].querySelector('.label-value-pn').innerText;
           const snVal = label.children[2].querySelector('.label-value-sn').innerText;
           
-          JsBarcode(svgPn, pnVal, barcodeOptions);
-          JsBarcode(svgSn, snVal, barcodeOptions);
+          JsBarcode(svgPn, pnVal, barcodeOptionsPN);
+          JsBarcode(svgSn, snVal, barcodeOptionsSN);
         }
       });
     }
