@@ -9,6 +9,9 @@
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
   <style>
+    /* ==========================================
+        СТИЛИ ИНТЕРФЕЙСА (ТЕМНАЯ ТЕМА)
+        ========================================== */
     :root {
       --bg-color: #111827;
       --card-bg: #1F2937;
@@ -48,6 +51,7 @@
     }
     .page-title { font-size: 26px; font-weight: 700; color: #FFFFFF; }
 
+    /* Переключатель листов */
     .sheet-tabs {
       display: flex;
       gap: 10px;
@@ -82,6 +86,7 @@
       border: 1px solid rgba(255, 255, 255, 0.2);
     }
 
+    /* Индикатор фонового обновления */
     .sync-indicator {
       margin-left: auto;
       font-size: 13px;
@@ -164,6 +169,7 @@
       letter-spacing: 0.5px;
     }
 
+    /* Чекбоксы */
     .custom-checkbox {
       width: 18px;
       height: 18px;
@@ -171,6 +177,7 @@
       accent-color: var(--accent-color);
     }
 
+    /* Кнопки и группы действий */
     .actions-cell { 
       display: flex; 
       gap: 16px; 
@@ -209,6 +216,7 @@
     .btn-brand { background-color: var(--brand-color); }
     .btn-brand:hover { background-color: var(--brand-hover); }
 
+    /* Модальное окно просмотра */
     .modal-backdrop {
       position: fixed;
       top: 0; left: 0; width: 100vw; height: 100vh;
@@ -238,6 +246,9 @@
     .modal-body { padding: 24px; display: flex; flex-direction: column; gap: 20px; align-items: center; max-height: 75vh; overflow-y: auto; background-color: #111827; }
     .modal-footer { padding: 16px 24px; border-top: 1px solid var(--border-color); display: flex; justify-content: flex-end; gap: 12px; }
 
+    /* ==========================================
+        ЭТИКЕТКА 100x80 мм (landscape)
+        ========================================== */
     .industrial-label {
       width: 100mm;
       height: 80mm;
@@ -254,7 +265,6 @@
       border: 1px solid #D1D5DB;
       box-shadow: 0 10px 25px rgba(0, 0, 0, 0.5);
       overflow: hidden;
-      flex-shrink: 0;
     }
 
     .label-block { 
@@ -307,26 +317,8 @@
       display: block; 
     }
 
-    /* Высота штрихкода для SN увеличена на 40% (28mm вместо 20mm) */
-    .barcode-wrapper-sn svg { 
-      max-width: 100%; 
-      height: 28mm;
-      display: block; 
-    }
-
-    /* Размеры текста для PN и SN */
-    .label-value-pn {
-      font-size: 22pt !important;
-      font-weight: 900;
-      font-family: 'Consolas', 'Courier New', monospace; 
-      color: #000000;
-      letter-spacing: 0.5px;
-      margin-top: 2px;
-      line-height: 1.1; 
-    }
-
-    .label-value-sn {
-      font-size: 18pt !important;
+    .label-value-text {
+      font-size: 15pt; 
       font-weight: 900;
       font-family: 'Consolas', 'Courier New', monospace; 
       color: #000000;
@@ -336,16 +328,20 @@
     }
 
     .label-spacer {
-      height: 2mm;
+      height: 3mm;
       width: 100%;
     }
 
+    /* ==========================================
+        НАСТРОЙКИ ДЛЯ ТЕРМОПЕЧАТИ TSC DA220
+        ========================================== */
     @page { 
       size: 100mm 80mm landscape; 
       margin: 0; 
     }
 
     @media print {
+      /* Скидаємо стилі сторінки та інтерфейсу */
       html, body {
         width: 100mm !important;
         height: auto !important;
@@ -357,11 +353,13 @@
         overflow: visible !important;
       }
 
+      /* Приховуємо абсолютно весь UI */
       .app-container, 
       .modal-backdrop { 
         display: none !important; 
       }
 
+      /* Відображаємо ізольований контейнер друку */
       #printContainer {
         display: block !important;
         position: static !important;
@@ -376,6 +374,7 @@
         visibility: visible !important;
       }
 
+      /* Правила розмірів та розривів для кожної етикетки */
       #printContainer .industrial-label { 
         width: 100mm !important;
         height: 80mm !important;
@@ -388,6 +387,7 @@
         box-sizing: border-box !important;
         overflow: hidden !important;
 
+        /* Заборона розриву всередині та фіксований розрив після кожної етикетки */
         page-break-inside: avoid !important;
         break-inside: avoid !important;
         page-break-after: always !important;
@@ -683,7 +683,7 @@
                 <div class="barcode-wrapper">
                   <svg id="barcodePN_${idx}_${copy}"></svg>
                 </div>
-                <span class="label-value-pn">${escapeHtml(product.pn)}</span>
+                <span class="label-value-text">${escapeHtml(product.pn)}</span>
               </div>
 
               <div class="label-spacer"></div>
@@ -692,10 +692,10 @@
                 <div class="label-header-row">
                   <span class="label-caption">SN</span>
                 </div>
-                <div class="barcode-wrapper barcode-wrapper-sn">
+                <div class="barcode-wrapper">
                   <svg id="barcodeSN_${idx}_${copy}"></svg>
                 </div>
-                <span class="label-value-sn">${escapeHtml(product.sn)}</span>
+                <span class="label-value-text">${escapeHtml(product.sn)}</span>
               </div>
             </div>
           `;
@@ -708,7 +708,7 @@
       const container = document.querySelector(containerSelector);
       if (!container) return;
 
-      const barcodeOptionsPN = {
+      const barcodeOptions = {
         format: "CODE128",
         displayValue: false,
         margin: 0,
@@ -718,27 +718,16 @@
         background: "transparent"
       };
 
-      // Штрихкод SN увеличен по высоте (параметр height пропорционален увеличению на 40%)
-      const barcodeOptionsSN = {
-        format: "CODE128",
-        displayValue: false,
-        margin: 0,
-        height: 67,
-        width: 1.55,
-        lineColor: "#000000",
-        background: "transparent"
-      };
-
-      container.querySelectorAll('.industrial-label').forEach((label, labelIdx) => {
+      container.querySelectorAll('.industrial-label').forEach((label) => {
         const svgPn = label.querySelector('[id^="barcodePN_"]');
         const svgSn = label.querySelector('[id^="barcodeSN_"]');
         
         if (svgPn && svgSn) {
-          const pnVal = label.children[0].querySelector('.label-value-pn').innerText;
-          const snVal = label.children[2].querySelector('.label-value-sn').innerText;
+          const pnVal = label.children[0].querySelector('.label-value-text').innerText;
+          const snVal = label.children[2].querySelector('.label-value-text').innerText;
           
-          JsBarcode(svgPn, pnVal, barcodeOptionsPN);
-          JsBarcode(svgSn, snVal, barcodeOptionsSN);
+          JsBarcode(svgPn, pnVal, barcodeOptions);
+          JsBarcode(svgSn, snVal, barcodeOptions);
         }
       });
     }
@@ -798,10 +787,7 @@
     document.getElementById('closeModalBtn').addEventListener('click', closeModal);
     document.getElementById('printModalBtn').addEventListener('click', () => {
       if (modalActiveItem) {
-        const targetIndex = products.indexOf(modalActiveItem);
-        if (targetIndex !== -1) {
-          printSingle(targetIndex, modalActiveBrand);
-        }
+        printSingle(products.indexOf(modalActiveItem), modalActiveBrand);
         closeModal();
       }
     });
