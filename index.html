@@ -3,15 +3,12 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Друк етикеток — TSC DA220</title>
+  <title>Друк етикеток — Багатоформатний додаток</title>
   
   <script src="https://cdn.jsdelivr.net/npm/jsbarcode@3.11.6/dist/JsBarcode.all.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
   <style>
-    /* ==========================================
-        СТИЛІ ІНТЕРФЕЙСУ (ТЕМНА ТЕМА)
-        ========================================== */
     :root {
       --bg-color: #111827;
       --card-bg: #1F2937;
@@ -221,7 +218,7 @@
       border-radius: var(--radius);
       border: 1px solid var(--border-color);
       box-shadow: var(--shadow-modal);
-      width: 90%; max-width: 580px;
+      width: 95%; max-width: 720px;
       display: flex; flex-direction: column;
       overflow: hidden;
     }
@@ -233,10 +230,9 @@
     .modal-footer { padding: 16px 24px; border-top: 1px solid var(--border-color); display: flex; justify-content: flex-end; gap: 12px; }
 
     /* ==========================================
-        ЕТИКЕТКА TSC DA220 — 100 x 78 мм
-        ФІКСОВАНИЙ ГОРИЗОНТАЛЬНИЙ PRINT LAYOUT
+        ФОРМАТ 1: TSC DA220 (100 x 78 мм) - ДЛЯ ЛИСТА 1
         ========================================== */
-    .industrial-label {
+    .industrial-label-sheet0 {
       width: 100mm;
       height: 78mm;
       position: relative;
@@ -252,25 +248,25 @@
       background-clip: padding-box;
     }
 
-    .top-divider {
+    .sheet0-top-divider {
       width: 100%;
       height: 0;
       border-top: 1.5px solid #000000;
       margin: 0 0 2.2mm 0;
     }
 
-    .label-section {
+    .sheet0-label-section {
       width: 100%;
       display: block;
       margin: 0;
       padding: 0;
     }
 
-    .label-section + .label-section {
+    .sheet0-label-section + .sheet0-label-section {
       margin-top: 3.1mm;
     }
 
-    .section-header {
+    .sheet0-section-header {
       width: 100%;
       height: 5.5mm;
       display: block;
@@ -280,7 +276,7 @@
       text-align: center;
     }
 
-    .header-title {
+    .sheet0-header-title {
       display: block;
       width: 100%;
       font-size: 16.5pt;
@@ -289,7 +285,7 @@
       text-align: center;
     }
 
-    .brand-tag {
+    .sheet0-brand-tag {
       position: absolute;
       right: 3.5mm;
       top: 0;
@@ -300,7 +296,7 @@
       white-space: nowrap;
     }
 
-    .barcode-box {
+    .sheet0-barcode-box {
       width: 82mm;
       height: 15.5mm;
       margin: 0 auto;
@@ -309,7 +305,7 @@
       text-align: center;
     }
 
-    .barcode-box svg {
+    .sheet0-barcode-box svg {
       width: auto !important;
       max-width: 100% !important;
       height: 15.5mm !important;
@@ -318,8 +314,8 @@
       shape-rendering: crispEdges;
     }
 
-    .val-pn,
-    .val-sn {
+    .sheet0-val-pn,
+    .sheet0-val-sn {
       width: 100%;
       box-sizing: border-box;
       text-align: center;
@@ -332,12 +328,12 @@
       margin: 1.1mm 0 0 0;
     }
 
-    .val-pn {
+    .sheet0-val-pn {
       font-size: 18pt;
       font-family: Arial, Helvetica, sans-serif;
     }
 
-    .val-sn {
+    .sheet0-val-sn {
       font-size: 13pt;
       font-family: Arial, Helvetica, sans-serif;
       transform: scale(1, 1.8);
@@ -345,11 +341,99 @@
       margin-top: 3.5mm;
     }
 
+
     /* ==========================================
-        ДРУК — РЕАЛЬНИЙ РОЗМІР 100 x 78 мм (ПОРТРЕТ)
+        ФОРМАТ 2: CITIZEN CL-S700 (130 x 76 мм) - ДЛЯ ЛИСТА 2
+        ========================================== */
+    .industrial-label-sheet1 {
+      width: 130mm;
+      height: 76mm;
+      position: relative;
+      background: #FFFFFF;
+      color: #000000;
+      padding: 0;
+      box-sizing: border-box;
+      font-family: Arial, Helvetica, sans-serif;
+      display: block;
+      overflow: hidden;
+      border: 1px solid #D1D5DB;
+      box-shadow: 0 10px 25px rgba(0, 0, 0, 0.5);
+      background-clip: padding-box;
+    }
+
+    .sheet1-pn-title {
+      position: absolute;
+      left: 0mm;
+      top: 18.2mm;
+      width: 130mm;
+      height: 4.8mm;
+      font-size: 16pt;
+      font-weight: bold;
+      line-height: 4.8mm;
+      padding-left: 2mm;
+    }
+
+    .sheet1-pn-val {
+      position: absolute;
+      left: 0mm;
+      top: 23.5mm;
+      width: 130mm;
+      height: 10.2mm;
+      font-size: 23pt;
+      font-weight: bold;
+      line-height: 10.2mm;
+      padding-left: 2mm;
+      white-space: nowrap;
+      overflow: hidden;
+    }
+
+    .sheet1-barcode-1 {
+      position: absolute;
+      left: 6.5mm;
+      top: 2.5mm;
+      width: 116.6mm;
+      height: 15.5mm;
+      overflow: hidden;
+    }
+    .sheet1-barcode-1 svg {
+      width: 100% !important;
+      height: 100% !important;
+      display: block;
+      shape-rendering: crispEdges;
+    }
+
+    .sheet1-barcode-2 {
+      position: absolute;
+      left: 2.7mm;
+      top: 39.7mm;
+      width: 124.6mm;
+      height: 17.0mm;
+      overflow: hidden;
+    }
+    .sheet1-barcode-2 svg {
+      width: 100% !important;
+      height: 100% !important;
+      display: block;
+      shape-rendering: crispEdges;
+    }
+
+    .sheet1-brand {
+      position: absolute;
+      right: 5mm;
+      top: 18.2mm;
+      height: 4.8mm;
+      font-size: 16pt;
+      font-weight: bold;
+      line-height: 4.8mm;
+      text-align: right;
+    }
+
+
+    /* ==========================================
+        ДИНАМІЧНІ ПРАВИЛА ДРУКУ ЗАЛЕЖНО ВІД ВИБРАНОГО ЛИСТА
         ========================================== */
     @page {
-      size: 100mm 78mm portrait;
+      size: auto;
       margin: 0;
     }
 
@@ -360,12 +444,8 @@
       }
 
       html, body {
-        width: 100mm !important;
-        height: 78mm !important;
-        min-width: 100mm !important;
-        min-height: 78mm !important;
-        max-width: 100mm !important;
-        max-height: 78mm !important;
+        width: auto !important;
+        height: auto !important;
         margin: 0 !important;
         padding: 0 !important;
         background: #ffffff !important;
@@ -381,13 +461,15 @@
       #printContainer {
         display: block !important;
         position: static !important;
-        width: 100mm !important;
-        height: 78mm !important;
         margin: 0 !important;
         padding: 0 !important;
       }
 
-      #printContainer .industrial-label {
+      /* Якщо вибрано Лист 1 (100x78) */
+      body.sheet-0 @page {
+        size: 100mm 78mm portrait;
+      }
+      body.sheet-0 #printContainer .industrial-label-sheet0 {
         width: 100mm !important;
         height: 78mm !important;
         min-width: 100mm !important;
@@ -410,20 +492,50 @@
         break-after: page !important;
         break-inside: avoid !important;
       }
+      body.sheet-0 #printContainer .industrial-label-sheet0:first-child {
+        page-break-before: avoid !important;
+        break-before: avoid !important;
+      }
 
-      #printContainer .industrial-label:first-child {
+      /* Якщо вибрано Лист 2 (130x76) */
+      body.sheet-193025884 @page {
+        size: 130mm 76mm landscape;
+      }
+      body.sheet-193025884 #printContainer .industrial-label-sheet1 {
+        width: 130mm !important;
+        height: 76mm !important;
+        min-width: 130mm !important;
+        min-height: 76mm !important;
+        max-width: 130mm !important;
+        max-height: 76mm !important;
+        margin: 0 !important;
+        border: 0 !important;
+        box-shadow: none !important;
+        box-sizing: border-box !important;
+        overflow: hidden !important;
+        display: block !important;
+        position: relative !important;
+        
+        page-break-before: always !important;
+        page-break-after: always !important;
+        page-break-inside: avoid !important;
+        break-before: page !important;
+        break-after: page !important;
+        break-inside: avoid !important;
+      }
+      body.sheet-193025884 #printContainer .industrial-label-sheet1:first-child {
         page-break-before: avoid !important;
         break-before: avoid !important;
       }
     }
   </style>
 </head>
-<body>
+<body class="sheet-0">
 
   <div class="app-container">
     <header class="page-header">
       <div>
-        <h1 class="page-title">🖨️ Друк етикеток (TSC DA220)</h1>
+        <h1 class="page-title">🖨️ Друк етикеток (Мультиформатний)</h1>
       </div>
       <div class="header-buttons">
         <button class="btn btn-test" onclick="printTestLabel()">⬛ Тестовий друк</button>
@@ -432,8 +544,8 @@
     </header>
 
     <div class="sheet-tabs">
-      <button class="sheet-tab-btn active" id="tabBtn0" onclick="switchSheet('0')">Лист 1 <kbd>Alt + 1</kbd></button>
-      <button class="sheet-tab-btn" id="tabBtn193025884" onclick="switchSheet('193025884')">Лист 2 <kbd>Alt + 2</kbd></button>
+      <button class="sheet-tab-btn active" id="tabBtn0" onclick="switchSheet('0')">Лист 1 (100x78) <kbd>Alt + 1</kbd></button>
+      <button class="sheet-tab-btn" id="tabBtn193025884" onclick="switchSheet('193025884')">Лист 2 (130x76) <kbd>Alt + 2</kbd></button>
       
       <div class="sync-indicator" id="syncIndicator">
         <div class="spinner"></div>
@@ -572,6 +684,9 @@
       const activeBtn = document.getElementById(`tabBtn${gid}`);
       if (activeBtn) activeBtn.classList.add('active');
 
+      // Динамічно змінюємо клас body для коректного формату паперу при друці
+      document.body.className = `sheet-${gid}`;
+
       if (products.length === 0) {
         tableBody.innerHTML = `<tr><td colspan="6" style="text-align: center; padding: 30px;">Завантаження даних...</td></tr>`;
       }
@@ -703,23 +818,36 @@
     }
 
     function printTestLabel() {
-      printContainer.innerHTML = `
-        <div class="industrial-label">
-          <div class="top-divider"></div>
-          <div class="label-section">
-            <div class="section-header"><span class="header-title">PN:</span></div>
-            <div class="barcode-box"><svg id="testPN"></svg></div>
-            <div class="val-pn">TEST-PN-100X78</div>
+      if (currentGid === '0') {
+        printContainer.innerHTML = `
+          <div class="industrial-label-sheet0">
+            <div class="sheet0-top-divider"></div>
+            <div class="sheet0-label-section">
+              <div class="sheet0-section-header"><span class="sheet0-header-title">PN:</span></div>
+              <div class="sheet0-barcode-box"><svg id="testPN"></svg></div>
+              <div class="sheet0-val-pn">TEST-PN-100X78</div>
+            </div>
+            <div class="sheet0-label-section">
+              <div class="sheet0-section-header"><span class="sheet0-header-title">SN:</span></div>
+              <div class="sheet0-barcode-box"><svg id="testSN"></svg></div>
+              <div class="sheet0-val-sn">TEST-SN-27082026</div>
+            </div>
           </div>
-          <div class="label-section">
-            <div class="section-header"><span class="header-title">SN:</span></div>
-            <div class="barcode-box"><svg id="testSN"></svg></div>
-            <div class="val-sn">TEST-SN-27082026</div>
+        `;
+        JsBarcode('#testPN', 'TEST-PN-100X78', { format: 'CODE128B', displayValue: false, margin: 0, height: 48, width: 1.18, flat: true, lineColor: '#000' });
+        JsBarcode('#testSN', 'TEST-SN-27082026', { format: 'CODE128B', displayValue: false, margin: 0, height: 48, width: 0.92, flat: true, lineColor: '#000' });
+      } else {
+        printContainer.innerHTML = `
+          <div class="industrial-label-sheet1">
+            <div class="sheet1-pn-title">PN:</div>
+            <div class="sheet1-pn-val">TEST-PN-130X76</div>
+            <div class="sheet1-barcode-1"><svg id="testPN"></svg></div>
+            <div class="sheet1-barcode-2"><svg id="testSN"></svg></div>
           </div>
-        </div>
-      `;
-      JsBarcode('#testPN', 'TEST-PN-100X78', { format: 'CODE128B', displayValue: false, margin: 0, height: 48, width: 1.18, flat: true, lineColor: '#000' });
-      JsBarcode('#testSN', 'TEST-SN-27082026', { format: 'CODE128B', displayValue: false, margin: 0, height: 48, width: 0.92, flat: true, lineColor: '#000' });
+        `;
+        JsBarcode('#testPN', 'TEST-PN-130X76', { format: 'CODE128B', displayValue: false, margin: 0, flat: true, lineColor: '#000' });
+        JsBarcode('#testSN', 'TEST-SN-27082026', { format: 'CODE128B', displayValue: false, margin: 0, flat: true, lineColor: '#000' });
+      }
       prepareAndPrint();
     }
 
@@ -727,32 +855,36 @@
       let html = '';
       itemsList.forEach((product, idx) => {
         for (let copy = 0; copy < 2; copy++) {
-          html += `
-            <div class="industrial-label">
-              <div class="top-divider"></div>
-
-              <div class="label-section">
-                <div class="section-header">
-                  <span class="header-title">PN:</span>
-                  ${includeBrand ? `<span class="brand-tag">${escapeHtml(product.brand)}</span>` : ''}
+          if (currentGid === '0') {
+            html += `
+              <div class="industrial-label-sheet0">
+                <div class="sheet0-top-divider"></div>
+                <div class="sheet0-label-section">
+                  <div class="sheet0-section-header">
+                    <span class="sheet0-header-title">PN:</span>
+                    ${includeBrand ? `<span class="sheet0-brand-tag">${escapeHtml(product.brand)}</span>` : ''}
+                  </div>
+                  <div class="sheet0-barcode-box"><svg id="barcodePN_${idx}_${copy}"></svg></div>
+                  <div class="sheet0-val-pn">${escapeHtml(product.pn)}</div>
                 </div>
-                <div class="barcode-box">
-                  <svg id="barcodePN_${idx}_${copy}"></svg>
+                <div class="sheet0-label-section">
+                  <div class="sheet0-section-header"><span class="sheet0-header-title">SN:</span></div>
+                  <div class="sheet0-barcode-box"><svg id="barcodeSN_${idx}_${copy}"></svg></div>
+                  <div class="sheet0-val-sn">${escapeHtml(product.sn)}</div>
                 </div>
-                <div class="val-pn">${escapeHtml(product.pn)}</div>
               </div>
-
-              <div class="label-section">
-                <div class="section-header">
-                  <span class="header-title">SN:</span>
-                </div>
-                <div class="barcode-box">
-                  <svg id="barcodeSN_${idx}_${copy}"></svg>
-                </div>
-                <div class="val-sn">${escapeHtml(product.sn)}</div>
+            `;
+          } else {
+            html += `
+              <div class="industrial-label-sheet1">
+                <div class="sheet1-pn-title">PN:</div>
+                ${includeBrand ? `<div class="sheet1-brand">${escapeHtml(product.brand)}</div>` : ''}
+                <div class="sheet1-pn-val">${escapeHtml(product.pn)}</div>
+                <div class="sheet1-barcode-1"><svg id="barcodePN_${idx}_${copy}"></svg></div>
+                <div class="sheet1-barcode-2"><svg id="barcodeSN_${idx}_${copy}"></svg></div>
               </div>
-            </div>
-          `;
+            `;
+          }
         }
       });
       return html;
@@ -762,33 +894,23 @@
       const container = document.querySelector(containerSelector);
       if (!container) return;
 
-      container.querySelectorAll('.industrial-label').forEach((label) => {
+      container.querySelectorAll(currentGid === '0' ? '.industrial-label-sheet0' : '.industrial-label-sheet1').forEach((label) => {
         const svgPn = label.querySelector('[id^="barcodePN_"]');
         const svgSn = label.querySelector('[id^="barcodeSN_"]');
         
         if (svgPn && svgSn) {
-          const pnVal = label.querySelector('.val-pn').innerText;
-          const snVal = label.querySelector('.val-sn').innerText;
-          
-          JsBarcode(svgPn, pnVal, {
-            format: "CODE128B",
-            displayValue: false,
-            margin: 0,
-            height: 48,
-            width: 1.18,
-            flat: true,
-            lineColor: "#000000"
-          });
+          const parts = svgPn.id.split('_');
+          const idx = parts[1];
+          const product = products[idx];
+          if (!product) return;
 
-          JsBarcode(svgSn, snVal, {
-            format: "CODE128B",
-            displayValue: false,
-            margin: 0,
-            height: 48,
-            width: 0.92,
-            flat: true,
-            lineColor: "#000000"
-          });
+          if (currentGid === '0') {
+            JsBarcode(svgPn, product.pn, { format: "CODE128B", displayValue: false, margin: 0, height: 48, width: 1.18, flat: true, lineColor: "#000000" });
+            JsBarcode(svgSn, product.sn, { format: "CODE128B", displayValue: false, margin: 0, height: 48, width: 0.92, flat: true, lineColor: "#000000" });
+          } else {
+            JsBarcode(svgPn, product.pn, { format: "CODE128B", displayValue: false, margin: 0, flat: true, lineColor: "#000000" });
+            JsBarcode(svgSn, product.sn, { format: "CODE128B", displayValue: false, margin: 0, flat: true, lineColor: "#000000" });
+          }
         }
       });
     }
