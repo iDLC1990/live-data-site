@@ -1,1355 +1,801 @@
 <!DOCTYPE html>
-<html lang="uk">
+<html lang="ru">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
-  <title>Друк етикеток TSC DA220</title>
-
-  <!--
-    JsBarcode використовується тільки для генерації SVG штрих-кодів.
-    Якщо бібліотека вже є у вашому проєкті — цей CDN можна прибрати.
-  -->
+  <title>Печать этикеток — TSC DA220</title>
+  
   <script src="https://cdn.jsdelivr.net/npm/jsbarcode@3.11.6/dist/JsBarcode.all.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
   <style>
-    /* ============================================================
-       ОСНОВНИЙ UI
-       ============================================================ */
-
-    * {
-      box-sizing: border-box;
+    /* ==========================================
+        СТИЛИ ИНТЕРФЕЙСА (ТЕМНАЯ ТЕМА)
+        ========================================== */
+    :root {
+      --bg-color: #111827;
+      --card-bg: #1F2937;
+      --accent-color: #2563EB;
+      --accent-hover: #1D4ED8;
+      --brand-color: #059669;
+      --brand-hover: #047857;
+      --text-main: #F9FAFB;
+      --text-muted: #9CA3AF;
+      --border-color: #374151;
+      --radius: 12px;
+      --shadow-lg: 0 10px 25px -5px rgba(0, 0, 0, 0.5);
+      --shadow-modal: 0 25px 50px -12px rgba(0, 0, 0, 0.7);
     }
 
-    html,
-    body {
-      margin: 0;
-      padding: 0;
-      font-family: Arial, Helvetica, sans-serif;
-      background: #f4f6f8;
-      color: #222;
-    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
 
     body {
+      background-color: var(--bg-color);
+      color: var(--text-main);
+      font-family: 'Segoe UI', -apple-system, BlinkMacSystemFont, Roboto, sans-serif;
       min-height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: flex-start;
+      padding: 40px 20px;
+      line-height: 1.5;
     }
 
+    .app-container { max-width: 1020px; width: 100%; }
+    
+    .page-header { 
+      margin-bottom: 28px; 
+      display: flex; 
+      justify-content: space-between; 
+      align-items: flex-end; 
+    }
+    .page-title { font-size: 26px; font-weight: 700; color: #FFFFFF; }
+
+    /* Переключатель листов */
     .sheet-tabs {
       display: flex;
+      gap: 10px;
+      margin-bottom: 20px;
       align-items: center;
-      gap: 8px;
-      padding: 12px 20px;
-      background: #fff;
-      border-bottom: 1px solid #ddd;
     }
 
     .sheet-tab-btn {
-      border: 1px solid #ccc;
-      background: #fff;
-      padding: 8px 14px;
-      border-radius: 6px;
+      background-color: #374151;
+      color: var(--text-muted);
+      border: 1px solid var(--border-color);
+      padding: 10px 18px;
+      border-radius: 8px;
+      font-size: 14px;
+      font-weight: 600;
       cursor: pointer;
+      transition: all 0.2s;
     }
 
     .sheet-tab-btn.active {
-      background: #222;
-      color: #fff;
-      border-color: #222;
+      background-color: var(--accent-color);
+      color: #FFFFFF;
+      border-color: var(--accent-color);
     }
 
     .sheet-tab-btn kbd {
-      margin-left: 8px;
+      background: rgba(0, 0, 0, 0.3);
+      padding: 2px 6px;
+      border-radius: 4px;
       font-size: 11px;
-      opacity: 0.7;
+      margin-left: 6px;
+      border: 1px solid rgba(255, 255, 255, 0.2);
     }
 
+    /* Индикатор фонового обновления */
     .sync-indicator {
       margin-left: auto;
+      font-size: 13px;
+      color: var(--text-muted);
       display: flex;
       align-items: center;
       gap: 8px;
-      font-size: 13px;
-      color: #777;
+      opacity: 0;
+      transition: opacity 0.3s ease;
     }
-
+    .sync-indicator.visible { opacity: 1; }
+    
     .spinner {
       width: 14px;
       height: 14px;
-      border: 2px solid #ddd;
-      border-top-color: #333;
+      border: 2px solid var(--border-color);
+      border-top-color: var(--accent-color);
       border-radius: 50%;
       animation: spin 0.8s linear infinite;
     }
-
-    @keyframes spin {
-      to {
-        transform: rotate(360deg);
-      }
-    }
+    @keyframes spin { to { transform: rotate(360deg); } }
 
     .batch-actions-bar {
+      background: var(--card-bg);
+      border: 1px solid var(--border-color);
+      padding: 14px 20px;
+      border-radius: var(--radius);
+      margin-bottom: 20px;
       display: flex;
       justify-content: space-between;
       align-items: center;
-      gap: 20px;
-      padding: 14px 20px;
-      background: #fff;
-      border-bottom: 1px solid #ddd;
+      box-shadow: var(--shadow-lg);
     }
 
     .batch-info {
-      font-weight: 600;
+      font-size: 14px;
+      font-weight: 500;
+      color: var(--text-muted);
     }
 
     .batch-buttons {
       display: flex;
-      gap: 10px;
-    }
-
-    .btn {
-      border: 0;
-      border-radius: 6px;
-      padding: 10px 15px;
-      cursor: pointer;
-      font-weight: 600;
-    }
-
-    .btn:disabled {
-      opacity: 0.5;
-      cursor: not-allowed;
-    }
-
-    .btn-secondary {
-      background: #e9ecef;
-      color: #222;
-    }
-
-    .btn-brand {
-      background: #2563eb;
-      color: #fff;
+      gap: 12px;
     }
 
     .card {
-      margin: 20px;
-      background: #fff;
-      border-radius: 8px;
+      background-color: var(--card-bg);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow-lg);
+      border: 1px solid var(--border-color);
       overflow: hidden;
-      border: 1px solid #ddd;
     }
 
-    .table-container {
-      overflow-x: auto;
-    }
-
-    .data-table {
-      width: 100%;
-      border-collapse: collapse;
-    }
-
-    .data-table th,
-    .data-table td {
-      padding: 12px;
-      border-bottom: 1px solid #eee;
-      text-align: left;
-    }
-
+    .table-container { width: 100%; overflow-x: auto; }
+    .data-table { width: 100%; border-collapse: collapse; text-align: left; }
     .data-table th {
-      background: #f8f9fa;
-      font-size: 13px;
+      background-color: #111827;
+      color: var(--text-muted);
+      font-size: 12px;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      padding: 16px 20px;
+      font-weight: 600;
+      border-bottom: 1px solid var(--border-color);
     }
 
+    .data-table td {
+      padding: 16px 20px;
+      font-size: 14px;
+      color: #E5E7EB;
+      border-bottom: 1px solid var(--border-color);
+      vertical-align: middle;
+    }
+
+    .data-table tbody tr:hover { background-color: rgba(255, 255, 255, 0.03); }
+
+    .code-text {
+      font-family: 'Consolas', 'Courier New', monospace;
+      font-weight: 600;
+      letter-spacing: 0.5px;
+    }
+
+    /* Чекбоксы */
     .custom-checkbox {
       width: 18px;
       height: 18px;
+      cursor: pointer;
+      accent-color: var(--accent-color);
     }
 
-    /* ============================================================
-       PRINT CONTAINER — НА ЕКРАНІ НЕ ПОКАЗУЄМО
-       ============================================================ */
-
-    #printContainer {
-      display: none;
+    /* Кнопки и группы действий */
+    .actions-cell { 
+      display: flex; 
+      gap: 16px; 
+      justify-content: flex-end; 
+      align-items: center;
     }
 
-    /* ============================================================
-       ЕТИКЕТКА
-       Фізичний розмір: 100 × 80 мм
-       ============================================================ */
+    .action-group {
+      display: flex;
+      gap: 6px;
+      align-items: center;
+    }
 
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      background-color: var(--accent-color);
+      color: #FFFFFF;
+      border: none;
+      border-radius: 8px;
+      padding: 8px 12px;
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      font-family: inherit;
+    }
+
+    .btn:hover { background-color: var(--accent-hover); transform: translateY(-1px); }
+    .btn:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
+    .btn-secondary { background-color: #374151; color: #F3F4F6; }
+    .btn-secondary:hover { background-color: #4B5563; }
+
+    .btn-brand { background-color: var(--brand-color); }
+    .btn-brand:hover { background-color: var(--brand-hover); }
+
+    /* Модальное окно просмотра */
+    .modal-backdrop {
+      position: fixed;
+      top: 0; left: 0; width: 100vw; height: 100vh;
+      background-color: rgba(0, 0, 0, 0.75);
+      backdrop-filter: blur(6px);
+      display: flex; align-items: center; justify-content: center;
+      opacity: 0; pointer-events: none;
+      transition: opacity 0.25s ease-in-out;
+      z-index: 1000;
+    }
+
+    .modal-backdrop.is-open { opacity: 1; pointer-events: auto; }
+
+    .modal-card {
+      background-color: var(--card-bg);
+      border-radius: var(--radius);
+      border: 1px solid var(--border-color);
+      box-shadow: var(--shadow-modal);
+      width: 90%; max-width: 580px;
+      display: flex; flex-direction: column;
+      overflow: hidden;
+    }
+
+    .modal-header { padding: 18px 24px; border-bottom: 1px solid var(--border-color); display: flex; justify-content: space-between; align-items: center; }
+    .modal-title { font-size: 18px; font-weight: 600; color: #FFFFFF; }
+    .modal-close-btn { background: none; border: none; color: var(--text-muted); font-size: 22px; cursor: pointer; }
+    .modal-body { padding: 24px; display: flex; flex-direction: column; gap: 20px; align-items: center; max-height: 75vh; overflow-y: auto; background-color: #111827; }
+    .modal-footer { padding: 16px 24px; border-top: 1px solid var(--border-color); display: flex; justify-content: flex-end; gap: 12px; }
+
+    /* ==========================================
+        ЭТИКЕТКА 100x80 мм (landscape)
+        ========================================== */
     .industrial-label {
       width: 100mm;
       height: 80mm;
-
+      background-color: #FFFFFF;
+      color: #000000;
+      padding: 4mm 5mm;
       box-sizing: border-box;
-
-      background: #fff;
-      color: #000;
-
+      font-family: 'Segoe UI', Arial, sans-serif;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      text-align: center;
+      border: 1px solid #D1D5DB;
+      box-shadow: 0 10px 25px rgba(0, 0, 0, 0.5);
       overflow: hidden;
+    }
 
+    .label-block { 
+      display: flex; 
+      flex-direction: column; 
+      align-items: center; 
+      width: 100%;
       position: relative;
-
-      font-family: Arial, Helvetica, sans-serif;
-
-      /*
-       * Не використовуємо padding у mm, який може створювати
-       * додатковий overflow.
-       */
-      padding: 3mm;
     }
 
-    .label-inner {
+    .label-header-row {
       width: 100%;
-      height: 100%;
-
-      display: flex;
-      flex-direction: column;
-
-      overflow: hidden;
-    }
-
-    /* ------------------------------------------------------------
-       Верхній блок
-       ------------------------------------------------------------ */
-
-    .label-header {
-      width: 100%;
-
-      display: flex;
-      justify-content: space-between;
-      align-items: flex-start;
-
-      min-height: 9mm;
-      max-height: 9mm;
-
-      overflow: hidden;
-    }
-
-    .label-brand {
-      font-size: 4mm;
-      line-height: 4.5mm;
-      font-weight: 700;
-
-      max-width: 55mm;
-
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
-    }
-
-    .label-type {
-      font-size: 2.8mm;
-      line-height: 3.2mm;
-      font-weight: 600;
-
-      text-align: right;
-      white-space: nowrap;
-    }
-
-    /* ------------------------------------------------------------
-       PN
-       ------------------------------------------------------------ */
-
-    .label-pn-block {
-      width: 100%;
-
-      text-align: center;
-
-      margin-top: 1mm;
-
-      min-height: 12mm;
-      max-height: 12mm;
-
-      overflow: hidden;
-    }
-
-    .label-pn-title {
-      font-size: 2.6mm;
-      line-height: 3mm;
-      font-weight: 700;
-      text-transform: uppercase;
-    }
-
-    .label-pn {
-      margin-top: 0.5mm;
-
-      font-size: 6mm;
-      line-height: 7mm;
-
-      font-weight: 800;
-
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
-    }
-
-    /* ------------------------------------------------------------
-       SN
-       ------------------------------------------------------------ */
-
-    .label-sn-block {
-      width: 100%;
-
-      text-align: center;
-
-      margin-top: 1mm;
-
-      min-height: 11mm;
-      max-height: 11mm;
-
-      overflow: hidden;
-    }
-
-    .label-sn-title {
-      font-size: 2.6mm;
-      line-height: 3mm;
-      font-weight: 700;
-      text-transform: uppercase;
-    }
-
-    .label-sn {
-      margin-top: 0.5mm;
-
-      font-size: 5mm;
-      line-height: 6mm;
-
-      font-weight: 700;
-
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
-    }
-
-    /* ------------------------------------------------------------
-       Штрих-коди
-       ------------------------------------------------------------ */
-
-    .label-barcodes {
-      flex: 1 1 auto;
-
-      min-height: 0;
-
-      width: 100%;
-
+      position: relative;
       display: flex;
       justify-content: center;
       align-items: center;
-
-      gap: 5mm;
-
-      overflow: hidden;
-
-      padding-top: 1mm;
+      margin-bottom: 2px;
     }
 
-    .barcode-block {
-      width: 43mm;
-
-      min-width: 0;
-
-      height: 37mm;
-
-      display: flex;
-      flex-direction: column;
-      justify-content: flex-start;
-      align-items: center;
-
-      overflow: hidden;
+    .label-caption { 
+      font-size: 16pt; 
+      font-weight: 900;
+      color: #000000; 
+      letter-spacing: 1px; 
+      text-transform: uppercase; 
+      line-height: 1;
     }
 
-    .barcode-title {
-      height: 4mm;
-
-      font-size: 2.4mm;
-      line-height: 3mm;
-
-      font-weight: 700;
-
-      text-align: center;
-
-      white-space: nowrap;
+    .label-brand-right {
+      position: absolute;
+      right: 0;
+      top: 50%;
+      transform: translateY(-50%);
+      font-weight: 900;
+      font-size: 14pt;
+      color: #000000;
+      line-height: 1;
     }
 
-    .barcode-svg {
-      display: block;
-
-      width: 42mm !important;
-      height: 25mm !important;
-
-      max-width: 42mm;
-      max-height: 25mm;
-
-      overflow: hidden;
+    .barcode-wrapper { 
+      width: 100%; 
+      display: flex; 
+      justify-content: center; 
+      align-items: center; 
+    }
+    
+    .barcode-wrapper svg { 
+      max-width: 100%; 
+      height: 20mm;
+      display: block; 
     }
 
-    .barcode-value {
-      width: 42mm;
-
-      height: 6mm;
-
-      margin-top: 0.5mm;
-
-      font-size: 2.7mm;
-      line-height: 3.5mm;
-
-      text-align: center;
-      font-weight: 600;
-
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
+    .label-value-text {
+      font-size: 15pt; 
+      font-weight: 900;
+      font-family: 'Consolas', 'Courier New', monospace; 
+      color: #000000;
+      letter-spacing: 0.5px;
+      margin-top: 2px;
+      line-height: 1.1; 
     }
 
-    /* ------------------------------------------------------------
-       Нижній блок
-       ------------------------------------------------------------ */
-
-    .label-footer {
+    .label-spacer {
+      height: 3mm;
       width: 100%;
-
-      height: 5mm;
-      min-height: 5mm;
-      max-height: 5mm;
-
-      display: flex;
-      align-items: flex-end;
-      justify-content: center;
-
-      overflow: hidden;
     }
 
-    .label-copy {
-      font-size: 2.2mm;
-      line-height: 2.5mm;
-      color: #444;
+    /* ==========================================
+        НАСТРОЙКИ ДЛЯ ТЕРМОПЕЧАТИ TSC DA220
+        ========================================== */
+    @page { 
+      size: 100mm 80mm landscape; 
+      margin: 0; 
     }
-
-
-    /* ============================================================
-       PRINT
-       ============================================================ */
 
     @media print {
-
-      /*
-       * Найважливіше правило.
-       *
-       * Браузеру явно задаємо фізичний формат етикетки.
-       */
-      @page {
-        size: 100mm 80mm;
-        margin: 0;
-      }
-
-      html,
-      body {
+      /* Скидаємо стилі сторінки та інтерфейсу */
+      html, body {
         width: 100mm !important;
-        height: 80mm !important;
-
+        height: auto !important;
         margin: 0 !important;
         padding: 0 !important;
-
-        overflow: hidden !important;
-
-        background: #fff !important;
-      }
-
-      body {
-        min-width: 100mm !important;
-        max-width: 100mm !important;
-
-        min-height: 80mm !important;
-        max-height: none !important;
-      }
-
-      /*
-       * Ховаємо весь звичайний UI.
-       */
-      .sheet-tabs,
-      .batch-actions-bar,
-      .app-container,
-      .modal-backdrop,
-      main.card,
-      body > header,
-      body > nav {
-        display: none !important;
-      }
-
-      /*
-       * Контейнер друку — звичайний block.
-       *
-       * ЖОДНОГО:
-       * display:flex
-       * position:absolute
-       * height:80mm
-       * transform
-       */
-      #printContainer {
+        background: #ffffff !important;
+        color: #000000 !important;
         display: block !important;
-
-        position: static !important;
-
-        width: 100mm !important;
-
-        margin: 0 !important;
-        padding: 0 !important;
-
         overflow: visible !important;
       }
 
-      /*
-       * КОЖНА етикетка = ОКРЕМА фізична сторінка.
-       */
-      #printContainer .industrial-label {
+      /* Приховуємо абсолютно весь UI */
+      .app-container, 
+      .modal-backdrop { 
+        display: none !important; 
+      }
+
+      /* Відображаємо ізольований контейнер друку */
+      #printContainer {
         display: block !important;
+        position: static !important;
+        width: 100mm !important;
+        margin: 0 !important;
+        padding: 0 !important;
+        background: #FFFFFF !important;
+        visibility: visible !important;
+      }
 
-        position: relative !important;
+      #printContainer * {
+        visibility: visible !important;
+      }
 
+      /* Правила розмірів та розривів для кожної етикетки */
+      #printContainer .industrial-label { 
         width: 100mm !important;
         height: 80mm !important;
-
-        min-width: 100mm !important;
         max-width: 100mm !important;
-
-        min-height: 80mm !important;
         max-height: 80mm !important;
-
-        box-sizing: border-box !important;
-
+        padding: 4mm 5mm !important;
         margin: 0 !important;
-        padding: 3mm !important;
-
+        border: none !important; 
+        box-shadow: none !important; 
+        box-sizing: border-box !important;
         overflow: hidden !important;
 
-        background: #fff !important;
-
-        /*
-         * Старий синтаксис для Chromium/старих браузерів.
-         */
-        page-break-before: auto !important;
+        /* Заборона розриву всередині та фіксований розрив після кожної етикетки */
         page-break-inside: avoid !important;
-        page-break-after: always !important;
-
-        /*
-         * Новий CSS Fragmentation API.
-         */
-        break-before: auto !important;
         break-inside: avoid !important;
+        page-break-after: always !important;
         break-after: page !important;
       }
 
-      /*
-       * Остання етикетка не повинна створювати порожню
-       * сторінку після себе.
-       */
       #printContainer .industrial-label:last-child {
         page-break-after: avoid !important;
         break-after: avoid !important;
       }
-
-      /*
-       * SVG не повинен створити власний overflow.
-       */
-      #printContainer svg {
-        display: block !important;
-
-        max-width: 100% !important;
-        overflow: hidden !important;
-      }
-
-      /*
-       * Примусово прибираємо браузерні/сторонні поля.
-       */
-      #printContainer *,
-      #printContainer *::before,
-      #printContainer *::after {
-        box-sizing: border-box;
-      }
     }
   </style>
 </head>
-
 <body>
 
-  <!-- ==========================================================
-       ОСНОВНИЙ ІНТЕРФЕЙС
-       ========================================================== -->
+  <div class="app-container">
+    <header class="page-header">
+      <div>
+        <h1 class="page-title">🖨️ Друк етикеток (TSC DA220)</h1>
+      </div>
+      <div>
+        <button class="btn btn-secondary" onclick="fetchDataFromGoogleSheet(true)">🔄 Обновить сейчас</button>
+      </div>
+    </header>
 
-  <div class="sheet-tabs">
-
-    <button
-      class="sheet-tab-btn active"
-      id="tabBtn0"
-      onclick="switchSheet('0')"
-    >
-      Лист 1 <kbd>Alt + 1</kbd>
-    </button>
-
-    <button
-      class="sheet-tab-btn"
-      id="tabBtn193025884"
-      onclick="switchSheet('193025884')"
-    >
-      Лист 2 <kbd>Alt + 2</kbd>
-    </button>
-
-    <div class="sync-indicator" id="syncIndicator">
-      <div class="spinner"></div>
-      <span>Синхронизация...</span>
+    <div class="sheet-tabs">
+      <button class="sheet-tab-btn active" id="tabBtn0" onclick="switchSheet('0')">Лист 1 <kbd>Alt + 1</kbd></button>
+      <button class="sheet-tab-btn" id="tabBtn193025884" onclick="switchSheet('193025884')">Лист 2 <kbd>Alt + 2</kbd></button>
+      
+      <div class="sync-indicator" id="syncIndicator">
+        <div class="spinner"></div>
+        <span>Синхронизация...</span>
+      </div>
     </div>
 
+    <div class="batch-actions-bar">
+      <div class="batch-info" id="selectedCountText">Выбрано позиций: 0</div>
+      <div class="batch-buttons">
+        <button class="btn btn-secondary" id="batchPrintNormalBtn" disabled onclick="printBatch(false)">🖨️ Печать выбранных (х2)</button>
+        <button class="btn btn-brand" id="batchPrintBrandBtn" disabled onclick="printBatch(true)">🖨️ Печать выбранных с Brand (х2)</button>
+      </div>
+    </div>
+
+    <main class="card">
+      <div class="table-container">
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th style="width: 40px;"><input type="checkbox" class="custom-checkbox" id="selectAllCheckbox" onclick="toggleSelectAll(this)"></th>
+              <th>#</th>
+              <th>Serial Number (SN)</th>
+              <th>Part Number (PN)</th>
+              <th>Brand</th>
+              <th style="width: 250px; text-align: right;">Печать (х2) / Просмотр</th>
+            </tr>
+          </thead>
+          <tbody id="productsTableBody">
+            <tr><td colspan="6" style="text-align: center; padding: 30px;">Загрузка данных...</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </main>
   </div>
 
-
-  <div class="batch-actions-bar">
-
-    <div
-      class="batch-info"
-      id="selectedCountText"
-    >
-      Выбрано позиций: 0
+  <div class="modal-backdrop" id="labelModal">
+    <div class="modal-card">
+      <div class="modal-header">
+        <h2 class="modal-title" id="modalTitleText">Предпросмотр этикетки</h2>
+        <button class="modal-close-btn" id="closeModalCross">&times;</button>
+      </div>
+      <div class="modal-body" id="modalPreviewBody"></div>
+      <div class="modal-footer">
+        <button class="btn btn-secondary" id="closeModalBtn">Закрыть</button>
+        <button class="btn" id="printModalBtn">🖨️ Печать</button>
+      </div>
     </div>
-
-    <div class="batch-buttons">
-
-      <button
-        class="btn btn-secondary"
-        id="batchPrintNormalBtn"
-        disabled
-        onclick="printBatch(false)"
-      >
-        🖨️ Печать выбранных (х2)
-      </button>
-
-      <button
-        class="btn btn-brand"
-        id="batchPrintBrandBtn"
-        disabled
-        onclick="printBatch(true)"
-      >
-        🖨️ Печать выбранных с Brand (х2)
-      </button>
-
-    </div>
-
   </div>
 
-
-  <main class="card">
-
-    <div class="table-container">
-
-      <table class="data-table">
-
-        <thead>
-          <tr>
-            <th style="width: 40px;">
-              <input
-                type="checkbox"
-                class="custom-checkbox"
-                id="selectAllCheckbox"
-                onclick="toggleSelectAll(this)"
-              >
-            </th>
-
-            <th>#</th>
-
-            <th>Serial Number (SN)</th>
-
-            <th>Part Number (PN)</th>
-
-            <th>Brand</th>
-
-            <th style="width: 250px; text-align: right;">
-              Печать (х2) / Просмотр
-            </th>
-          </tr>
-        </thead>
-
-        <tbody id="productsTableBody"></tbody>
-
-      </table>
-
-    </div>
-
-  </main>
-
-
-  <!-- ==========================================================
-       ОТДЕЛЬНИЙ PRINT CONTAINER
-       ========================================================== -->
-
-  <div id="printContainer"></div>
-
+  <div id="printContainer" style="display: none;"></div>
 
   <script>
+    const SUPABASE_URL = 'https://xgjggfnfgrmkuclgjmih.supabase.co';
+    const SUPABASE_KEY = 'sb_publishable_MLyF6CMVplwDyDqSeDnSBA__RakJscC';
+    const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
-    /* ============================================================
-       ДЕМО-ДАНІ
-       ============================================================
+    const TABLE_NAME = 'products_db';
+    const COLUMN_PN = 'tpv_pn';
+    const COLUMN_SN = 'panel_sn';
+    const COLUMN_BRAND = 'brand';
 
-       Замініть цей масив своїм API/даними.
+    const SHEET_ID = '10W03bvKlVFlIUcxsHkzP_v_13gtnYRBmnrrO0ujB1bU';
+    
+    let currentGid = '0';
+    let products = [];
+    let selectedIndices = new Set();
+    let modalActiveItem = null;
+    let modalActiveBrand = false;
+    let isInitialLoad = true;
 
-       Формат:
-       {
-         id: number|string,
-         sn: string,
-         pn: string,
-         brand: string
-       }
-    */
+    const tableBody = document.getElementById('productsTableBody');
+    const modal = document.getElementById('labelModal');
+    const modalPreviewBody = document.getElementById('modalPreviewBody');
+    const printContainer = document.getElementById('printContainer');
+    const syncIndicator = document.getElementById('syncIndicator');
 
-    const products = [
-      {
-        id: 1,
-        sn: 'SN123456789',
-        pn: 'PN-100-ABC',
-        brand: 'DEMO BRAND'
-      },
-      {
-        id: 2,
-        sn: 'SN987654321',
-        pn: 'PN-200-XYZ',
-        brand: 'ANOTHER BRAND'
-      },
-      {
-        id: 3,
-        sn: 'SN555555555',
-        pn: 'PN-300-TEST',
-        brand: 'TEST BRAND'
+    function parseCSV(str) {
+      const arr = [];
+      let quote = false;
+      for (let row = 0, col = 0, c = 0; c < str.length; c++) {
+        let cc = str[c], nc = str[c+1];
+        arr[row] = arr[row] || [];
+        arr[row][col] = arr[row][col] || '';
+        if (cc == '"' && quote && nc == '"') { arr[row][col] += cc; ++c; continue; }
+        if (cc == '"') { quote = !quote; continue; }
+        if (cc == ',' && !quote) { ++col; continue; }
+        if (cc == '\r' && nc == '\n' && !quote) { ++row; col = 0; ++c; continue; }
+        if (cc == '\n' && !quote) { ++row; col = 0; continue; }
+        if (cc == '\r' && !quote) { ++row; col = 0; continue; }
+        arr[row][col] += cc;
       }
-    ];
-
-
-    let currentSheet = '0';
-
-
-    /* ============================================================
-       РЕНДЕР ТАБЛИЦІ
-       ============================================================ */
-
-    function renderProducts() {
-
-      const tbody = document.getElementById('productsTableBody');
-
-      if (!products.length) {
-
-        tbody.innerHTML = `
-          <tr>
-            <td
-              colspan="6"
-              style="text-align:center;padding:30px;"
-            >
-              Даних немає
-            </td>
-          </tr>
-        `;
-
-        return;
-      }
-
-
-      tbody.innerHTML = products.map((product, index) => {
-
-        return `
-          <tr>
-
-            <td>
-              <input
-                type="checkbox"
-                class="custom-checkbox product-checkbox"
-                data-id="${escapeHtml(product.id)}"
-                onchange="updateSelectedCount()"
-              >
-            </td>
-
-            <td>${index + 1}</td>
-
-            <td>${escapeHtml(product.sn)}</td>
-
-            <td>${escapeHtml(product.pn)}</td>
-
-            <td>${escapeHtml(product.brand || '')}</td>
-
-            <td style="text-align:right;">
-
-              <button
-                class="btn btn-secondary"
-                onclick="printSingle('${escapeJs(product.id)}', false)"
-              >
-                🖨️ Друк
-              </button>
-
-              <button
-                class="btn btn-brand"
-                onclick="printSingle('${escapeJs(product.id)}', true)"
-              >
-                🖨️ Brand
-              </button>
-
-            </td>
-
-          </tr>
-        `;
-
-      }).join('');
-
-
-      updateSelectedCount();
+      return arr;
     }
 
+    async function getProductFromDatabase(sn) {
+      try {
+        const { data, error } = await supabaseClient
+          .from(TABLE_NAME)
+          .select(`${COLUMN_PN}, ${COLUMN_BRAND}`)
+          .eq(COLUMN_SN, sn)
+          .single();
 
-    /* ============================================================
-       ВИБІР
-       ============================================================ */
-
-    function toggleSelectAll(checkbox) {
-
-      document
-        .querySelectorAll('.product-checkbox')
-        .forEach(item => {
-          item.checked = checkbox.checked;
-        });
-
-      updateSelectedCount();
-    }
-
-
-    function updateSelectedCount() {
-
-      const selected = getSelectedProducts();
-
-      const count = selected.length;
-
-      document.getElementById('selectedCountText').textContent =
-        `Выбрано позиций: ${count}`;
-
-
-      document.getElementById('batchPrintNormalBtn').disabled =
-        count === 0;
-
-      document.getElementById('batchPrintBrandBtn').disabled =
-        count === 0;
-    }
-
-
-    function getSelectedProducts() {
-
-      const selectedIds = Array.from(
-        document.querySelectorAll('.product-checkbox:checked')
-      ).map(checkbox => String(checkbox.dataset.id));
-
-
-      return products.filter(product =>
-        selectedIds.includes(String(product.id))
-      );
-    }
-
-
-    /* ============================================================
-       ПЕРЕМИКАННЯ ЛИСТІВ
-       ============================================================ */
-
-    function switchSheet(sheetId) {
-
-      currentSheet = String(sheetId);
-
-      document
-        .querySelectorAll('.sheet-tab-btn')
-        .forEach(button => {
-          button.classList.remove('active');
-        });
-
-
-      const button = document.getElementById(
-        `tabBtn${sheetId}`
-      );
-
-      if (button) {
-        button.classList.add('active');
+        if (error || !data) {
+          return { pn: "NOT_FOUND_IN_DB", brand: "-" };
+        }
+        return { 
+          pn: data[COLUMN_PN] || "N/A", 
+          brand: data[COLUMN_BRAND] || "-" 
+        };
+      } catch (e) {
+        return { pn: "DB_ERROR", brand: "ERR" };
       }
     }
 
+    async function switchSheet(gid) {
+      if (currentGid === gid) return;
+      currentGid = gid;
+      
+      document.querySelectorAll('.sheet-tab-btn').forEach(btn => btn.classList.remove('active'));
+      const activeBtn = document.getElementById(`tabBtn${gid}`);
+      if (activeBtn) activeBtn.classList.add('active');
 
-    /* ============================================================
-       ДРУК ОДНІЄЇ ПОЗИЦІЇ
-       ============================================================ */
-
-    function printSingle(productId, withBrand = false) {
-
-      const product = products.find(
-        item => String(item.id) === String(productId)
-      );
-
-
-      if (!product) {
-        console.error('Product not found:', productId);
-        return;
+      if (products.length === 0) {
+        tableBody.innerHTML = `<tr><td colspan="6" style="text-align: center; padding: 30px;">Загрузка данных с листа...</td></tr>`;
       }
 
-
-      /*
-       * x2 — друкуємо дві копії.
-       */
-      const printItems = [
-        product,
-        product
-      ];
-
-
-      preparePrint(printItems, withBrand);
+      await fetchDataFromGoogleSheet(false);
     }
 
-
-    /* ============================================================
-       ДРУК ВИБРАНИХ
-       ============================================================ */
-
-    function printBatch(withBrand = false) {
-
-      const selected = getSelectedProducts();
-
-
-      if (!selected.length) {
-        alert('Оберіть хоча б одну позицію.');
-        return;
-      }
-
-
-      /*
-       * Для кожної позиції створюємо 2 етикетки.
-       *
-       * Наприклад:
-       *
-       * Product A
-       * Product A
-       * Product B
-       * Product B
-       *
-       * Кожна буде окремою сторінкою 100×80 мм.
-       */
-
-      const printItems = [];
-
-      selected.forEach(product => {
-
-        printItems.push(product);
-        printItems.push(product);
-
-      });
-
-
-      preparePrint(printItems, withBrand);
-    }
-
-
-    /* ============================================================
-       ПІДГОТОВКА PRINT DOM
-       ============================================================ */
-
-    function preparePrint(items, withBrand) {
-
-      const printContainer =
-        document.getElementById('printContainer');
-
-
-      /*
-       * Повністю очищаємо старий друк.
-       */
-      printContainer.innerHTML = '';
-
-
-      /*
-       * Створюємо кожну етикетку окремим DOM-блоком.
-       */
-      items.forEach((product, index) => {
-
-        const label = createLabel(
-          product,
-          withBrand,
-          index + 1,
-          items.length
-        );
-
-        printContainer.appendChild(label);
-
-      });
-
-
-      /*
-       * Даємо браузеру завершити layout/рендер SVG.
-       *
-       * Особливо важливо для JsBarcode.
-       */
-      requestAnimationFrame(() => {
-
-        requestAnimationFrame(() => {
-
-          generateBarcodes();
-
-          /*
-           * Ще один кадр — після генерації SVG.
-           */
-          requestAnimationFrame(() => {
-
-            window.print();
-
-          });
-
-        });
-
-      });
-    }
-
-
-    /* ============================================================
-       СТВОРЕННЯ ЕТИКЕТКИ
-       ============================================================ */
-
-    function createLabel(
-      product,
-      withBrand,
-      copyNumber,
-      totalCopies
-    ) {
-
-      const label = document.createElement('section');
-
-      label.className = 'industrial-label';
-
-
-      const brandHtml = withBrand && product.brand
-        ? `
-          <div class="label-brand">
-            ${escapeHtml(product.brand)}
-          </div>
-        `
-        : `
-          <div class="label-brand">
-            &nbsp;
-          </div>
-        `;
-
-
-      label.innerHTML = `
-
-        <div class="label-inner">
-
-          <!-- HEADER -->
-
-          <div class="label-header">
-
-            ${brandHtml}
-
-            <div class="label-type">
-              INDUSTRIAL LABEL
-            </div>
-
-          </div>
-
-
-          <!-- PN -->
-
-          <div class="label-pn-block">
-
-            <div class="label-pn-title">
-              PART NUMBER
-            </div>
-
-            <div class="label-pn">
-              ${escapeHtml(product.pn)}
-            </div>
-
-          </div>
-
-
-          <!-- SN -->
-
-          <div class="label-sn-block">
-
-            <div class="label-sn-title">
-              SERIAL NUMBER
-            </div>
-
-            <div class="label-sn">
-              ${escapeHtml(product.sn)}
-            </div>
-
-          </div>
-
-
-          <!-- BARCODES -->
-
-          <div class="label-barcodes">
-
-            <div class="barcode-block">
-
-              <div class="barcode-title">
-                PN
-              </div>
-
-              <svg
-                class="barcode-svg"
-                data-barcode="${escapeHtml(product.pn)}"
-                data-format="CODE128"
-                aria-label="PN barcode"
-              ></svg>
-
-              <div class="barcode-value">
-                ${escapeHtml(product.pn)}
-              </div>
-
-            </div>
-
-
-            <div class="barcode-block">
-
-              <div class="barcode-title">
-                SN
-              </div>
-
-              <svg
-                class="barcode-svg"
-                data-barcode="${escapeHtml(product.sn)}"
-                data-format="CODE128"
-                aria-label="SN barcode"
-              ></svg>
-
-              <div class="barcode-value">
-                ${escapeHtml(product.sn)}
-              </div>
-
-            </div>
-
-          </div>
-
-
-          <!-- FOOTER -->
-
-          <div class="label-footer">
-
-            <div class="label-copy">
-              ${copyNumber} / ${totalCopies}
-            </div>
-
-          </div>
-
-        </div>
-      `;
-
-
-      return label;
-    }
-
-
-    /* ============================================================
-       ГЕНЕРАЦІЯ SVG BARCODE
-       ============================================================ */
-
-    function generateBarcodes() {
-
-      const barcodes =
-        document.querySelectorAll(
-          '#printContainer .barcode-svg'
-        );
-
-
-      if (
-        typeof JsBarcode === 'undefined'
-      ) {
-
-        console.error(
-          'JsBarcode library is not loaded.'
-        );
-
-        return;
-      }
-
-
-      barcodes.forEach(svg => {
-
-        const value = svg.dataset.barcode;
-
-
-        if (!value) {
-          return;
+    async function fetchDataFromGoogleSheet(showIndicator = false) {
+      try {
+        if (showIndicator || isInitialLoad) {
+          syncIndicator.classList.add('visible');
         }
 
+        const url = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:csv&gid=${currentGid}&_nc=${Date.now()}`;
+        const response = await fetch(url);
+        
+        if (!response.ok) throw new Error('Не удалось получить данные с сервера Google');
+        
+        const csvText = await response.text();
+        const rows = parseCSV(csvText);
 
-        /*
-         * Важливі параметри:
-         *
-         * width  — товщина ліній
-         * height — фізична висота barcode
-         *
-         * displayValue:false
-         *
-         * Текст ми рендеримо окремим HTML-елементом,
-         * тому barcode не роздуває висоту SVG.
-         */
+        const rawSnList = [];
+        for (let i = 1; i < rows.length; i++) {
+          const row = rows[i];
+          if (!row || row.length < 3) continue;
 
-        JsBarcode(svg, value, {
-
-          format: 'CODE128',
-
-          width: 1.4,
-
-          height: 70,
-
-          displayValue: false,
-
-          margin: 0,
-
-          marginTop: 0,
-
-          marginBottom: 0,
-
-          marginLeft: 0,
-
-          marginRight: 0,
-
-          background: '#ffffff',
-
-          lineColor: '#000000',
-
-          valid: function(valid) {
-
-            if (!valid) {
-              console.warn(
-                'Invalid barcode:',
-                value
-              );
-            }
-
+          const sn = row[2] ? row[2].trim() : '';
+          if (sn && sn.toUpperCase() !== 'SERIAL NUMBER') {
+            rawSnList.push(sn);
           }
-
-        });
-
-
-        /*
-         * Примусово задаємо viewBox, якщо бібліотека його
-         * не створила.
-         */
-        if (!svg.getAttribute('viewBox')) {
-
-          const width =
-            svg.getAttribute('width') || 300;
-
-          const height =
-            svg.getAttribute('height') || 70;
-
-          svg.setAttribute(
-            'viewBox',
-            `0 0 ${parseFloat(width)} ${parseFloat(height)}`
-          );
-
         }
 
-      });
+        const lastSnList = rawSnList.slice(-10).reverse();
+        const validItems = [];
+
+        for (const sn of lastSnList) {
+          const dbData = await getProductFromDatabase(sn);
+          validItems.push({ 
+            pn: dbData.pn, 
+            brand: dbData.brand, 
+            sn: sn 
+          });
+        }
+
+        products = validItems;
+        selectedIndices.clear();
+        renderTable();
+        updateBatchBar();
+      } catch (error) {
+        console.error('Ошибка фонового обновления:', error);
+      } finally {
+        isInitialLoad = false;
+        syncIndicator.classList.remove('visible');
+      }
     }
 
-
-    /* ============================================================
-       ПІСЛЯ PRINT
-       ============================================================ */
-
-    window.addEventListener('afterprint', () => {
-
-      /*
-       * Очищаємо print DOM після завершення друку.
-       *
-       * Це важливо, щоб при наступному друці не залишилися
-       * старі етикетки.
-       */
-
-      const printContainer =
-        document.getElementById('printContainer');
-
-      printContainer.innerHTML = '';
-
-    });
-
-
-    /* ============================================================
-       ESCAPE
-       ============================================================ */
-
-    function escapeHtml(value) {
-
-      return String(value ?? '')
-        .replace(/&/g, '&amp;')
-        .replace(/</g, '&lt;')
-        .replace(/>/g, '&gt;')
-        .replace(/"/g, '&quot;')
-        .replace(/'/g, '&#039;');
-
-    }
-
-
-    function escapeJs(value) {
-
-      return String(value ?? '')
-        .replace(/\\/g, '\\\\')
-        .replace(/'/g, "\\'");
-
-    }
-
-
-    /* ============================================================
-       HOTKEYS
-       ============================================================ */
-
-    document.addEventListener('keydown', event => {
-
-      if (!event.altKey) {
+    function renderTable() {
+      if (products.length === 0) {
+        tableBody.innerHTML = `<tr><td colspan="6" style="text-align: center; padding: 20px;">Записей в таблице не найдено</td></tr>`;
         return;
       }
 
+      tableBody.innerHTML = '';
+      products.forEach((product, index) => {
+        const isChecked = selectedIndices.has(index);
+        const row = document.createElement('tr');
+        row.innerHTML = `
+          <td><input type="checkbox" class="custom-checkbox" ${isChecked ? 'checked' : ''} onchange="toggleRowSelection(${index}, this)"></td>
+          <td><strong>${index + 1}</strong></td>
+          <td class="code-text">${escapeHtml(product.sn)}</td>
+          <td class="code-text">${escapeHtml(product.pn)}</td>
+          <td><span style="background: #374151; padding: 3px 8px; border-radius: 4px; font-size: 12px; font-weight: 600;">${escapeHtml(product.brand)}</span></td>
+          <td class="actions-cell">
+            <div class="action-group">
+              <button class="btn btn-secondary" onclick="openPreview(${index}, false)" title="Предпросмотр">👁️</button>
+              <button class="btn" onclick="printSingle(${index}, false)" title="Сразу печать 2 копии">🖨️ х2</button>
+            </div>
+            <div class="action-group">
+              <button class="btn btn-secondary" onclick="openPreview(${index}, true)" title="Предпросмотр с Brand">👁️</button>
+              <button class="btn btn-brand" onclick="printSingle(${index}, true)" title="Сразу печать 2 копии с Brand">🖨️ х2</button>
+            </div>
+          </td>
+        `;
+        tableBody.appendChild(row);
+      });
+    }
 
-      if (event.key === '1') {
-
-        event.preventDefault();
-
-        switchSheet('0');
-
+    function toggleRowSelection(index, checkbox) {
+      if (checkbox.checked) {
+        selectedIndices.add(index);
+      } else {
+        selectedIndices.delete(index);
       }
+      updateBatchBar();
+    }
 
+    function toggleSelectAll(selectAllCheckbox) {
+      const checkboxes = document.querySelectorAll('#productsTableBody input[type="checkbox"]');
+      checkboxes.forEach((cb, idx) => {
+        cb.checked = selectAllCheckbox.checked;
+        if (selectAllCheckbox.checked) {
+          selectedIndices.add(idx);
+        } else {
+          selectedIndices.delete(idx);
+        }
+      });
+      updateBatchBar();
+    }
 
-      if (event.key === '2') {
-
-        event.preventDefault();
-
-        switchSheet('193025884');
-
+    function updateBatchBar() {
+      const count = selectedIndices.size;
+      document.getElementById('selectedCountText').innerText = `Выбрано позиций: ${count}`;
+      const btnNorm = document.getElementById('batchPrintNormalBtn');
+      const btnBrand = document.getElementById('batchPrintBrandBtn');
+      
+      if (count > 0) {
+        btnNorm.removeAttribute('disabled');
+        btnBrand.removeAttribute('disabled');
+      } else {
+        btnNorm.setAttribute('disabled', 'true');
+        btnBrand.setAttribute('disabled', 'true');
       }
+    }
 
+    function escapeHtml(text) {
+      const div = document.createElement('div');
+      div.innerText = text;
+      return div.innerHTML;
+    }
+
+    function buildLabelsHTML(itemsList, includeBrand) {
+      let html = '';
+      itemsList.forEach((product, idx) => {
+        for (let copy = 0; copy < 2; copy++) {
+          html += `
+            <div class="industrial-label">
+              <div class="label-block">
+                <div class="label-header-row">
+                  <span class="label-caption">PN</span>
+                  ${includeBrand ? `<span class="label-brand-right">${escapeHtml(product.brand)}</span>` : ''}
+                </div>
+                <div class="barcode-wrapper">
+                  <svg id="barcodePN_${idx}_${copy}"></svg>
+                </div>
+                <span class="label-value-text">${escapeHtml(product.pn)}</span>
+              </div>
+
+              <div class="label-spacer"></div>
+
+              <div class="label-block">
+                <div class="label-header-row">
+                  <span class="label-caption">SN</span>
+                </div>
+                <div class="barcode-wrapper">
+                  <svg id="barcodeSN_${idx}_${copy}"></svg>
+                </div>
+                <span class="label-value-text">${escapeHtml(product.sn)}</span>
+              </div>
+            </div>
+          `;
+        }
+      });
+      return html;
+    }
+
+    function renderBarcodesInContainer(containerSelector) {
+      const container = document.querySelector(containerSelector);
+      if (!container) return;
+
+      const barcodeOptions = {
+        format: "CODE128",
+        displayValue: false,
+        margin: 0,
+        height: 48,
+        width: 1.55,
+        lineColor: "#000000",
+        background: "transparent"
+      };
+
+      container.querySelectorAll('.industrial-label').forEach((label) => {
+        const svgPn = label.querySelector('[id^="barcodePN_"]');
+        const svgSn = label.querySelector('[id^="barcodeSN_"]');
+        
+        if (svgPn && svgSn) {
+          const pnVal = label.children[0].querySelector('.label-value-text').innerText;
+          const snVal = label.children[2].querySelector('.label-value-text').innerText;
+          
+          JsBarcode(svgPn, pnVal, barcodeOptions);
+          JsBarcode(svgSn, snVal, barcodeOptions);
+        }
+      });
+    }
+
+    function printSingle(index, includeBrand) {
+      const product = products[index];
+      if (!product) return;
+
+      printContainer.innerHTML = buildLabelsHTML([product], includeBrand);
+      renderBarcodesInContainer('#printContainer');
+      window.print();
+    }
+
+    function printBatch(includeBrand) {
+      if (selectedIndices.size === 0) return;
+
+      const itemsToPrint = [];
+      selectedIndices.forEach(idx => {
+        if (products[idx]) itemsToPrint.push(products[idx]);
+      });
+
+      printContainer.innerHTML = buildLabelsHTML(itemsToPrint, includeBrand);
+      renderBarcodesInContainer('#printContainer');
+      window.print();
+    }
+
+    function openPreview(index, includeBrand) {
+      const product = products[index];
+      if (!product) return;
+
+      modalActiveItem = product;
+      modalActiveBrand = includeBrand;
+
+      document.getElementById('modalTitleText').innerText = includeBrand ? 'Предпросмотр (с Brand - 2 копии)' : 'Предпросмотр (Обычная - 2 копии)';
+
+      modalPreviewBody.innerHTML = buildLabelsHTML([product], includeBrand);
+      renderBarcodesInContainer('#modalPreviewBody');
+
+      modal.classList.add('is-open');
+    }
+
+    function closeModal() { modal.classList.remove('is-open'); }
+
+    document.addEventListener('keydown', (e) => {
+      if (e.altKey) {
+        if (e.key === '1') {
+          e.preventDefault();
+          switchSheet('0');
+        } else if (e.key === '2') {
+          e.preventDefault();
+          switchSheet('193025884');
+        }
+      }
     });
 
-
-    /* ============================================================
-       START
-       ============================================================ */
+    document.getElementById('closeModalCross').addEventListener('click', closeModal);
+    document.getElementById('closeModalBtn').addEventListener('click', closeModal);
+    document.getElementById('printModalBtn').addEventListener('click', () => {
+      if (modalActiveItem) {
+        printSingle(products.indexOf(modalActiveItem), modalActiveBrand);
+        closeModal();
+      }
+    });
 
     document.addEventListener('DOMContentLoaded', () => {
-
-      renderProducts();
-
-      const syncIndicator =
-        document.getElementById('syncIndicator');
-
-      /*
-       * Тут можна залишити вашу реальну синхронізацію/API.
-       */
-
-      setTimeout(() => {
-
-        syncIndicator.style.display = 'none';
-
-      }, 500);
-
+      fetchDataFromGoogleSheet(true);
+      setInterval(() => fetchDataFromGoogleSheet(false), 10000);
     });
-
   </script>
-
 </body>
 </html>
