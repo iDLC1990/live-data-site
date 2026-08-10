@@ -852,7 +852,7 @@
       }
     });
 
-    document.getElementById('DOMContentLoaded', () => {
+    document.addEventListener('DOMContentLoaded', () => {
       fetchDataFromGoogleSheet(true);
       setInterval(() => fetchDataFromGoogleSheet(false), 5000);
     });
