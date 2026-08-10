@@ -51,7 +51,6 @@
     }
     .page-title { font-size: 26px; font-weight: 700; color: #FFFFFF; }
 
-    /* Переключатель листов */
     .sheet-tabs {
       display: flex;
       gap: 10px;
@@ -86,7 +85,6 @@
       border: 1px solid rgba(255, 255, 255, 0.2);
     }
 
-    /* Индикатор фонового обновления */
     .sync-indicator {
       margin-left: auto;
       font-size: 13px;
@@ -169,7 +167,6 @@
       letter-spacing: 0.5px;
     }
 
-    /* Чекбоксы */
     .custom-checkbox {
       width: 18px;
       height: 18px;
@@ -177,7 +174,6 @@
       accent-color: var(--accent-color);
     }
 
-    /* Кнопки и группы действий */
     .actions-cell { 
       display: flex; 
       gap: 16px; 
@@ -216,7 +212,6 @@
     .btn-brand { background-color: var(--brand-color); }
     .btn-brand:hover { background-color: var(--brand-hover); }
 
-    /* Модальное окно просмотра */
     .modal-backdrop {
       position: fixed;
       top: 0; left: 0; width: 100vw; height: 100vh;
@@ -247,23 +242,23 @@
     .modal-footer { padding: 16px 24px; border-top: 1px solid var(--border-color); display: flex; justify-content: flex-end; gap: 12px; }
 
     /* ==========================================
-        ЕКРАННА ВЕРСТКА ЕТИКЕТКИ (100x80 мм)
+        БЕЗПЕЧНА ВЕРСТКА ЕТИКЕТКИ (100x78 мм)
         ========================================== */
     .industrial-label {
       width: 100mm;
-      height: 80mm;
+      height: 78mm; /* Зменшено з 80мм до 78мм для запобігання помилки GAP */
       background-color: #FFFFFF;
       color: #000000;
-      padding: 5mm 6mm; /* ТОЧНО 5мм ЗВЕРХУ ТА ЗНИЗУ */
+      padding: 5mm 5mm; /* Фіксований відступ 5мм зверху і знизу */
       box-sizing: border-box;
       font-family: Arial, 'Helvetica Neue', sans-serif;
       display: flex;
       flex-direction: column;
-      justify-content: space-between; /* Рівномірний розподіл у межах 70мм корисного простору */
+      justify-content: space-around;
       align-items: center;
       border: 1px solid #D1D5DB;
       box-shadow: 0 10px 25px rgba(0, 0, 0, 0.5);
-      overflow: hidden; /* Захист від вилазіння контенту */
+      overflow: hidden;
     }
 
     .label-block { 
@@ -279,16 +274,16 @@
       display: flex;
       justify-content: center;
       align-items: center;
-      margin-bottom: 1mm;
+      margin-bottom: 1px;
     }
 
     .label-caption { 
-      font-size: 15pt; 
+      font-size: 14pt; 
       font-weight: 900;
       color: #000000; 
       letter-spacing: 1px; 
       text-transform: uppercase; 
-      line-height: 1.1; 
+      line-height: 1; 
     }
 
     .label-brand-right {
@@ -297,9 +292,9 @@
       top: 50%;
       transform: translateY(-50%);
       font-weight: 900;
-      font-size: 13pt;
+      font-size: 12pt;
       color: #000000;
-      line-height: 1.1;
+      line-height: 1;
       text-transform: uppercase;
     }
 
@@ -313,32 +308,32 @@
     
     .barcode-wrapper svg { 
       max-width: 100%; 
-      height: 18mm; /* Скоригована висота для точного вміщення */
+      height: 15mm; /* Оптимальна висота штрихкоду */
       display: block; 
     }
 
     .label-value-text {
-      font-size: 14pt;
+      font-size: 12.5pt;
       font-weight: 900;
       font-family: 'Consolas', 'Courier New', monospace; 
       color: #000000;
       letter-spacing: 0.5px;
-      line-height: 1.1;
+      line-height: 1;
       text-align: center;
     }
 
     /* ==========================================
-        НАЛАШТУВАННЯ ДЛЯ ТЕРМОДРУКУ TSC DA220
+        ДРУК ДЛЯ TSC DA220
         ========================================== */
     @page { 
       size: 100mm 80mm landscape; 
-      margin: 0; 
+      margin: 0 !important; 
     }
 
     @media print {
       html, body {
         width: 100mm !important;
-        height: 80mm !important;
+        height: 78mm !important;
         margin: 0 !important;
         padding: 0 !important;
         background: #ffffff !important;
@@ -356,10 +351,12 @@
         display: block !important;
         position: static !important;
         width: 100mm !important;
+        height: 78mm !important;
         margin: 0 !important;
         padding: 0 !important;
         background: #FFFFFF !important;
         visibility: visible !important;
+        overflow: hidden !important;
       }
 
       #printContainer * {
@@ -368,10 +365,10 @@
 
       #printContainer .industrial-label { 
         width: 100mm !important;
-        height: 80mm !important;
+        height: 78mm !important;
         max-width: 100mm !important;
-        max-height: 80mm !important;
-        padding: 5mm 6mm !important; /* Рівно 5мм відступи при друку */
+        max-height: 78mm !important;
+        padding: 5mm 5mm !important;
         margin: 0 !important;
         border: none !important; 
         box-shadow: none !important; 
@@ -700,8 +697,8 @@
         format: "CODE128",
         displayValue: false,
         margin: 0,
-        height: 42, /* Висота штрихкоду підібрана для точного вміщення у 80мм */
-        width: 1.5,
+        height: 35, /* Безпечна висота штрихкоду */
+        width: 1.4,
         lineColor: "#000000",
         background: "transparent"
       };
