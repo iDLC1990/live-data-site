@@ -333,56 +333,79 @@
     /* ==========================================
         ДРУК НА TSC DA220
         ========================================== */
-    @page { 
-      size: 100mm 78mm landscape; 
-      margin: 0 !important; 
+    /* ==========================================
+       НАДІЙНИЙ ДРУК НА TSC DA220
+       Кожна етикетка = окрема сторінка 100×78 мм.
+       ========================================== */
+    @page {
+      size: 100mm 78mm;
+      margin: 0;
     }
 
     @media print {
-      html, body {
-        width: 100mm !important;
-        height: 78mm !important;
-        margin: 0 !important;
-        padding: 0 !important;
-        background: #ffffff !important;
-        display: block !important;
-        overflow: hidden !important;
+      * {
+        -webkit-print-color-adjust: exact !important;
+        print-color-adjust: exact !important;
       }
 
-      .app-container, 
-      .modal-backdrop { 
-        display: none !important; 
+      html, body {
+        width: 100% !important;
+        height: auto !important;
+        min-width: 0 !important;
+        min-height: 0 !important;
+        margin: 0 !important;
+        padding: 0 !important;
+        background: #fff !important;
+        display: block !important;
+        overflow: visible !important;
+      }
+
+      body {
+        position: static !important;
+      }
+
+      .app-container,
+      .modal-backdrop {
+        display: none !important;
       }
 
       #printContainer {
         display: block !important;
-        position: absolute !important;
-        top: 0 !important;
-        left: 0 !important;
-        width: 100mm !important;
-        height: 78mm !important;
+        position: static !important;
+        width: 100% !important;
+        height: auto !important;
         margin: 0 !important;
         padding: 0 !important;
       }
 
-      #printContainer .industrial-label { 
+      #printContainer .industrial-label {
         width: 100mm !important;
         height: 78mm !important;
+        min-width: 100mm !important;
+        max-width: 100mm !important;
+        min-height: 78mm !important;
+        max-height: 78mm !important;
+        margin: 0 !important;
         padding: 2mm 3mm !important;
-        border: none !important; 
-        box-shadow: none !important; 
+        border: none !important;
+        box-shadow: none !important;
         box-sizing: border-box !important;
         overflow: hidden !important;
 
+        display: flex !important;
+        flex-direction: column !important;
+
+        page-break-before: auto !important;
         page-break-inside: avoid !important;
-        break-inside: avoid !important;
         page-break-after: always !important;
+        break-before: auto !important;
+        break-inside: avoid !important;
         break-after: page !important;
       }
 
       #printContainer .industrial-label:last-child {
-        page-break-after: avoid !important;
-        break-after: avoid !important;
+        page-break-after: auto !important;
+        break-after: auto !important;
       }
     }
   </style>
@@ -656,6 +679,15 @@
       return div.innerHTML;
     }
 
+    function runPrint() {
+      // Даємо браузеру завершити розкладку та промалювати штрихкоди
+      requestAnimationFrame(() => {
+        requestAnimationFrame(() => {
+          window.print();
+        });
+      });
+    }
+
     function printTestLabel() {
       printContainer.innerHTML = `
         <div class="industrial-label" style="justify-content: center; align-items: center; text-align: center;">
@@ -663,7 +695,7 @@
           <p style="font-size: 14pt; margin-top: 5mm;">100 x 78 mm — OK</p>
         </div>
       `;
-      window.print();
+      runPrint();
     }
 
     function buildLabelsHTML(itemsList, includeBrand) {
@@ -745,7 +777,7 @@
 
       printContainer.innerHTML = buildLabelsHTML([product], includeBrand);
       renderBarcodesInContainer('#printContainer');
-      window.print();
+      runPrint();
     }
 
     function printBatch(includeBrand) {
@@ -758,7 +790,7 @@
 
       printContainer.innerHTML = buildLabelsHTML(itemsToPrint, includeBrand);
       renderBarcodesInContainer('#printContainer');
-      window.print();
+      runPrint();
     }
 
     function openPreview(index, includeBrand) {
@@ -797,6 +829,11 @@
         printSingle(products.indexOf(modalActiveItem), modalActiveBrand);
         closeModal();
       }
+    });
+
+    // Після друку очищаємо контейнер, щоб наступний друк починався чисто.
+    window.addEventListener('afterprint', () => {
+      printContainer.innerHTML = '';
     });
 
     document.addEventListener('DOMContentLoaded', () => {
