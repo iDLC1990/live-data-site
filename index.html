@@ -356,14 +356,13 @@
     @media print {
       html, body {
         width: 100mm !important;
-        height: 78mm !important;
+        height: auto !important;
         min-width: 100mm !important;
-        min-height: 78mm !important;
         margin: 0 !important;
         padding: 0 !important;
         background: #ffffff !important;
         display: block !important;
-        overflow: hidden !important;
+        overflow: visible !important;
       }
 
       .app-container,
@@ -394,15 +393,20 @@
         overflow: hidden !important;
         display: block !important;
         position: relative !important;
-        page-break-inside: avoid !important;
-        break-inside: avoid !important;
+        
+        /* КРИТИЧНО ДЛЯ ОКРЕМИХ ЕТИКЕТОК */
+        page-break-before: always !important;
         page-break-after: always !important;
+        page-break-inside: avoid !important;
+        break-before: page !important;
         break-after: page !important;
+        break-inside: avoid !important;
       }
 
-      #printContainer .industrial-label:last-child {
-        page-break-after: auto !important;
-        break-after: auto !important;
+      /* Першу етикетку не треба штучно відривати перед початком */
+      #printContainer .industrial-label:first-child {
+        page-break-before: avoid !important;
+        break-before: avoid !important;
       }
     }
   </style>
@@ -527,10 +531,8 @@
           .single();
 
         if (error || !data) {
-          // Якщо в базі даних не знайдено, перевіряємо префікс сеійного номера
           const upperSn = sn.toUpperCase();
           if (upperSn.startsWith('TBV') && upperSn.length >= 12) {
-            // Витягуємо перші 12 символів (наприклад, TBV500412M8)
             const prefix = upperSn.substring(0, 12);
             return {
               pn: `750${prefix}N000`,
