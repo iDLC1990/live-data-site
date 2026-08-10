@@ -346,17 +346,17 @@
     }
 
     /* ==========================================
-        ДРУК — ДОЗВОЛЯЄМО БРАУЗЕРУ ОБИРАТИ ОРІЄНТАЦІЮ
+        ДРУК — РЕАЛЬНИЙ РОЗМІР 100 x 78 мм
         ========================================== */
     @page {
-      size: auto;
+      size: 100mm 78mm;
       margin: 0;
     }
 
     @media print {
       html, body {
-        width: 100mm ;
-        height: 78mm;
+        width: 100mm !important;
+        height: 78mm !important;
         min-width: 100mm !important;
         min-height: 78mm !important;
         margin: 0 !important;
@@ -365,7 +365,6 @@
         display: block !important;
         overflow: hidden !important;
       }
-
 
       .app-container,
       .modal-backdrop {
@@ -511,13 +510,9 @@
         if (cc == '"' && quote && nc == '"') { arr[row][col] += cc; ++c; continue; }
         if (cc == '"') { quote = !quote; continue; }
         if (cc == ',' && !quote) { ++col; continue; }
-        if (cc == '
-' && nc == '
-' && !quote) { ++row; col = 0; ++c; continue; }
-        if (cc == '
-' && !quote) { ++row; col = 0; continue; }
-        if (cc == '
-' && !quote) { ++row; col = 0; continue; }
+        if (cc == '\r' && nc == '\n' && !quote) { ++row; col = 0; ++c; continue; }
+        if (cc == '\n' && !quote) { ++row; col = 0; continue; }
+        if (cc == '\r' && !quote) { ++row; col = 0; continue; }
         arr[row][col] += cc;
       }
       return arr;
