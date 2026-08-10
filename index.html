@@ -4,375 +4,2331 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1.0">
-<title>Друк етикеток — TSC DA220</title>
+
+<title>Друк етикеток — TSC DA220 Emulator</title>
+
 <script src="https://cdn.jsdelivr.net/npm/jsbarcode@3.11.6/dist/JsBarcode.all.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
 <style>
-:root{--bg:#111827;--card:#1F2937;--blue:#2563EB;--blueh:#1D4ED8;--green:#059669;--greenh:#047857;--text:#F9FAFB;--muted:#9CA3AF;--border:#374151;--radius:12px;--shadow:0 10px 25px -5px rgba(0,0,0,.5)}
-*{box-sizing:border-box;margin:0;padding:0}
-body{background:var(--bg);color:var(--text);font-family:'Segoe UI',Arial,sans-serif;min-height:100vh;padding:40px 20px;line-height:1.5}
-.app-container{max-width:1020px;width:100%;margin:auto}
-.page-header{margin-bottom:28px;display:flex;justify-content:space-between;align-items:flex-end}
-.page-title{font-size:26px;font-weight:700}
-.header-buttons,.sheet-tabs,.batch-buttons,.action-group{display:flex;gap:10px}
-.sheet-tabs{margin-bottom:20px;align-items:center}
-.sheet-tab-btn{background:#374151;color:var(--muted);border:1px solid var(--border);padding:10px 18px;border-radius:8px;font-size:14px;font-weight:600;cursor:pointer}
-.sheet-tab-btn.active{background:var(--blue);color:#fff;border-color:var(--blue)}
-.sheet-tab-btn kbd{background:rgba(0,0,0,.3);padding:2px 6px;border-radius:4px;font-size:11px;margin-left:6px}
-.sync-indicator{margin-left:auto;font-size:13px;color:var(--muted);display:flex;align-items:center;gap:8px;opacity:0;transition:.3s}
-.sync-indicator.visible{opacity:1}
-.spinner{width:14px;height:14px;border:2px solid var(--border);border-top-color:var(--blue);border-radius:50%;animation:spin .8s linear infinite}
-@keyframes spin{to{transform:rotate(360deg)}}
-.batch-actions-bar{background:var(--card);border:1px solid var(--border);padding:14px 20px;border-radius:var(--radius);margin-bottom:20px;display:flex;justify-content:space-between;align-items:center;box-shadow:var(--shadow)}
-.batch-info{font-size:14px;color:var(--muted)}
-.card{background:var(--card);border-radius:var(--radius);box-shadow:var(--shadow);border:1px solid var(--border);overflow:hidden}
-.table-container{width:100%;overflow-x:auto}
-.data-table{width:100%;border-collapse:collapse;text-align:left}
-.data-table th{background:var(--bg);color:var(--muted);font-size:12px;text-transform:uppercase;letter-spacing:.08em;padding:16px 20px;font-weight:600;border-bottom:1px solid var(--border)}
-.data-table td{padding:16px 20px;font-size:14px;color:#E5E7EB;border-bottom:1px solid var(--border);vertical-align:middle}
-.data-table tbody tr:hover{background:rgba(255,255,255,.03)}
-.code-text{font-family:Consolas,'Courier New',monospace;font-weight:600;letter-spacing:.5px}
-.custom-checkbox{width:18px;height:18px;cursor:pointer;accent-color:var(--blue)}
-.actions-cell{display:flex;gap:16px;justify-content:flex-end;align-items:center}
-.btn{display:inline-flex;align-items:center;justify-content:center;gap:6px;background:var(--blue);color:#fff;border:0;border-radius:8px;padding:8px 12px;font-size:13px;font-weight:600;cursor:pointer;transition:.2s;font-family:inherit}
-.btn:hover{background:var(--blueh);transform:translateY(-1px)}
-.btn:disabled{opacity:.5;cursor:not-allowed;transform:none}
-.btn-secondary{background:#374151;color:#F3F4F6}.btn-secondary:hover{background:#4B5563}
-.btn-test{background:#111827;border:1px solid #4B5563}.btn-test:hover{background:#000}
-.btn-brand{background:var(--green)}.btn-brand:hover{background:var(--greenh)}
-.modal-backdrop{position:fixed;inset:0;background:rgba(0,0,0,.75);backdrop-filter:blur(6px);display:flex;align-items:center;justify-content:center;opacity:0;pointer-events:none;transition:.25s;z-index:1000}
-.modal-backdrop.is-open{opacity:1;pointer-events:auto}
-.modal-card{background:var(--card);border-radius:var(--radius);border:1px solid var(--border);width:90%;max-width:580px;display:flex;flex-direction:column;overflow:hidden}
-.modal-header{padding:18px 24px;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center}
-.modal-title{font-size:18px;font-weight:600}
-.modal-close-btn{background:none;border:0;color:var(--muted);font-size:22px;cursor:pointer}
-.modal-body{padding:24px;display:flex;flex-direction:column;gap:20px;align-items:center;max-height:75vh;overflow-y:auto;background:var(--bg)}
-.modal-footer{padding:16px 24px;border-top:1px solid var(--border);display:flex;justify-content:flex-end;gap:12px}
+:root{
+    --bg:#111827;
+    --card:#1F2937;
+    --blue:#2563EB;
+    --blueh:#1D4ED8;
+    --green:#059669;
+    --greenh:#047857;
+    --text:#F9FAFB;
+    --muted:#9CA3AF;
+    --border:#374151;
+    --radius:12px;
+    --shadow:0 10px 25px -5px rgba(0,0,0,.5)
+}
 
-.industrial-label{width:100mm;height:78mm;position:relative;background:#fff;color:#000;padding:3.2mm 4mm 2.8mm;font-family:Arial,Helvetica,sans-serif;overflow:hidden;border:1px solid #D1D5DB;box-shadow:0 10px 25px rgba(0,0,0,.5)}
-.top-divider{height:0;border-top:1.5px solid #000;margin-bottom:2.2mm}
-.label-section{width:100%;margin:0;padding:0}
-.label-section+.label-section{margin-top:3.1mm}
-.section-header{width:100%;height:5.5mm;position:relative;margin-bottom:1.1mm;line-height:5.5mm;text-align:center}
-.header-title{display:block;width:100%;font-size:16.5pt;font-weight:900;line-height:5.5mm}
-.brand-tag{position:absolute;right:3.5mm;top:0;font-weight:900;font-size:16.5pt;text-transform:uppercase;line-height:5.5mm;white-space:nowrap}
-.barcode-box{width:82mm;height:15.5mm;margin:auto;overflow:hidden;text-align:center}
-.barcode-box svg{width:auto!important;max-width:100%!important;height:15.5mm!important;display:inline-block;vertical-align:top;shape-rendering:crispEdges}
-.val-pn,.val-sn{width:100%;text-align:center;font-weight:900;white-space:nowrap;overflow:hidden;line-height:1;letter-spacing:0;margin-top:1.1mm}
-.val-pn{font-size:18pt}.val-sn{font-size:13pt;transform:scale(1,1.8);transform-origin:center top;margin-top:3.5mm}
+*{
+    box-sizing:border-box;
+    margin:0;
+    padding:0
+}
 
-@page{size:100mm 78mm;margin:0}
+body{
+    background:var(--bg);
+    color:var(--text);
+    font-family:'Segoe UI',Arial,sans-serif;
+    min-height:100vh;
+    padding:40px 20px;
+    line-height:1.5
+}
+
+.app-container{
+    max-width:1020px;
+    width:100%;
+    margin:auto
+}
+
+.page-header{
+    margin-bottom:28px;
+    display:flex;
+    justify-content:space-between;
+    align-items:flex-end
+}
+
+.page-title{
+    font-size:26px;
+    font-weight:700
+}
+
+.header-buttons,
+.sheet-tabs,
+.batch-buttons,
+.action-group{
+    display:flex;
+    gap:10px
+}
+
+.sheet-tabs{
+    margin-bottom:20px;
+    align-items:center
+}
+
+.sheet-tab-btn{
+    background:#374151;
+    color:var(--muted);
+    border:1px solid var(--border);
+    padding:10px 18px;
+    border-radius:8px;
+    font-size:14px;
+    font-weight:600;
+    cursor:pointer
+}
+
+.sheet-tab-btn.active{
+    background:var(--blue);
+    color:#fff;
+    border-color:var(--blue)
+}
+
+.sheet-tab-btn kbd{
+    background:rgba(0,0,0,.3);
+    padding:2px 6px;
+    border-radius:4px;
+    font-size:11px;
+    margin-left:6px
+}
+
+.sync-indicator{
+    margin-left:auto;
+    font-size:13px;
+    color:var(--muted);
+    display:flex;
+    align-items:center;
+    gap:8px;
+    opacity:0;
+    transition:.3s
+}
+
+.sync-indicator.visible{
+    opacity:1
+}
+
+.spinner{
+    width:14px;
+    height:14px;
+    border:2px solid var(--border);
+    border-top-color:var(--blue);
+    border-radius:50%;
+    animation:spin .8s linear infinite
+}
+
+@keyframes spin{
+    to{transform:rotate(360deg)}
+}
+
+.batch-actions-bar{
+    background:var(--card);
+    border:1px solid var(--border);
+    padding:14px 20px;
+    border-radius:var(--radius);
+    margin-bottom:20px;
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    box-shadow:var(--shadow)
+}
+
+.batch-info{
+    font-size:14px;
+    color:var(--muted)
+}
+
+.card{
+    background:var(--card);
+    border-radius:var(--radius);
+    box-shadow:var(--shadow);
+    border:1px solid var(--border);
+    overflow:hidden
+}
+
+.table-container{
+    width:100%;
+    overflow-x:auto
+}
+
+.data-table{
+    width:100%;
+    border-collapse:collapse;
+    text-align:left
+}
+
+.data-table th{
+    background:var(--bg);
+    color:var(--muted);
+    font-size:12px;
+    text-transform:uppercase;
+    letter-spacing:.08em;
+    padding:16px 20px;
+    font-weight:600;
+    border-bottom:1px solid var(--border)
+}
+
+.data-table td{
+    padding:16px 20px;
+    font-size:14px;
+    color:#E5E7EB;
+    border-bottom:1px solid var(--border);
+    vertical-align:middle
+}
+
+.data-table tbody tr:hover{
+    background:rgba(255,255,255,.03)
+}
+
+.code-text{
+    font-family:Consolas,'Courier New',monospace;
+    font-weight:600;
+    letter-spacing:.5px
+}
+
+.custom-checkbox{
+    width:18px;
+    height:18px;
+    cursor:pointer;
+    accent-color:var(--blue)
+}
+
+.actions-cell{
+    display:flex;
+    gap:16px;
+    justify-content:flex-end;
+    align-items:center
+}
+
+.btn{
+    display:inline-flex;
+    align-items:center;
+    justify-content:center;
+    gap:6px;
+    background:var(--blue);
+    color:#fff;
+    border:0;
+    border-radius:8px;
+    padding:8px 12px;
+    font-size:13px;
+    font-weight:600;
+    cursor:pointer;
+    transition:.2s;
+    font-family:inherit
+}
+
+.btn:hover{
+    background:var(--blueh);
+    transform:translateY(-1px)
+}
+
+.btn:disabled{
+    opacity:.5;
+    cursor:not-allowed;
+    transform:none
+}
+
+.btn-secondary{
+    background:#374151;
+    color:#F3F4F6
+}
+
+.btn-secondary:hover{
+    background:#4B5563
+}
+
+.btn-test{
+    background:#111827;
+    border:1px solid #4B5563
+}
+
+.btn-test:hover{
+    background:#000
+}
+
+.btn-brand{
+    background:var(--green)
+}
+
+.btn-brand:hover{
+    background:var(--greenh)
+}
+
+/* =========================================================
+   Обычное окно Preview
+   ========================================================= */
+
+.modal-backdrop{
+    position:fixed;
+    inset:0;
+    background:rgba(0,0,0,.75);
+    backdrop-filter:blur(6px);
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    opacity:0;
+    pointer-events:none;
+    transition:.25s;
+    z-index:1000
+}
+
+.modal-backdrop.is-open{
+    opacity:1;
+    pointer-events:auto
+}
+
+.modal-card{
+    background:var(--card);
+    border-radius:var(--radius);
+    border:1px solid var(--border);
+    width:90%;
+    max-width:580px;
+    display:flex;
+    flex-direction:column;
+    overflow:hidden
+}
+
+.modal-header{
+    padding:18px 24px;
+    border-bottom:1px solid var(--border);
+    display:flex;
+    justify-content:space-between;
+    align-items:center
+}
+
+.modal-title{
+    font-size:18px;
+    font-weight:600
+}
+
+.modal-close-btn{
+    background:none;
+    border:0;
+    color:var(--muted);
+    font-size:22px;
+    cursor:pointer
+}
+
+.modal-body{
+    padding:24px;
+    display:flex;
+    flex-direction:column;
+    gap:20px;
+    align-items:center;
+    max-height:75vh;
+    overflow-y:auto;
+    background:var(--bg)
+}
+
+.modal-footer{
+    padding:16px 24px;
+    border-top:1px solid var(--border);
+    display:flex;
+    justify-content:flex-end;
+    gap:12px
+}
+
+/* =========================================================
+   ЭТИКЕТКА TSC DA220
+   Реальный размер: 100 x 78 мм
+   ========================================================= */
+
+.industrial-label{
+    width:100mm;
+    height:78mm;
+    position:relative;
+    flex:none;
+    background:#fff;
+    color:#000;
+    padding:3.2mm 4mm 2.8mm;
+    font-family:Arial,Helvetica,sans-serif;
+    overflow:hidden;
+    border:1px solid #D1D5DB;
+    box-shadow:0 10px 25px rgba(0,0,0,.5)
+}
+
+.top-divider{
+    height:0;
+    border-top:1.5px solid #000;
+    margin-bottom:2.2mm
+}
+
+.label-section{
+    width:100%;
+    margin:0;
+    padding:0
+}
+
+.label-section+.label-section{
+    margin-top:3.1mm
+}
+
+.section-header{
+    width:100%;
+    height:5.5mm;
+    position:relative;
+    margin-bottom:1.1mm;
+    line-height:5.5mm;
+    text-align:center
+}
+
+.header-title{
+    display:block;
+    width:100%;
+    font-size:16.5pt;
+    font-weight:900;
+    line-height:5.5mm
+}
+
+.brand-tag{
+    position:absolute;
+    right:3.5mm;
+    top:0;
+    font-weight:900;
+    font-size:16.5pt;
+    text-transform:uppercase;
+    line-height:5.5mm;
+    white-space:nowrap
+}
+
+.barcode-box{
+    width:82mm;
+    height:15.5mm;
+    margin:auto;
+    overflow:hidden;
+    text-align:center
+}
+
+.barcode-box svg{
+    width:auto!important;
+    max-width:100%!important;
+    height:15.5mm!important;
+    display:inline-block;
+    vertical-align:top;
+    shape-rendering:crispEdges
+}
+
+.val-pn,
+.val-sn{
+    width:100%;
+    text-align:center;
+    font-weight:900;
+    white-space:nowrap;
+    overflow:hidden;
+    line-height:1;
+    letter-spacing:0;
+    margin-top:1.1mm
+}
+
+.val-pn{
+    font-size:18pt
+}
+
+.val-sn{
+    font-size:13pt;
+    transform:scale(1,1.8);
+    transform-origin:center top;
+    margin-top:3.5mm
+}
+
+/* =========================================================
+   TSC DA220 EMULATOR
+   ========================================================= */
+
+.tsc-emulator-card{
+    width:95%;
+    max-width:1000px;
+    max-height:95vh
+}
+
+.tsc-emulator-header{
+    display:flex;
+    align-items:center;
+    gap:20px;
+    flex-wrap:wrap
+}
+
+.tsc-emulator-title-area{
+    flex:1
+}
+
+.tsc-emulator-subtitle{
+    margin-top:4px;
+    font-size:12px;
+    color:#9CA3AF
+}
+
+.tsc-emulator-controls{
+    display:flex;
+    align-items:center;
+    gap:8px
+}
+
+.tsc-emulator-controls label{
+    color:#9CA3AF;
+    font-size:12px
+}
+
+.tsc-emulator-controls select{
+    background:#111827;
+    color:#F9FAFB;
+    border:1px solid #4B5563;
+    border-radius:6px;
+    padding:6px 10px;
+    font-family:inherit;
+    cursor:pointer
+}
+
+.tsc-emulator-body{
+    background:#080B10;
+    min-height:300px;
+    padding:35px;
+    overflow:auto;
+    display:flex;
+    justify-content:center;
+    align-items:flex-start
+}
+
+.tsc-emulator-labels{
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    gap:28px
+}
+
+.tsc-emulator-label{
+    flex:none;
+    transform-origin:top center;
+    box-shadow:0 15px 40px rgba(0,0,0,.75);
+    border:1px solid #D1D5DB
+}
+
+.tsc-copy-separator{
+    width:260px;
+    display:flex;
+    align-items:center;
+    gap:10px;
+    color:#6B7280;
+    font-size:11px;
+    text-transform:uppercase;
+    letter-spacing:.1em
+}
+
+.tsc-copy-separator::before,
+.tsc-copy-separator::after{
+    content:"";
+    height:1px;
+    background:#374151;
+    flex:1
+}
+
+.tsc-emulator-status{
+    display:inline-flex;
+    align-items:center;
+    gap:8px;
+    color:#10B981;
+    font-size:13px;
+    font-weight:700
+}
+
+.tsc-emulator-status::before{
+    content:"";
+    width:9px;
+    height:9px;
+    border-radius:50%;
+    background:#10B981;
+    box-shadow:0 0 8px #10B981
+}
+
+.tsc-emulator-info{
+    width:100%;
+    background:#111827;
+    border:1px solid #374151;
+    border-radius:8px;
+    padding:10px 14px;
+    color:#9CA3AF;
+    font-size:12px;
+    margin-bottom:16px
+}
+
+/* =========================================================
+   Адаптация
+   ========================================================= */
+
+@media(max-width:800px){
+
+    body{
+        padding:20px 10px
+    }
+
+    .page-header{
+        flex-direction:column;
+        align-items:flex-start;
+        gap:15px
+    }
+
+    .header-buttons{
+        width:100%;
+        flex-wrap:wrap
+    }
+
+    .batch-actions-bar{
+        flex-direction:column;
+        align-items:flex-start;
+        gap:12px
+    }
+
+    .batch-buttons{
+        flex-wrap:wrap
+    }
+
+    .actions-cell{
+        flex-direction:column
+    }
+
+    .tsc-emulator-body{
+        padding:20px 10px
+    }
+}
+
+@page{
+    size:100mm 78mm;
+    margin:0
+}
+
+/* Если когда-нибудь вернуть window.print() */
 @media print{
-html,body{width:100mm!important;height:auto!important;min-width:100mm!important;margin:0!important;padding:0!important;background:#fff!important;display:block!important;overflow:visible!important}
-.app-container,.modal-backdrop{display:none!important}
-#printContainer{display:block!important;width:100mm!important;margin:0!important;padding:0!important}
-#printContainer .industrial-label{width:100mm!important;height:78mm!important;margin:0!important;padding:3.2mm 4mm 2.8mm!important;border:0!important;box-shadow:none!important;overflow:hidden!important;display:block!important;position:relative!important;page-break-inside:avoid!important;break-inside:avoid!important;page-break-after:always!important;break-after:page!important}
-#printContainer .industrial-label:last-child{page-break-after:auto!important;break-after:auto!important}
+
+    html,
+    body{
+        width:100mm!important;
+        height:auto!important;
+        min-width:100mm!important;
+        margin:0!important;
+        padding:0!important;
+        background:#fff!important;
+        display:block!important;
+        overflow:visible!important
+    }
+
+    .app-container,
+    .modal-backdrop{
+        display:none!important
+    }
+
+    #printContainer{
+        display:block!important;
+        width:100mm!important;
+        margin:0!important;
+        padding:0!important
+    }
+
+    #printContainer .industrial-label{
+        width:100mm!important;
+        height:78mm!important;
+        margin:0!important;
+        padding:3.2mm 4mm 2.8mm!important;
+        border:0!important;
+        box-shadow:none!important;
+        overflow:hidden!important;
+        display:block!important;
+        position:relative!important;
+        page-break-inside:avoid!important;
+        break-inside:avoid!important;
+        page-break-after:always!important;
+        break-after:page!important
+    }
+
+    #printContainer .industrial-label:last-child{
+        page-break-after:auto!important;
+        break-after:auto!important
+    }
 }
 </style>
 </head>
+
 <body>
+
 <div class="app-container">
+
 <header class="page-header">
-<h1 class="page-title">🖨️ Друк етикеток (TSC DA220)</h1>
+
+<h1 class="page-title">
+🖨️ Друк етикеток (TSC DA220)
+</h1>
+
 <div class="header-buttons">
-<button class="btn btn-test" onclick="printTestLabel()">⬛ Тестовий друк</button>
-<button class="btn btn-secondary" onclick="fetchDataFromGoogleSheet(true)">🔄 Оновити зараз</button>
+
+<button
+    class="btn btn-test"
+    onclick="printTestLabel()">
+    ⬛ Тестовий друк
+</button>
+
+<button
+    class="btn btn-secondary"
+    onclick="fetchDataFromGoogleSheet(true)">
+    🔄 Оновити зараз
+</button>
+
 </div>
+
 </header>
 
 <div class="sheet-tabs">
-<button class="sheet-tab-btn active" id="tabBtn0" onclick="switchSheet('0')">Лист 1 <kbd>Alt + 1</kbd></button>
-<button class="sheet-tab-btn" id="tabBtn193025884" onclick="switchSheet('193025884')">Лист 2 <kbd>Alt + 2</kbd></button>
-<div class="sync-indicator" id="syncIndicator"><div class="spinner"></div><span>Синхронізація...</span></div>
+
+<button
+    class="sheet-tab-btn active"
+    id="tabBtn0"
+    onclick="switchSheet('0')">
+    Лист 1 <kbd>Alt + 1</kbd>
+</button>
+
+<button
+    class="sheet-tab-btn"
+    id="tabBtn193025884"
+    onclick="switchSheet('193025884')">
+    Лист 2 <kbd>Alt + 2</kbd>
+</button>
+
+<div
+    class="sync-indicator"
+    id="syncIndicator">
+
+    <div class="spinner"></div>
+    <span>Синхронізація...</span>
+
+</div>
+
 </div>
 
 <div class="batch-actions-bar">
-<div class="batch-info" id="selectedCountText">Вибрано позицій: 0</div>
-<div class="batch-buttons">
-<button class="btn btn-secondary" id="batchPrintNormalBtn" disabled onclick="printBatch(false)">🖨️ Друк вибраних (х2)</button>
-<button class="btn btn-brand" id="batchPrintBrandBtn" disabled onclick="printBatch(true)">🖨️ Друк вибраних з Brand (х2)</button>
+
+<div
+    class="batch-info"
+    id="selectedCountText">
+    Вибрано позицій: 0
 </div>
+
+<div class="batch-buttons">
+
+<button
+    class="btn btn-secondary"
+    id="batchPrintNormalBtn"
+    disabled
+    onclick="printBatch(false)">
+    🖨️ Друк вибраних (х2)
+</button>
+
+<button
+    class="btn btn-brand"
+    id="batchPrintBrandBtn"
+    disabled
+    onclick="printBatch(true)">
+    🖨️ Друк вибраних з Brand (х2)
+</button>
+
+</div>
+
 </div>
 
 <main class="card">
+
 <div class="table-container">
+
 <table class="data-table">
-<thead><tr>
-<th style="width:40px"><input type="checkbox" class="custom-checkbox" id="selectAllCheckbox" onclick="toggleSelectAll(this)"></th>
-<th>#</th><th>Serial Number (SN)</th><th>Part Number (PN)</th><th>Brand</th>
-<th style="width:250px;text-align:right">Друк (х2) / Перегляд</th>
-</tr></thead>
-<tbody id="productsTableBody"><tr><td colspan="6" style="text-align:center;padding:30px">Завантаження даних...</td></tr></tbody>
+
+<thead>
+
+<tr>
+
+<th style="width:40px">
+<input
+    type="checkbox"
+    class="custom-checkbox"
+    id="selectAllCheckbox"
+    onclick="toggleSelectAll(this)">
+</th>
+
+<th>#</th>
+
+<th>Serial Number (SN)</th>
+
+<th>Part Number (PN)</th>
+
+<th>Brand</th>
+
+<th style="width:250px;text-align:right">
+Друк (х2) / Перегляд
+</th>
+
+</tr>
+
+</thead>
+
+<tbody id="productsTableBody">
+
+<tr>
+
+<td
+    colspan="6"
+    style="text-align:center;padding:30px">
+
+Завантаження даних...
+
+</td>
+
+</tr>
+
+</tbody>
+
 </table>
+
 </div>
+
 </main>
+
 </div>
 
-<div class="modal-backdrop" id="labelModal">
+
+<!-- ======================================================
+     СТАРОЕ ОКНО ПРЕДПРОСМОТРА
+     ====================================================== -->
+
+<div
+    class="modal-backdrop"
+    id="labelModal">
+
 <div class="modal-card">
-<div class="modal-header"><h2 class="modal-title" id="modalTitleText">Попередній перегляд етикетки</h2><button class="modal-close-btn" id="closeModalCross">&times;</button></div>
-<div class="modal-body" id="modalPreviewBody"></div>
-<div class="modal-footer"><button class="btn btn-secondary" id="closeModalBtn">Закрити</button><button class="btn" id="printModalBtn">🖨️ Друк</button></div>
-</div>
+
+<div class="modal-header">
+
+<h2
+    class="modal-title"
+    id="modalTitleText">
+    Попередній перегляд етикетки
+</h2>
+
+<button
+    class="modal-close-btn"
+    id="closeModalCross">
+    &times;
+</button>
+
 </div>
 
-<div id="printContainer" style="display:none"></div>
+<div
+    class="modal-body"
+    id="modalPreviewBody">
+</div>
+
+<div class="modal-footer">
+
+<button
+    class="btn btn-secondary"
+    id="closeModalBtn">
+    Закрити
+</button>
+
+<button
+    class="btn"
+    id="printModalBtn">
+    🖨️ Друк
+</button>
+
+</div>
+
+</div>
+
+</div>
+
+
+<!-- ======================================================
+     TSC DA220 EMULATOR
+     ====================================================== -->
+
+<div
+    class="modal-backdrop"
+    id="tscEmulator">
+
+<div class="modal-card tsc-emulator-card">
+
+<div class="modal-header tsc-emulator-header">
+
+<div class="tsc-emulator-title-area">
+
+<h2 class="modal-title">
+🖨️ TSC DA220 — Емуляція друку
+</h2>
+
+<div class="tsc-emulator-subtitle">
+Віртуальний принтер • 100 × 78 мм • 203 DPI
+</div>
+
+</div>
+
+<div class="tsc-emulator-controls">
+
+<label for="tscScale">
+Масштаб:
+</label>
+
+<select
+    id="tscScale"
+    onchange="changeTSCScale(this.value)">
+
+<option value="0.50">
+50%
+</option>
+
+<option value="0.75">
+75%
+</option>
+
+<option value="1" selected>
+100%
+</option>
+
+</select>
+
+</div>
+
+<button
+    class="modal-close-btn"
+    onclick="closeTSCEmulator()">
+
+&times;
+
+</button>
+
+</div>
+
+
+<div class="modal-body tsc-emulator-body">
+
+<div style="width:100%;max-width:850px">
+
+<div class="tsc-emulator-info">
+
+<strong style="color:#F9FAFB">
+TSC DA220
+</strong>
+
+&nbsp; • &nbsp;
+
+Размер этикетки:
+
+<strong style="color:#F9FAFB">
+100 × 78 мм
+</strong>
+
+&nbsp; • &nbsp;
+
+<strong style="color:#10B981">
+2 КОПИИ
+</strong>
+
+</div>
+
+<div
+    id="tscEmulatorBody"
+    class="tsc-emulator-labels">
+</div>
+
+</div>
+
+</div>
+
+
+<div class="modal-footer">
+
+<div style="margin-right:auto">
+
+<span class="tsc-emulator-status">
+PRINTER READY
+</span>
+
+</div>
+
+<button
+    class="btn btn-secondary"
+    onclick="closeTSCEmulator()">
+
+Закрити
+
+</button>
+
+</div>
+
+</div>
+
+</div>
+
+
+<!-- ======================================================
+     СКРЫТЫЙ PRINT CONTAINER
+     ====================================================== -->
+
+<div
+    id="printContainer"
+    style="display:none">
+</div>
+
 
 <script>
-const SUPABASE_URL='https://xgjggfnfgrmkuclgjmih.supabase.co';
-const SUPABASE_KEY='sb_publishable_MLyF6CMVplwDyDqSeDnSBA__RakJscC';
-const supabaseClient=window.supabase.createClient(SUPABASE_URL,SUPABASE_KEY);
-const TABLE_NAME='products_db',COLUMN_PN='tpv_pn',COLUMN_SN='panel_sn',COLUMN_BRAND='brand';
-const SHEET_ID='10W03bvKlVFlIUcxsHkzP_v_13gtnYRBmnrrO0ujB1bU';
-let currentGid='0',products=[],selectedSNs=new Set(),modalActiveItem=null,modalActiveBrand=false,isInitialLoad=true;
 
-const tableBody=document.getElementById('productsTableBody');
-const modal=document.getElementById('labelModal');
-const modalPreviewBody=document.getElementById('modalPreviewBody');
-const printContainer=document.getElementById('printContainer');
-const syncIndicator=document.getElementById('syncIndicator');
+/* =========================================================
+   SUPABASE
+   ========================================================= */
+
+const SUPABASE_URL =
+'https://xgjggfnfgrmkuclgjmih.supabase.co';
+
+const SUPABASE_KEY =
+'sb_publishable_MLyF6CMVplwDyDqSeDnSBA__RakJscA';
+
+const supabaseClient =
+window.supabase.createClient(
+    SUPABASE_URL,
+    SUPABASE_KEY
+);
+
+
+/* =========================================================
+   НАСТРОЙКИ
+   ========================================================= */
+
+const TABLE_NAME =
+'products_db';
+
+const COLUMN_PN =
+'tpv_pn';
+
+const COLUMN_SN =
+'panel_sn';
+
+const COLUMN_BRAND =
+'brand';
+
+const SHEET_ID =
+'10W03bvKlVFlIUcxsHkzP_v_13gtnYRBmnrrO0ujB1bU';
+
+
+/* =========================================================
+   ГЛОБАЛЬНЫЕ ПЕРЕМЕННЫЕ
+   ========================================================= */
+
+let currentGid = '0';
+
+let products = [];
+
+let selectedSNs = new Set();
+
+let modalActiveItem = null;
+
+let modalActiveBrand = false;
+
+let isInitialLoad = true;
+
+
+/* =========================================================
+   DOM
+   ========================================================= */
+
+const tableBody =
+document.getElementById('productsTableBody');
+
+const modal =
+document.getElementById('labelModal');
+
+const modalPreviewBody =
+document.getElementById('modalPreviewBody');
+
+const printContainer =
+document.getElementById('printContainer');
+
+const syncIndicator =
+document.getElementById('syncIndicator');
+
+
+/* =========================================================
+   CSV PARSER
+   ========================================================= */
 
 function parseCSV(str){
-const arr=[];let quote=false;
-for(let row=0,col=0,c=0;c<str.length;c++){
-const cc=str[c],nc=str[c+1];
-arr[row]=arr[row]||[];arr[row][col]=arr[row][col]||'';
-if(cc==='"'&&quote&&nc==='"'){arr[row][col]+=cc;++c;continue}
-if(cc==='"'){quote=!quote;continue}
-if(cc===','&&!quote){++col;continue}
-if(cc==='\r'&&nc==='\n'&&!quote){++row;col=0;++c;continue}
-if((cc==='\n'||cc==='\r')&&!quote){++row;col=0;continue}
-arr[row][col]+=cc;
+
+    const arr = [];
+
+    let quote = false;
+
+    for(
+        let row = 0, col = 0, c = 0;
+        c < str.length;
+        c++
+    ){
+
+        const cc = str[c];
+
+        const nc = str[c + 1];
+
+        arr[row] = arr[row] || [];
+
+        arr[row][col] =
+            arr[row][col] || '';
+
+        if(
+            cc === '"' &&
+            quote &&
+            nc === '"'
+        ){
+
+            arr[row][col] += cc;
+
+            ++c;
+
+            continue;
+        }
+
+        if(cc === '"'){
+
+            quote = !quote;
+
+            continue;
+        }
+
+        if(
+            cc === ',' &&
+            !quote
+        ){
+
+            ++col;
+
+            continue;
+        }
+
+        if(
+            cc === '\r' &&
+            nc === '\n' &&
+            !quote
+        ){
+
+            ++row;
+
+            col = 0;
+
+            ++c;
+
+            continue;
+        }
+
+        if(
+            (cc === '\n' || cc === '\r') &&
+            !quote
+        ){
+
+            ++row;
+
+            col = 0;
+
+            continue;
+        }
+
+        arr[row][col] += cc;
+    }
+
+    return arr;
 }
-return arr;
-}
+
+
+/* =========================================================
+   FALLBACK PN
+   ========================================================= */
 
 function getFallbackPN(sn){
-const s=String(sn||'').trim().toUpperCase();
-if(!/^(TBV|TOV)[A-Z0-9]+$/.test(s)||s.length<11)return null;
-const prefix=s.substring(0,11);
-return s.startsWith('TBV')?`750${prefix}N000`:s.startsWith('TOV')?`730${prefix}N000`:null;
+
+    const s =
+        String(sn || '')
+        .trim()
+        .toUpperCase();
+
+    if(
+        !/^(TBV|TOV)[A-Z0-9]+$/.test(s) ||
+        s.length < 11
+    ){
+
+        return null;
+    }
+
+    const prefix =
+        s.substring(0,11);
+
+    return s.startsWith('TBV')
+        ? `750${prefix}N000`
+        : s.startsWith('TOV')
+            ? `730${prefix}N000`
+            : null;
 }
+
+
+/* =========================================================
+   SUPABASE
+   ========================================================= */
 
 async function getProductFromDatabase(sn){
-try{
-const {data,error}=await supabaseClient.from(TABLE_NAME).select(`${COLUMN_PN},${COLUMN_BRAND}`).eq(COLUMN_SN,sn).limit(1);
-if(error){console.error('Supabase error:',error);return{pn:'DB_ERROR',brand:'ERR'}}
-if(!data||!data.length){
-const fallback=getFallbackPN(sn);
-return fallback?{pn:fallback,brand:'PHP[PHP]'}:{pn:'NOT_FOUND_IN_DB',brand:'-'};
+
+    try{
+
+        const {
+            data,
+            error
+        } =
+        await supabaseClient
+        .from(TABLE_NAME)
+        .select(`${COLUMN_PN},${COLUMN_BRAND}`)
+        .eq(COLUMN_SN,sn)
+        .limit(1);
+
+        if(error){
+
+            console.error(
+                'Supabase error:',
+                error
+            );
+
+            return {
+                pn:'DB_ERROR',
+                brand:'ERR'
+            };
+        }
+
+        if(
+            !data ||
+            !data.length
+        ){
+
+            const fallback =
+                getFallbackPN(sn);
+
+            return fallback
+                ? {
+                    pn:fallback,
+                    brand:'PHP[PHP]'
+                }
+                : {
+                    pn:'NOT_FOUND_IN_DB',
+                    brand:'-'
+                };
+        }
+
+        return {
+
+            pn:
+                data[0][COLUMN_PN]
+                || 'N/A',
+
+            brand:
+                data[0][COLUMN_BRAND]
+                || '-'
+        };
+
+    }catch(e){
+
+        console.error(
+            'Database error:',
+            e
+        );
+
+        return {
+            pn:'DB_ERROR',
+            brand:'ERR'
+        };
+    }
 }
-return{pn:data[0][COLUMN_PN]||'N/A',brand:data[0][COLUMN_BRAND]||'-'};
-}catch(e){
-console.error('Database error:',e);
-return{pn:'DB_ERROR',brand:'ERR'};
-}
-}
+
+
+/* =========================================================
+   SWITCH SHEET
+   ========================================================= */
 
 async function switchSheet(gid){
-if(currentGid===gid)return;
-currentGid=gid;
-document.querySelectorAll('.sheet-tab-btn').forEach(b=>b.classList.remove('active'));
-document.getElementById(`tabBtn${gid}`)?.classList.add('active');
-await fetchDataFromGoogleSheet(false);
+
+    if(currentGid === gid)
+        return;
+
+    currentGid = gid;
+
+    document
+        .querySelectorAll('.sheet-tab-btn')
+        .forEach(
+            b => b.classList.remove('active')
+        );
+
+    document
+        .getElementById(`tabBtn${gid}`)
+        ?.classList.add('active');
+
+    await fetchDataFromGoogleSheet(false);
 }
 
-async function fetchDataFromGoogleSheet(showIndicator=false){
-try{
-if(showIndicator||isInitialLoad)syncIndicator.classList.add('visible');
-const url=`https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:csv&gid=${currentGid}&_nc=${Date.now()}`;
-const response=await fetch(url);
-if(!response.ok)throw new Error('Помилка Google Таблиці');
-const rows=parseCSV(await response.text()),raw=[];
-for(let i=1;i<rows.length;i++){
-const sn=rows[i]?.[2]?.trim()||'';
-if(sn&&sn.toUpperCase()!=='SERIAL NUMBER')raw.push(sn);
+
+/* =========================================================
+   GOOGLE SHEET
+   ========================================================= */
+
+async function fetchDataFromGoogleSheet(
+    showIndicator = false
+){
+
+    try{
+
+        if(
+            showIndicator ||
+            isInitialLoad
+        ){
+
+            syncIndicator
+                .classList
+                .add('visible');
+        }
+
+        const url =
+        `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:csv&gid=${currentGid}&_nc=${Date.now()}`;
+
+        const response =
+            await fetch(url);
+
+        if(!response.ok)
+            throw new Error(
+                'Помилка Google Таблиці'
+            );
+
+        const rows =
+            parseCSV(
+                await response.text()
+            );
+
+        const raw = [];
+
+        for(
+            let i = 1;
+            i < rows.length;
+            i++
+        ){
+
+            const sn =
+                rows[i]?.[2]?.trim()
+                || '';
+
+            if(
+                sn &&
+                sn.toUpperCase() !==
+                'SERIAL NUMBER'
+            ){
+
+                raw.push(sn);
+            }
+        }
+
+        const last =
+            raw.slice(-10).reverse();
+
+        const newProducts = [];
+
+        for(const sn of last){
+
+            const d =
+                await getProductFromDatabase(sn);
+
+            newProducts.push({
+
+                sn,
+
+                pn:d.pn,
+
+                brand:d.brand
+
+            });
+        }
+
+        const available =
+            new Set(
+                newProducts.map(
+                    p => p.sn
+                )
+            );
+
+        selectedSNs =
+            new Set(
+                [...selectedSNs]
+                .filter(
+                    sn => available.has(sn)
+                )
+            );
+
+        products =
+            newProducts;
+
+        renderTable();
+
+        updateBatchBar();
+
+    }catch(e){
+
+        console.error(
+            'Помилка оновлення:',
+            e
+        );
+
+    }finally{
+
+        isInitialLoad = false;
+
+        syncIndicator
+            .classList
+            .remove('visible');
+    }
 }
-const last=raw.slice(-10).reverse(),newProducts=[];
-for(const sn of last){
-const d=await getProductFromDatabase(sn);
-newProducts.push({sn,pn:d.pn,brand:d.brand});
-}
-const available=new Set(newProducts.map(p=>p.sn));
-selectedSNs=new Set([...selectedSNs].filter(sn=>available.has(sn)));
-products=newProducts;
-renderTable();
-updateBatchBar();
-}catch(e){console.error('Помилка оновлення:',e)}
-finally{isInitialLoad=false;syncIndicator.classList.remove('visible')}
-}
+
+
+/* =========================================================
+   TABLE
+   ========================================================= */
 
 function renderTable(){
-if(!products.length){
-tableBody.innerHTML='<tr><td colspan="6" style="text-align:center;padding:20px">Записів не знайдено</td></tr>';
-updateSelectAll();
-return;
-}
-tableBody.innerHTML='';
-products.forEach((p,i)=>{
-const checked=selectedSNs.has(p.sn);
-const row=document.createElement('tr');
-row.innerHTML=`
-<td><input type="checkbox" class="custom-checkbox" ${checked?'checked':''} onchange="toggleRowSelection(${i},this)"></td>
-<td><strong>${i+1}</strong></td>
-<td class="code-text">${escapeHtml(p.sn)}</td>
-<td class="code-text">${escapeHtml(p.pn)}</td>
-<td><span style="background:#374151;padding:3px 8px;border-radius:4px;font-size:12px;font-weight:600">${escapeHtml(p.brand)}</span></td>
-<td class="actions-cell">
-<div class="action-group">
-<button class="btn btn-secondary" onclick="openPreview(${i},false)" title="Перегляд">👁️</button>
-<button class="btn" onclick="printSingle(${i},false)" title="Друк 2 копії">🖨️ х2</button>
-</div>
-<div class="action-group">
-<button class="btn btn-secondary" onclick="openPreview(${i},true)" title="Перегляд з Brand">👁️</button>
-<button class="btn btn-brand" onclick="printSingle(${i},true)" title="Друк 2 копії з Brand">🖨️ х2</button>
-</div>
-</td>`;
-tableBody.appendChild(row);
-});
-updateSelectAll();
+
+    if(!products.length){
+
+        tableBody.innerHTML =
+        `
+        <tr>
+            <td
+                colspan="6"
+                style="text-align:center;padding:20px">
+                Записів не знайдено
+            </td>
+        </tr>
+        `;
+
+        updateSelectAll();
+
+        return;
+    }
+
+    tableBody.innerHTML = '';
+
+    products.forEach((p,i)=>{
+
+        const checked =
+            selectedSNs.has(p.sn);
+
+        const row =
+            document.createElement('tr');
+
+        row.innerHTML =
+        `
+        <td>
+            <input
+                type="checkbox"
+                class="custom-checkbox"
+                ${checked ? 'checked' : ''}
+                onchange="toggleRowSelection(${i},this)">
+        </td>
+
+        <td>
+            <strong>${i+1}</strong>
+        </td>
+
+        <td class="code-text">
+            ${escapeHtml(p.sn)}
+        </td>
+
+        <td class="code-text">
+            ${escapeHtml(p.pn)}
+        </td>
+
+        <td>
+            <span
+                style="
+                background:#374151;
+                padding:3px 8px;
+                border-radius:4px;
+                font-size:12px;
+                font-weight:600">
+                ${escapeHtml(p.brand)}
+            </span>
+        </td>
+
+        <td class="actions-cell">
+
+            <div class="action-group">
+
+                <button
+                    class="btn btn-secondary"
+                    onclick="openPreview(${i},false)"
+                    title="Перегляд">
+                    👁️
+                </button>
+
+                <button
+                    class="btn"
+                    onclick="printSingle(${i},false)"
+                    title="Емуляція друку 2 копії">
+                    🖨️ х2
+                </button>
+
+            </div>
+
+            <div class="action-group">
+
+                <button
+                    class="btn btn-secondary"
+                    onclick="openPreview(${i},true)"
+                    title="Перегляд з Brand">
+                    👁️
+                </button>
+
+                <button
+                    class="btn btn-brand"
+                    onclick="printSingle(${i},true)"
+                    title="Емуляція друку 2 копії з Brand">
+                    🖨️ х2
+                </button>
+
+            </div>
+
+        </td>
+        `;
+
+        tableBody.appendChild(row);
+    });
+
+    updateSelectAll();
 }
 
-function toggleRowSelection(index,checkbox){
-const p=products[index];
-if(!p)return;
-checkbox.checked?selectedSNs.add(p.sn):selectedSNs.delete(p.sn);
-updateBatchBar();
-updateSelectAll();
+
+/* =========================================================
+   SELECTION
+   ========================================================= */
+
+function toggleRowSelection(
+    index,
+    checkbox
+){
+
+    const p =
+        products[index];
+
+    if(!p)
+        return;
+
+    if(checkbox.checked)
+        selectedSNs.add(p.sn);
+    else
+        selectedSNs.delete(p.sn);
+
+    updateBatchBar();
+
+    updateSelectAll();
 }
+
 
 function toggleSelectAll(cb){
-products.forEach(p=>cb.checked?selectedSNs.add(p.sn):selectedSNs.delete(p.sn));
-renderTable();
-updateBatchBar();
+
+    products.forEach(p=>{
+
+        if(cb.checked)
+            selectedSNs.add(p.sn);
+        else
+            selectedSNs.delete(p.sn);
+
+    });
+
+    renderTable();
+
+    updateBatchBar();
 }
+
 
 function updateSelectAll(){
-const cb=document.getElementById('selectAllCheckbox');
-cb.checked=products.length>0&&products.every(p=>selectedSNs.has(p.sn));
-cb.indeterminate=selectedSNs.size>0&&!cb.checked;
+
+    const cb =
+        document.getElementById(
+            'selectAllCheckbox'
+        );
+
+    cb.checked =
+        products.length > 0 &&
+        products.every(
+            p => selectedSNs.has(p.sn)
+        );
+
+    cb.indeterminate =
+        selectedSNs.size > 0 &&
+        !cb.checked;
 }
+
 
 function updateBatchBar(){
-const n=selectedSNs.size;
-document.getElementById('selectedCountText').innerText=`Вибрано позицій: ${n}`;
-document.getElementById('batchPrintNormalBtn').disabled=n===0;
-document.getElementById('batchPrintBrandBtn').disabled=n===0;
+
+    const n =
+        selectedSNs.size;
+
+    document
+        .getElementById(
+            'selectedCountText'
+        )
+        .innerText =
+        `Вибрано позицій: ${n}`;
+
+    document
+        .getElementById(
+            'batchPrintNormalBtn'
+        )
+        .disabled =
+        n === 0;
+
+    document
+        .getElementById(
+            'batchPrintBrandBtn'
+        )
+        .disabled =
+        n === 0;
 }
+
+
+/* =========================================================
+   HTML ESCAPE
+   ========================================================= */
 
 function escapeHtml(text){
-const d=document.createElement('div');
-d.innerText=String(text??'');
-return d.innerHTML;
+
+    const d =
+        document.createElement('div');
+
+    d.innerText =
+        String(text ?? '');
+
+    return d.innerHTML;
 }
 
-/* Создаём РОВНО 2 физических экземпляра каждой этикетки.
-   Copies в системном окне печати менять не нужно — оставляем 1. */
-function buildLabelsHTML(items,includeBrand){
-let html='';
-items.forEach((p,i)=>{
-for(let copy=1;copy<=2;copy++){
-html+=`
-<div class="industrial-label">
-<div class="top-divider"></div>
-<div class="label-section">
-<div class="section-header"><span class="header-title">PN:</span>${includeBrand?`<span class="brand-tag">${escapeHtml(p.brand)}</span>`:''}</div>
-<div class="barcode-box"><svg class="barcode-pn"></svg></div>
-<div class="val-pn">${escapeHtml(p.pn)}</div>
-</div>
-<div class="label-section">
-<div class="section-header"><span class="header-title">SN:</span></div>
-<div class="barcode-box"><svg class="barcode-sn"></svg></div>
-<div class="val-sn">${escapeHtml(p.sn)}</div>
-</div>
-</div>`;
+
+/* =========================================================
+   СОЗДАНИЕ ЭТИКЕТОК
+   ========================================================= */
+
+function buildLabelsHTML(
+    items,
+    includeBrand
+){
+
+    let html = '';
+
+    items.forEach((p,i)=>{
+
+        /*
+         * Создаём ровно 2 физические копии
+         */
+        for(
+            let copy = 1;
+            copy <= 2;
+            copy++
+        ){
+
+            html +=
+            `
+            <div
+                class="industrial-label"
+                data-copy="${copy}">
+
+                <div class="top-divider"></div>
+
+                <div class="label-section">
+
+                    <div class="section-header">
+
+                        <span class="header-title">
+                            PN:
+                        </span>
+
+                        ${
+                            includeBrand
+                            ?
+                            `<span class="brand-tag">
+                                ${escapeHtml(p.brand)}
+                            </span>`
+                            :
+                            ''
+                        }
+
+                    </div>
+
+                    <div class="barcode-box">
+
+                        <svg
+                            class="barcode-pn">
+                        </svg>
+
+                    </div>
+
+                    <div class="val-pn">
+                        ${escapeHtml(p.pn)}
+                    </div>
+
+                </div>
+
+
+                <div class="label-section">
+
+                    <div class="section-header">
+
+                        <span class="header-title">
+                            SN:
+                        </span>
+
+                    </div>
+
+                    <div class="barcode-box">
+
+                        <svg
+                            class="barcode-sn">
+                        </svg>
+
+                    </div>
+
+                    <div class="val-sn">
+                        ${escapeHtml(p.sn)}
+                    </div>
+
+                </div>
+
+            </div>
+            `;
+        }
+
+    });
+
+    return html;
 }
-});
-return html;
-}
+
+
+/* =========================================================
+   BARCODE
+   ========================================================= */
 
 function renderBarcodes(container){
-container.querySelectorAll('.industrial-label').forEach(label=>{
-const pn=label.querySelector('.val-pn')?.innerText||'';
-const sn=label.querySelector('.val-sn')?.innerText||'';
-const svgPn=label.querySelector('.barcode-pn');
-const svgSn=label.querySelector('.barcode-sn');
-if(svgPn)JsBarcode(svgPn,pn,{format:'CODE128B',displayValue:false,margin:0,height:48,width:1.18,flat:true,lineColor:'#000'});
-if(svgSn)JsBarcode(svgSn,sn,{format:'CODE128B',displayValue:false,margin:0,height:48,width:.92,flat:true,lineColor:'#000'});
-});
+
+    container
+        .querySelectorAll(
+            '.industrial-label'
+        )
+        .forEach(label=>{
+
+            const pn =
+                label
+                .querySelector(
+                    '.val-pn'
+                )
+                ?.innerText
+                || '';
+
+            const sn =
+                label
+                .querySelector(
+                    '.val-sn'
+                )
+                ?.innerText
+                || '';
+
+            const svgPn =
+                label
+                .querySelector(
+                    '.barcode-pn'
+                );
+
+            const svgSn =
+                label
+                .querySelector(
+                    '.barcode-sn'
+                );
+
+
+            if(svgPn){
+
+                JsBarcode(
+                    svgPn,
+                    pn,
+                    {
+                        format:'CODE128B',
+                        displayValue:false,
+                        margin:0,
+                        height:48,
+                        width:1.18,
+                        flat:true,
+                        lineColor:'#000'
+                    }
+                );
+
+            }
+
+
+            if(svgSn){
+
+                JsBarcode(
+                    svgSn,
+                    sn,
+                    {
+                        format:'CODE128B',
+                        displayValue:false,
+                        margin:0,
+                        height:48,
+                        width:.92,
+                        flat:true,
+                        lineColor:'#000'
+                    }
+                );
+
+            }
+
+        });
 }
 
-/* Ждём, пока браузер полностью отрисует две копии и штрихкоды,
-   затем открываем печать. */
+
+/* =========================================================
+   TSC DA220 EMULATOR
+   ========================================================= */
+
 function prepareAndPrint(){
-requestAnimationFrame(()=>{
-requestAnimationFrame(()=>{
-setTimeout(()=>window.print(),250);
-});
-});
+
+    /*
+     * ВАЖНО:
+     *
+     * Здесь больше НЕТ window.print().
+     *
+     * Вместо системного принтера
+     * открываем виртуальный TSC DA220.
+     */
+
+    openTSCEmulator(
+        printContainer.innerHTML
+    );
 }
 
-function printSingle(index,includeBrand){
-const p=products[index];
-if(!p)return;
-printContainer.innerHTML=buildLabelsHTML([p],includeBrand);
-renderBarcodes(printContainer);
-prepareAndPrint();
+
+function openTSCEmulator(
+    labelsHTML
+){
+
+    const emulator =
+        document.getElementById(
+            'tscEmulator'
+        );
+
+    const body =
+        document.getElementById(
+            'tscEmulatorBody'
+        );
+
+    body.innerHTML = '';
+
+    const wrapper =
+        document.createElement('div');
+
+    wrapper.className =
+        'tsc-emulator-labels';
+
+    wrapper.innerHTML =
+        labelsHTML;
+
+    body.appendChild(wrapper);
+
+    /*
+     * Рисуем штрихкоды
+     */
+    renderBarcodes(body);
+
+
+    /*
+     * Добавляем разделитель между
+     * физическими копиями
+     */
+    const labels =
+        [...body.querySelectorAll(
+            '.industrial-label'
+        )];
+
+    labels.forEach((label,index)=>{
+
+        label.classList.add(
+            'tsc-emulator-label'
+        );
+
+        /*
+         * Между двумя этикетками
+         * добавляем визуальный разделитель
+         */
+        if(
+            index < labels.length - 1
+        ){
+
+            const separator =
+                document.createElement(
+                    'div'
+                );
+
+            separator.className =
+                'tsc-copy-separator';
+
+            separator.innerText =
+                `копия ${index + 1} → копия ${index + 2}`;
+
+            wrapper.insertBefore(
+                separator,
+                label.nextSibling
+            );
+        }
+
+    });
+
+
+    /*
+     * Устанавливаем текущий масштаб
+     */
+    const scale =
+        document.getElementById(
+            'tscScale'
+        )?.value || '1';
+
+    applyTSCScale(scale);
+
+
+    /*
+     * Открываем окно
+     */
+    emulator.classList.add(
+        'is-open'
+    );
+
+    /*
+     * Прокручиваем вверх
+     */
+    setTimeout(()=>{
+
+        const scrollArea =
+            document.querySelector(
+                '.tsc-emulator-body'
+            );
+
+        if(scrollArea)
+            scrollArea.scrollTop = 0;
+
+    },50);
 }
 
-function printBatch(includeBrand){
-const items=products.filter(p=>selectedSNs.has(p.sn));
-if(!items.length)return;
-printContainer.innerHTML=buildLabelsHTML(items,includeBrand);
-renderBarcodes(printContainer);
-prepareAndPrint();
+
+/* =========================================================
+   МАСШТАБ
+   ========================================================= */
+
+function changeTSCScale(value){
+
+    applyTSCScale(value);
 }
+
+
+function applyTSCScale(value){
+
+    const scale =
+        parseFloat(value) || 1;
+
+    document
+        .querySelectorAll(
+            '#tscEmulator .tsc-emulator-label'
+        )
+        .forEach(label=>{
+
+            label.style.transform =
+                `scale(${scale})`;
+
+        });
+
+    /*
+     * При масштабе меньше 100%
+     * немного уменьшаем промежутки,
+     * чтобы две этикетки было удобно видеть.
+     */
+
+    const wrapper =
+        document.querySelector(
+            '#tscEmulator .tsc-emulator-labels'
+        );
+
+    if(wrapper){
+
+        wrapper.style.gap =
+            scale >= 1
+                ? '28px'
+                : '18px';
+    }
+}
+
+
+/* =========================================================
+   ЗАКРЫТИЕ ЭМУЛЯТОРА
+   ========================================================= */
+
+function closeTSCEmulator(){
+
+    document
+        .getElementById(
+            'tscEmulator'
+        )
+        .classList
+        .remove('is-open');
+}
+
+
+/* =========================================================
+   ПЕЧАТЬ ОДНОЙ ПОЗИЦИИ
+   ========================================================= */
+
+function printSingle(
+    index,
+    includeBrand
+){
+
+    const p =
+        products[index];
+
+    if(!p)
+        return;
+
+    /*
+     * Здесь создаются 2 копии
+     */
+    printContainer.innerHTML =
+        buildLabelsHTML(
+            [p],
+            includeBrand
+        );
+
+    /*
+     * Генерируем штрихкоды
+     */
+    renderBarcodes(
+        printContainer
+    );
+
+    /*
+     * Показываем эмулятор
+     */
+    prepareAndPrint();
+}
+
+
+/* =========================================================
+   ПАКЕТНАЯ ПЕЧАТЬ
+   ========================================================= */
+
+function printBatch(
+    includeBrand
+){
+
+    const items =
+        products.filter(
+            p => selectedSNs.has(p.sn)
+        );
+
+    if(!items.length)
+        return;
+
+    /*
+     * Для КАЖДОЙ позиции
+     * будет создано 2 копии.
+     */
+
+    printContainer.innerHTML =
+        buildLabelsHTML(
+            items,
+            includeBrand
+        );
+
+    renderBarcodes(
+        printContainer
+    );
+
+    prepareAndPrint();
+}
+
+
+/* =========================================================
+   ТЕСТОВАЯ ЭТИКЕТКА
+   ========================================================= */
 
 function printTestLabel(){
-const test={pn:'TEST-PN-100X78',sn:'TEST-SN-27082026',brand:''};
-printContainer.innerHTML=buildLabelsHTML([test],false);
-renderBarcodes(printContainer);
-prepareAndPrint();
+
+    const test = {
+
+        pn:'TEST-PN-100X78',
+
+        sn:'TEST-SN-27082026',
+
+        brand:''
+
+    };
+
+    printContainer.innerHTML =
+        buildLabelsHTML(
+            [test],
+            false
+        );
+
+    renderBarcodes(
+        printContainer
+    );
+
+    prepareAndPrint();
 }
 
-function openPreview(index,includeBrand){
-const p=products[index];
-if(!p)return;
-modalActiveItem=p;
-modalActiveBrand=includeBrand;
-document.getElementById('modalTitleText').innerText=includeBrand?'Перегляд (з Brand - 2 копії)':'Перегляд (Звичайна - 2 копії)';
-modalPreviewBody.innerHTML=buildLabelsHTML([p],includeBrand);
-renderBarcodes(modalPreviewBody);
-modal.classList.add('is-open');
+
+/* =========================================================
+   ОБЫЧНЫЙ PREVIEW
+   ========================================================= */
+
+function openPreview(
+    index,
+    includeBrand
+){
+
+    const p =
+        products[index];
+
+    if(!p)
+        return;
+
+    modalActiveItem = p;
+
+    modalActiveBrand =
+        includeBrand;
+
+    document
+        .getElementById(
+            'modalTitleText'
+        )
+        .innerText =
+        includeBrand
+        ? 'Перегляд (з Brand - 2 копії)'
+        : 'Перегляд (Звичайна - 2 копії)';
+
+    modalPreviewBody.innerHTML =
+        buildLabelsHTML(
+            [p],
+            includeBrand
+        );
+
+    renderBarcodes(
+        modalPreviewBody
+    );
+
+    modal.classList.add(
+        'is-open'
+    );
 }
 
-function closeModal(){modal.classList.remove('is-open')}
 
-document.addEventListener('keydown',e=>{
-if(e.altKey&&e.key==='1'){e.preventDefault();switchSheet('0')}
-if(e.altKey&&e.key==='2'){e.preventDefault();switchSheet('193025884')}
-if(e.key==='Escape'&&modal.classList.contains('is-open'))closeModal();
-});
+function closeModal(){
 
-document.getElementById('closeModalCross').onclick=closeModal;
-document.getElementById('closeModalBtn').onclick=closeModal;
-document.getElementById('printModalBtn').onclick=()=>{
-if(!modalActiveItem)return;
-const i=products.findIndex(p=>p.sn===modalActiveItem.sn);
-if(i>=0)printSingle(i,modalActiveBrand);
-closeModal();
-};
+    modal.classList.remove(
+        'is-open'
+    );
+}
 
-window.addEventListener('afterprint',()=>{
-printContainer.innerHTML='';
-});
 
-document.addEventListener('DOMContentLoaded',()=>{
-fetchDataFromGoogleSheet(true);
-setInterval(()=>fetchDataFromGoogleSheet(false),5000);
-});
+/* =========================================================
+   КЛАВИАТУРА
+   ========================================================= */
+
+document.addEventListener(
+    'keydown',
+    e=>{
+
+        if(
+            e.altKey &&
+            e.key === '1'
+        ){
+
+            e.preventDefault();
+
+            switchSheet('0');
+        }
+
+
+        if(
+            e.altKey &&
+            e.key === '2'
+        ){
+
+            e.preventDefault();
+
+            switchSheet('193025884');
+        }
+
+
+        if(
+            e.key === 'Escape'
+        ){
+
+            if(
+                modal.classList.contains(
+                    'is-open'
+                )
+            ){
+
+                closeModal();
+            }
+
+            if(
+                document
+                .getElementById(
+                    'tscEmulator'
+                )
+                .classList
+                .contains(
+                    'is-open'
+                )
+            ){
+
+                closeTSCEmulator();
+            }
+
+        }
+
+    }
+);
+
+
+/* =========================================================
+   КНОПКИ PREVIEW
+   ========================================================= */
+
+document
+    .getElementById(
+        'closeModalCross'
+    )
+    .onclick =
+    closeModal;
+
+
+document
+    .getElementById(
+        'closeModalBtn'
+    )
+    .onclick =
+    closeModal;
+
+
+document
+    .getElementById(
+        'printModalBtn'
+    )
+    .onclick =
+    ()=>{
+
+        if(!modalActiveItem)
+            return;
+
+        const i =
+            products.findIndex(
+                p =>
+                p.sn ===
+                modalActiveItem.sn
+            );
+
+        if(i >= 0)
+            printSingle(
+                i,
+                modalActiveBrand
+            );
+
+        closeModal();
+    };
+
+
+/* =========================================================
+   CLICK ПО ФОНУ
+   ========================================================= */
+
+document
+    .getElementById(
+        'tscEmulator'
+    )
+    .addEventListener(
+        'click',
+        e=>{
+
+            if(
+                e.target.id ===
+                'tscEmulator'
+            ){
+
+                closeTSCEmulator();
+            }
+
+        }
+    );
+
+
+document
+    .getElementById(
+        'labelModal'
+    )
+    .addEventListener(
+        'click',
+        e=>{
+
+            if(
+                e.target.id ===
+                'labelModal'
+            ){
+
+                closeModal();
+            }
+
+        }
+    );
+
+
+/* =========================================================
+   ИНИЦИАЛИЗАЦИЯ
+   ========================================================= */
+
+document.addEventListener(
+    'DOMContentLoaded',
+    ()=>{
+
+        fetchDataFromGoogleSheet(
+            true
+        );
+
+        /*
+         * Обновление каждые 5 секунд
+         */
+        setInterval(
+            ()=>{
+                fetchDataFromGoogleSheet(
+                    false
+                );
+            },
+            5000
+        );
+
+    }
+);
+
 </script>
+
 </body>
 </html>
 ```
