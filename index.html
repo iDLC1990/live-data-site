@@ -247,21 +247,20 @@
     .modal-footer { padding: 16px 24px; border-top: 1px solid var(--border-color); display: flex; justify-content: flex-end; gap: 12px; }
 
     /* ==========================================
-        ЭТИКЕТКА 100x80 мм (landscape)
+        ЭТИКЕТКА 100x80 мм (ОНОВЛЕНІ СТИЛІ)
         ========================================== */
     .industrial-label {
       width: 100mm;
       height: 80mm;
       background-color: #FFFFFF;
       color: #000000;
-      padding: 4mm 5mm;
+      padding: 5mm 6mm;
       box-sizing: border-box;
-      font-family: 'Segoe UI', Arial, sans-serif;
+      font-family: Arial, 'Helvetica Neue', sans-serif;
       display: flex;
       flex-direction: column;
-      justify-content: center;
+      justify-content: space-between; /* Рівномірне розтягування блоків по висоті */
       align-items: center;
-      text-align: center;
       border: 1px solid #D1D5DB;
       box-shadow: 0 10px 25px rgba(0, 0, 0, 0.5);
       overflow: hidden;
@@ -285,12 +284,12 @@
     }
 
     .label-caption { 
-      font-size: 16pt; 
+      font-size: 18pt; 
       font-weight: 900;
       color: #000000; 
-      letter-spacing: 1px; 
+      letter-spacing: 1.5px; 
       text-transform: uppercase; 
-      line-height: 1;
+      line-height: 1.2; /* Збільшена інтерлінія */
     }
 
     .label-brand-right {
@@ -299,9 +298,10 @@
       top: 50%;
       transform: translateY(-50%);
       font-weight: 900;
-      font-size: 14pt;
+      font-size: 16pt;
       color: #000000;
-      line-height: 1;
+      line-height: 1.2;
+      text-transform: uppercase;
     }
 
     .barcode-wrapper { 
@@ -309,26 +309,27 @@
       display: flex; 
       justify-content: center; 
       align-items: center; 
+      margin: 1mm 0;
     }
     
     .barcode-wrapper svg { 
       max-width: 100%; 
-      height: 20mm;
+      height: 22mm; /* Збільшена висота штрихкоду */
       display: block; 
     }
 
     .label-value-text {
-      font-size: 15pt; 
+      font-size: 17pt; /* Збільшений розмір значення */
       font-weight: 900;
       font-family: 'Consolas', 'Courier New', monospace; 
       color: #000000;
-      letter-spacing: 0.5px;
-      margin-top: 2px;
-      line-height: 1.1; 
+      letter-spacing: 1px;
+      line-height: 1.3; /* Вища інтерлінія для жирного тексту */
+      text-align: center;
     }
 
     .label-spacer {
-      height: 3mm;
+      height: 2mm;
       width: 100%;
     }
 
@@ -341,7 +342,6 @@
     }
 
     @media print {
-      /* Скидаємо стилі сторінки та інтерфейсу */
       html, body {
         width: 100mm !important;
         height: auto !important;
@@ -353,13 +353,11 @@
         overflow: visible !important;
       }
 
-      /* Приховуємо абсолютно весь UI */
       .app-container, 
       .modal-backdrop { 
         display: none !important; 
       }
 
-      /* Відображаємо ізольований контейнер друку */
       #printContainer {
         display: block !important;
         position: static !important;
@@ -374,20 +372,18 @@
         visibility: visible !important;
       }
 
-      /* Правила розмірів та розривів для кожної етикетки */
       #printContainer .industrial-label { 
         width: 100mm !important;
         height: 80mm !important;
         max-width: 100mm !important;
         max-height: 80mm !important;
-        padding: 4mm 5mm !important;
+        padding: 5mm 6mm !important;
         margin: 0 !important;
         border: none !important; 
         box-shadow: none !important; 
         box-sizing: border-box !important;
         overflow: hidden !important;
 
-        /* Заборона розриву всередині та фіксований розрив після кожної етикетки */
         page-break-inside: avoid !important;
         break-inside: avoid !important;
         page-break-after: always !important;
@@ -712,8 +708,8 @@
         format: "CODE128",
         displayValue: false,
         margin: 0,
-        height: 48,
-        width: 1.55,
+        height: 52, /* Трохи збільшено товщину штрихів штрихкоду */
+        width: 1.6,
         lineColor: "#000000",
         background: "transparent"
       };
