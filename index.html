@@ -233,7 +233,7 @@
     .modal-footer { padding: 16px 24px; border-top: 1px solid var(--border-color); display: flex; justify-content: flex-end; gap: 12px; }
 
     /* ==========================================
-        НОВА НАДІЙНА СИСТЕМА МАКЕТУВАННЯ ЕТИКЕТКИ (100x78 mm)
+        МАКЕТ ЕТИКЕТКИ (100x78 mm)
         ========================================== */
     .industrial-label {
       width: 100mm;
@@ -331,7 +331,7 @@
     }
 
     /* ==========================================
-        ІДЕАЛЬНИЙ ДРУК ДЛЯ TSC DA220
+        ДРУК НА TSC DA220
         ========================================== */
     @page { 
       size: 100mm 78mm landscape; 
@@ -701,6 +701,7 @@
       return html;
     }
 
+    /* Генерація штрихкодів чисто в режимі CODE128B (Zestaw B) */
     function renderBarcodesInContainer(containerSelector) {
       const container = document.querySelector(containerSelector);
       if (!container) return;
@@ -713,20 +714,20 @@
           const pnVal = label.querySelector('.val-pn').innerText;
           const snVal = label.querySelector('.val-sn').innerText;
           
-          // Для PN (короткий)
+          // Для PN: Code 128B (без автоперемикань)
           JsBarcode(svgPn, pnVal, {
-            format: "CODE128",
+            format: "CODE128B",
             displayValue: false,
             margin: 0,
             height: 50,
-            width: 1.6,
+            width: 1.5,
             flat: true,
             lineColor: "#000000"
           });
 
-          // Для SN (довгий) — адаптивна ширина модуля 1.15 для 100% вміщення
+          // Для SN: Code 128B (Zestaw B — примусово)
           JsBarcode(svgSn, snVal, {
-            format: "CODE128",
+            format: "CODE128B",
             displayValue: false,
             margin: 0,
             height: 50,
