@@ -1,16 +1,16 @@
 <!DOCTYPE html>
-<html lang="ru">
+<html lang="uk">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Печать этикеток — TSC DA220</title>
+  <title>Друк етикеток — TSC DA220</title>
   
   <script src="https://cdn.jsdelivr.net/npm/jsbarcode@3.11.6/dist/JsBarcode.all.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
   <style>
     /* ==========================================
-        СТИЛИ ИНТЕРФЕЙСА (ТЕМНАЯ ТЕМА)
+        СТИЛІ ІНТЕРФЕЙСУ (ТЕМНА ТЕМА)
         ========================================== */
     :root {
       --bg-color: #111827;
@@ -242,23 +242,30 @@
     .modal-footer { padding: 16px 24px; border-top: 1px solid var(--border-color); display: flex; justify-content: flex-end; gap: 12px; }
 
     /* ==========================================
-        БЕЗПЕЧНА ВЕРСТКА ЕТИКЕТКИ (100x78 мм)
+        ТОЧНИЙ МАКЕТ ЕТИКЕТКИ (ЗІ СКРІНШОТА)
         ========================================== */
     .industrial-label {
       width: 100mm;
-      height: 78mm; /* Зменшено з 80мм до 78мм для запобігання помилки GAP */
+      height: 78mm; /* Захист від аварійної зупинки принтера */
       background-color: #FFFFFF;
       color: #000000;
-      padding: 5mm 5mm; /* Фіксований відступ 5мм зверху і знизу */
+      padding: 3mm 5mm 2mm 5mm;
       box-sizing: border-box;
-      font-family: Arial, 'Helvetica Neue', sans-serif;
+      font-family: Arial, sans-serif;
       display: flex;
       flex-direction: column;
-      justify-content: space-around;
       align-items: center;
+      justify-content: flex-start;
       border: 1px solid #D1D5DB;
       box-shadow: 0 10px 25px rgba(0, 0, 0, 0.5);
       overflow: hidden;
+    }
+
+    /* Лінія зверху */
+    .top-border {
+      width: 100%;
+      border-top: 2px solid #000000;
+      margin-bottom: 2mm;
     }
 
     .label-block { 
@@ -274,16 +281,14 @@
       display: flex;
       justify-content: center;
       align-items: center;
-      margin-bottom: 1px;
     }
 
     .label-caption { 
-      font-size: 14pt; 
+      font-size: 15pt; 
       font-weight: 900;
       color: #000000; 
-      letter-spacing: 1px; 
-      text-transform: uppercase; 
       line-height: 1; 
+      text-align: center;
     }
 
     .label-brand-right {
@@ -303,27 +308,37 @@
       display: flex; 
       justify-content: center; 
       align-items: center; 
-      margin: 1mm 0;
     }
     
     .barcode-wrapper svg { 
-      max-width: 100%; 
-      height: 15mm; /* Оптимальна висота штрихкоду */
+      width: 90%; 
+      height: 14mm; 
       display: block; 
     }
 
-    .label-value-text {
-      font-size: 12.5pt;
+    .label-value-pn {
+      font-size: 18pt;
       font-weight: 900;
-      font-family: 'Consolas', 'Courier New', monospace; 
       color: #000000;
-      letter-spacing: 0.5px;
+      line-height: 1.1;
+      text-align: center;
+      margin-top: 1mm;
+      margin-bottom: 2mm;
+    }
+
+    .label-value-sn {
+      font-size: 16pt;
+      font-weight: 900;
+      color: #000000;
       line-height: 1;
       text-align: center;
+      margin-top: 1mm;
+      transform: scaleX(0.85); /* Стискає довгий SN як на фото */
+      display: inline-block;
     }
 
     /* ==========================================
-        ДРУК ДЛЯ TSC DA220
+        ДРУК НА TSC DA220
         ========================================== */
     @page { 
       size: 100mm 80mm landscape; 
@@ -368,7 +383,7 @@
         height: 78mm !important;
         max-width: 100mm !important;
         max-height: 78mm !important;
-        padding: 5mm 5mm !important;
+        padding: 3mm 5mm 2mm 5mm !important;
         margin: 0 !important;
         border: none !important; 
         box-shadow: none !important; 
@@ -396,7 +411,7 @@
         <h1 class="page-title">🖨️ Друк етикеток (TSC DA220)</h1>
       </div>
       <div>
-        <button class="btn btn-secondary" onclick="fetchDataFromGoogleSheet(true)">🔄 Обновить сейчас</button>
+        <button class="btn btn-secondary" onclick="fetchDataFromGoogleSheet(true)">🔄 Оновити зараз</button>
       </div>
     </header>
 
@@ -406,15 +421,15 @@
       
       <div class="sync-indicator" id="syncIndicator">
         <div class="spinner"></div>
-        <span>Синхронизация...</span>
+        <span>Синхронізація...</span>
       </div>
     </div>
 
     <div class="batch-actions-bar">
-      <div class="batch-info" id="selectedCountText">Выбрано позиций: 0</div>
+      <div class="batch-info" id="selectedCountText">Вибрано позицій: 0</div>
       <div class="batch-buttons">
-        <button class="btn btn-secondary" id="batchPrintNormalBtn" disabled onclick="printBatch(false)">🖨️ Печать выбранных (х2)</button>
-        <button class="btn btn-brand" id="batchPrintBrandBtn" disabled onclick="printBatch(true)">🖨️ Печать выбранных с Brand (х2)</button>
+        <button class="btn btn-secondary" id="batchPrintNormalBtn" disabled onclick="printBatch(false)">🖨️ Друк вибраних (х2)</button>
+        <button class="btn btn-brand" id="batchPrintBrandBtn" disabled onclick="printBatch(true)">🖨️ Друк вибраних з Brand (х2)</button>
       </div>
     </div>
 
@@ -428,11 +443,11 @@
               <th>Serial Number (SN)</th>
               <th>Part Number (PN)</th>
               <th>Brand</th>
-              <th style="width: 250px; text-align: right;">Печать (х2) / Просмотр</th>
+              <th style="width: 250px; text-align: right;">Друк (х2) / Перегляд</th>
             </tr>
           </thead>
           <tbody id="productsTableBody">
-            <tr><td colspan="6" style="text-align: center; padding: 30px;">Загрузка данных...</td></tr>
+            <tr><td colspan="6" style="text-align: center; padding: 30px;">Завантаження даних...</td></tr>
           </tbody>
         </table>
       </div>
@@ -442,13 +457,13 @@
   <div class="modal-backdrop" id="labelModal">
     <div class="modal-card">
       <div class="modal-header">
-        <h2 class="modal-title" id="modalTitleText">Предпросмотр этикетки</h2>
+        <h2 class="modal-title" id="modalTitleText">Попередній перегляд етикетки</h2>
         <button class="modal-close-btn" id="closeModalCross">&times;</button>
       </div>
       <div class="modal-body" id="modalPreviewBody"></div>
       <div class="modal-footer">
-        <button class="btn btn-secondary" id="closeModalBtn">Закрыть</button>
-        <button class="btn" id="printModalBtn">🖨️ Печать</button>
+        <button class="btn btn-secondary" id="closeModalBtn">Закрити</button>
+        <button class="btn" id="printModalBtn">🖨️ Друк</button>
       </div>
     </div>
   </div>
@@ -527,7 +542,7 @@
       if (activeBtn) activeBtn.classList.add('active');
 
       if (products.length === 0) {
-        tableBody.innerHTML = `<tr><td colspan="6" style="text-align: center; padding: 30px;">Загрузка данных с листа...</td></tr>`;
+        tableBody.innerHTML = `<tr><td colspan="6" style="text-align: center; padding: 30px;">Завантаження даних...</td></tr>`;
       }
 
       await fetchDataFromGoogleSheet(false);
@@ -542,7 +557,7 @@
         const url = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:csv&gid=${currentGid}&_nc=${Date.now()}`;
         const response = await fetch(url);
         
-        if (!response.ok) throw new Error('Не удалось получить данные с сервера Google');
+        if (!response.ok) throw new Error('Помилка Google Таблиці');
         
         const csvText = await response.text();
         const rows = parseCSV(csvText);
@@ -575,7 +590,7 @@
         renderTable();
         updateBatchBar();
       } catch (error) {
-        console.error('Ошибка фонового обновления:', error);
+        console.error('Помилка оновлення:', error);
       } finally {
         isInitialLoad = false;
         syncIndicator.classList.remove('visible');
@@ -584,7 +599,7 @@
 
     function renderTable() {
       if (products.length === 0) {
-        tableBody.innerHTML = `<tr><td colspan="6" style="text-align: center; padding: 20px;">Записей в таблице не найдено</td></tr>`;
+        tableBody.innerHTML = `<tr><td colspan="6" style="text-align: center; padding: 20px;">Записів не знайдено</td></tr>`;
         return;
       }
 
@@ -600,12 +615,12 @@
           <td><span style="background: #374151; padding: 3px 8px; border-radius: 4px; font-size: 12px; font-weight: 600;">${escapeHtml(product.brand)}</span></td>
           <td class="actions-cell">
             <div class="action-group">
-              <button class="btn btn-secondary" onclick="openPreview(${index}, false)" title="Предпросмотр">👁️</button>
-              <button class="btn" onclick="printSingle(${index}, false)" title="Сразу печать 2 копии">🖨️ х2</button>
+              <button class="btn btn-secondary" onclick="openPreview(${index}, false)" title="Перегляд">👁️</button>
+              <button class="btn" onclick="printSingle(${index}, false)" title="Друк 2 копії">🖨️ х2</button>
             </div>
             <div class="action-group">
-              <button class="btn btn-secondary" onclick="openPreview(${index}, true)" title="Предпросмотр с Brand">👁️</button>
-              <button class="btn btn-brand" onclick="printSingle(${index}, true)" title="Сразу печать 2 копии с Brand">🖨️ х2</button>
+              <button class="btn btn-secondary" onclick="openPreview(${index}, true)" title="Перегляд з Brand">👁️</button>
+              <button class="btn btn-brand" onclick="printSingle(${index}, true)" title="Друк 2 копії з Brand">🖨️ х2</button>
             </div>
           </td>
         `;
@@ -637,7 +652,7 @@
 
     function updateBatchBar() {
       const count = selectedIndices.size;
-      document.getElementById('selectedCountText').innerText = `Выбрано позиций: ${count}`;
+      document.getElementById('selectedCountText').innerText = `Вибрано позицій: ${count}`;
       const btnNorm = document.getElementById('batchPrintNormalBtn');
       const btnBrand = document.getElementById('batchPrintBrandBtn');
       
@@ -662,25 +677,27 @@
         for (let copy = 0; copy < 2; copy++) {
           html += `
             <div class="industrial-label">
+              <div class="top-border"></div>
+
               <div class="label-block">
                 <div class="label-header-row">
-                  <span class="label-caption">PN</span>
+                  <span class="label-caption">PN:</span>
                   ${includeBrand ? `<span class="label-brand-right">${escapeHtml(product.brand)}</span>` : ''}
                 </div>
                 <div class="barcode-wrapper">
                   <svg id="barcodePN_${idx}_${copy}"></svg>
                 </div>
-                <span class="label-value-text">${escapeHtml(product.pn)}</span>
+                <span class="label-value-pn">${escapeHtml(product.pn)}</span>
               </div>
 
               <div class="label-block">
                 <div class="label-header-row">
-                  <span class="label-caption">SN</span>
+                  <span class="label-caption">SN:</span>
                 </div>
                 <div class="barcode-wrapper">
                   <svg id="barcodeSN_${idx}_${copy}"></svg>
                 </div>
-                <span class="label-value-text">${escapeHtml(product.sn)}</span>
+                <span class="label-value-sn">${escapeHtml(product.sn)}</span>
               </div>
             </div>
           `;
@@ -693,26 +710,31 @@
       const container = document.querySelector(containerSelector);
       if (!container) return;
 
-      const barcodeOptions = {
-        format: "CODE128",
-        displayValue: false,
-        margin: 0,
-        height: 35, /* Безпечна висота штрихкоду */
-        width: 1.4,
-        lineColor: "#000000",
-        background: "transparent"
-      };
-
       container.querySelectorAll('.industrial-label').forEach((label) => {
         const svgPn = label.querySelector('[id^="barcodePN_"]');
         const svgSn = label.querySelector('[id^="barcodeSN_"]');
         
         if (svgPn && svgSn) {
-          const pnVal = label.children[0].querySelector('.label-value-text').innerText;
-          const snVal = label.children[1].querySelector('.label-value-text').innerText;
+          const pnVal = label.querySelector('.label-value-pn').innerText;
+          const snVal = label.querySelector('.label-value-sn').innerText;
           
-          JsBarcode(svgPn, pnVal, barcodeOptions);
-          JsBarcode(svgSn, snVal, barcodeOptions);
+          JsBarcode(svgPn, pnVal, {
+            format: "CODE128",
+            displayValue: false,
+            margin: 0,
+            height: 40,
+            width: 1.8,
+            lineColor: "#000000"
+          });
+
+          JsBarcode(svgSn, snVal, {
+            format: "CODE128",
+            displayValue: false,
+            margin: 0,
+            height: 40,
+            width: 1.25, /* Вужчі лінії штрихкоду для SN */
+            lineColor: "#000000"
+          });
         }
       });
     }
@@ -746,7 +768,7 @@
       modalActiveItem = product;
       modalActiveBrand = includeBrand;
 
-      document.getElementById('modalTitleText').innerText = includeBrand ? 'Предпросмотр (с Brand - 2 копии)' : 'Предпросмотр (Обычная - 2 копии)';
+      document.getElementById('modalTitleText').innerText = includeBrand ? 'Перегляд (з Brand - 2 копії)' : 'Перегляд (Звичайна - 2 копії)';
 
       modalPreviewBody.innerHTML = buildLabelsHTML([product], includeBrand);
       renderBarcodesInContainer('#modalPreviewBody');
