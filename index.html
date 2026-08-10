@@ -234,19 +234,16 @@
     .modal-footer { padding: 16px 24px; border-top: 1px solid var(--border-color); display: flex; justify-content: flex-end; gap: 12px; }
 
     /* ==========================================
-        ТОЧНИЙ МАКЕТ ЕТИКЕТКИ ЗГІДНО З ОБРАЗОМ 6
+        ТОЧНИЙ МАКЕТ ЕТИКЕТКИ ТА ТОЧНІ КООРДИНАТИ (100x78 mm)
         ========================================== */
     .industrial-label {
       width: 100mm;
       height: 78mm;
       background-color: #FFFFFF;
       color: #000000;
-      padding: 2mm 3mm 2mm 3mm;
+      position: relative;
       box-sizing: border-box;
       font-family: Arial, Helvetica, sans-serif;
-      display: flex;
-      flex-direction: column;
-      justify-content: flex-start;
       border: 1px solid #D1D5DB;
       box-shadow: 0 10px 25px rgba(0, 0, 0, 0.5);
       overflow: hidden;
@@ -262,87 +259,110 @@
     }
 
     .top-border {
-      width: 100%;
+      position: absolute;
+      top: 3mm;
+      left: 3mm;
+      width: 94mm;
       border-top: 2.5px solid #000000;
-      margin-top: 1mm;
-      margin-bottom: 1.5mm;
     }
 
-    .label-block { 
-      display: flex; 
-      flex-direction: column; 
-      align-items: center; 
-      width: 100%;
-    }
-
-    .label-header-row {
-      width: 100%;
-      position: relative;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      margin-bottom: 0.5mm;
-    }
-
-    .label-caption { 
-      font-size: 13pt; 
-      font-weight: 900;
-      color: #000000; 
-      line-height: 1; 
+    /* PN Блок (Верхній) */
+    .pn-caption {
+      position: absolute;
+      top: 5.5mm;
+      left: 0;
+      width: 100mm;
       text-align: center;
+      font-size: 13pt;
+      font-weight: 900;
+      line-height: 1;
     }
 
     .label-brand-right {
       position: absolute;
-      right: 2mm;
-      top: 50%;
-      transform: translateY(-50%);
+      top: 5.5mm;
+      right: 5mm;
       font-weight: 900;
       font-size: 11pt;
-      color: #000000;
       line-height: 1;
       text-transform: uppercase;
     }
 
-    .barcode-wrapper { 
-      width: 100%; 
-      display: flex; 
-      justify-content: center; 
-      align-items: center; 
+    .pn-barcode-wrapper {
+      position: absolute;
+      top: 12mm;
+      left: 11mm;
+      width: 78mm;
+      height: 15mm;
+      display: flex;
+      justify-content: center;
+      align-items: center;
     }
-    
-    /* shape-rendering: crispEdges забігає некоректному друку термоголовою */
-    .barcode-wrapper svg { 
-      width: 96%; 
-      height: 15mm; 
-      display: block; 
-      shape-rendering: crispEdges; 
+
+    .pn-barcode-wrapper svg {
+      width: 100%;
+      height: 100%;
+      display: block;
+      shape-rendering: crispEdges;
     }
 
     .label-value-pn {
+      position: absolute;
+      top: 28.5mm;
+      left: 0;
+      width: 100mm;
       font-size: 20pt;
       font-weight: 900;
-      color: #000000;
-      line-height: 1;
       text-align: center;
-      margin-top: 1mm;
-      margin-bottom: 3mm;
+      line-height: 1;
       letter-spacing: -0.3px;
     }
 
-    /* Стиснутий шрифт для довгого SN як на макеті */
+    /* SN Блок (Нижній) — НАЛАШТУВАННЯ З ЗНІМКУ OBRAZ_7.PNG */
+    .sn-caption {
+      position: absolute;
+      top: 41mm;
+      left: 0;
+      width: 100mm;
+      text-align: center;
+      font-size: 13pt;
+      font-weight: 900;
+      line-height: 1;
+    }
+
+    /* Точні параметри з вашої програми: X=8.5mm, Y=47.8mm, Width=77.6mm, Height=12.8mm */
+    .sn-barcode-wrapper {
+      position: absolute;
+      left: 8.5mm;
+      top: 47.8mm;
+      width: 77.6mm;
+      height: 12.8mm;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      overflow: hidden;
+    }
+
+    .sn-barcode-wrapper svg {
+      width: 100%;
+      height: 100%;
+      display: block;
+      shape-rendering: crispEdges;
+    }
+
     .label-value-sn {
+      position: absolute;
+      top: 62.5mm;
+      left: 0;
+      width: 100mm;
       font-size: 19pt;
       font-weight: 900;
       font-family: 'Arial Narrow', Arial, sans-serif;
-      color: #000000;
-      line-height: 1;
       text-align: center;
-      margin-top: 1mm;
+      line-height: 1;
       transform: scaleX(0.82);
       transform-origin: center;
       white-space: nowrap;
-      display: block;
     }
 
     /* ==========================================
@@ -391,7 +411,6 @@
         height: 78mm !important;
         max-width: 100mm !important;
         max-height: 78mm !important;
-        padding: 2mm 3mm 2mm 3mm !important;
         margin: 0 !important;
         border: none !important; 
         box-shadow: none !important; 
@@ -709,26 +728,18 @@
             <div class="industrial-label">
               <div class="top-border"></div>
 
-              <div class="label-block">
-                <div class="label-header-row">
-                  <span class="label-caption">PN:</span>
-                  ${includeBrand ? `<span class="label-brand-right">${escapeHtml(product.brand)}</span>` : ''}
-                </div>
-                <div class="barcode-wrapper">
-                  <svg id="barcodePN_${idx}_${copy}"></svg>
-                </div>
-                <span class="label-value-pn">${escapeHtml(product.pn)}</span>
+              <span class="pn-caption">PN:</span>
+              ${includeBrand ? `<span class="label-brand-right">${escapeHtml(product.brand)}</span>` : ''}
+              <div class="pn-barcode-wrapper">
+                <svg id="barcodePN_${idx}_${copy}"></svg>
               </div>
+              <span class="label-value-pn">${escapeHtml(product.pn)}</span>
 
-              <div class="label-block">
-                <div class="label-header-row">
-                  <span class="label-caption">SN:</span>
-                </div>
-                <div class="barcode-wrapper">
-                  <svg id="barcodeSN_${idx}_${copy}"></svg>
-                </div>
-                <span class="label-value-sn">${escapeHtml(product.sn)}</span>
+              <span class="sn-caption">SN:</span>
+              <div class="sn-barcode-wrapper">
+                <svg id="barcodeSN_${idx}_${copy}"></svg>
               </div>
+              <span class="label-value-sn">${escapeHtml(product.sn)}</span>
             </div>
           `;
         }
@@ -736,7 +747,7 @@
       return html;
     }
 
-    /* Оптимізована генерація CODE128 з чіткими лініями (crispEdges) для термодруку */
+    /* Налаштування JsBarcode згідно з діалоговим вікном z obraz_7.png */
     function renderBarcodesInContainer(containerSelector) {
       const container = document.querySelector(containerSelector);
       if (!container) return;
@@ -749,22 +760,24 @@
           const pnVal = label.querySelector('.label-value-pn').innerText;
           const snVal = label.querySelector('.label-value-sn').innerText;
           
+          // PN Штрихкод (Code 128)
           JsBarcode(svgPn, pnVal, {
             format: "CODE128",
             displayValue: false,
             margin: 0,
-            height: 45,
-            width: 1.5,
+            height: 48,
+            width: 2,
             flat: true,
             lineColor: "#000000"
           });
 
+          // SN Штрихкод (Точно за налаштуваннями з obraz_7.png: Code 128, Szerokość modułu: 2, Auto)
           JsBarcode(svgSn, snVal, {
             format: "CODE128",
             displayValue: false,
             margin: 0,
-            height: 45,
-            width: 1.15, // Підібрано ширину під довгий SN для максимальної читабельності сканером
+            height: 48, // Відповідає висоті 12.8 мм
+            width: 2,   // Szerokość modułu: 2
             flat: true,
             lineColor: "#000000"
           });
