@@ -233,42 +233,31 @@
     .modal-footer { padding: 16px 24px; border-top: 1px solid var(--border-color); display: flex; justify-content: flex-end; gap: 12px; }
 
     /* ==========================================
-       ЕТИКЕТКА — ФІЗИЧНИЙ ФОРМАТ 100x78 мм
-       Друк у landscape без flexbox у print-layout
-       ========================================== */
+        ЕТИКЕТКА TSC DA220 — 100 x 78 мм
+        ФІКСОВАНИЙ ГОРИЗОНТАЛЬНИЙ PRINT LAYOUT
+        Без flexbox / без rotate / без scale
+        ========================================== */
     .industrial-label {
-      width: 78mm;
-      height: 100mm;
+      width: 100mm;
+      height: 78mm;
       position: relative;
-      background: #fff;
-      color: #000;
+      background: #FFFFFF;
+      color: #000000;
+      padding: 3.2mm 4mm 2.8mm;
       box-sizing: border-box;
-      padding: 0;
       font-family: Arial, Helvetica, sans-serif;
       display: block;
       overflow: hidden;
-      border: 1px solid #d1d5db;
-    }
-
-    .print-rotated {
-      position: absolute;
-      left: -11mm;
-      top: 11mm;
-      width: 100mm;
-      height: 78mm;
-      padding: 3mm 4mm;
-      box-sizing: border-box;
-      background: #fff;
-      transform: rotate(90deg);
-      transform-origin: center center;
-      overflow: hidden;
+      border: 1px solid #D1D5DB;
+      box-shadow: 0 10px 25px rgba(0, 0, 0, 0.5);
+      background-clip: padding-box;
     }
 
     .top-divider {
       width: 100%;
       height: 0;
-      border-top: 2px solid #000;
-      margin: 0 0 2.5mm 0;
+      border-top: 1.5px solid #000000;
+      margin: 0 0 2.2mm 0;
     }
 
     .label-section {
@@ -279,24 +268,25 @@
     }
 
     .label-section + .label-section {
-      margin-top: 3.5mm;
+      margin-top: 3.1mm;
     }
 
     .section-header {
       width: 100%;
-      height: 7mm;
+      height: 5.5mm;
       display: block;
       position: relative;
-      margin: 0 0 1.5mm 0;
-      line-height: 1;
+      margin: 0 0 1.1mm 0;
+      line-height: 5.5mm;
+      text-align: center;
     }
 
     .header-title {
       display: block;
       width: 100%;
-      font-size: 13pt;
+      font-size: 12.5pt;
       font-weight: 900;
-      line-height: 7mm;
+      line-height: 5.5mm;
       text-align: center;
     }
 
@@ -305,15 +295,16 @@
       right: 0;
       top: 0;
       font-weight: 900;
-      font-size: 10pt;
+      font-size: 9.5pt;
       text-transform: uppercase;
-      line-height: 7mm;
+      line-height: 5.5mm;
       white-space: nowrap;
     }
 
     .barcode-box {
-      width: 100%;
-      height: 13mm;
+      width: 82mm;
+      height: 15.5mm;
+      margin: 0 auto;
       display: block;
       overflow: hidden;
       text-align: center;
@@ -321,8 +312,8 @@
 
     .barcode-box svg {
       width: auto !important;
-      max-width: 100%;
-      height: 13mm !important;
+      max-width: 100% !important;
+      height: 15.5mm !important;
       display: inline-block;
       vertical-align: top;
       shape-rendering: crispEdges;
@@ -337,41 +328,40 @@
       white-space: nowrap;
       overflow: hidden;
       text-overflow: clip;
-      margin: 1.2mm 0 0 0;
       line-height: 1;
+      letter-spacing: 0;
+      margin: 1.1mm 0 0 0;
     }
 
     .val-pn {
       font-size: 18pt;
-      letter-spacing: 0;
+      font-family: Arial, Helvetica, sans-serif;
     }
 
     .val-sn {
-      font-size: 15pt;
+      font-size: 17pt;
       font-family: Arial, Helvetica, sans-serif;
-      letter-spacing: 0;
     }
 
     /* ==========================================
-       ДРУК — ОКРЕМИЙ PRINT LAYOUT
-       ========================================== */
+        ДРУК — РЕАЛЬНИЙ РОЗМІР 100 x 78 мм
+        ========================================== */
     @page {
-      size: 78mm 100mm;
+      size: 100mm 78mm;
       margin: 0;
     }
 
     @media print {
       html, body {
-        width: 78mm !important;
-        height: 100mm !important;
+        width: 100mm !important;
+        height: 78mm !important;
+        min-width: 100mm !important;
+        min-height: 78mm !important;
         margin: 0 !important;
         padding: 0 !important;
-        background: #fff !important;
-        overflow: hidden !important;
-      }
-
-      body {
+        background: #ffffff !important;
         display: block !important;
+        overflow: hidden !important;
       }
 
       .app-container,
@@ -381,43 +371,31 @@
 
       #printContainer {
         display: block !important;
-        width: 78mm !important;
-        height: auto !important;
+        position: static !important;
+        width: 100mm !important;
         margin: 0 !important;
         padding: 0 !important;
-        position: static !important;
       }
 
       #printContainer .industrial-label {
-        width: 78mm !important;
-        height: 100mm !important;
-        min-width: 78mm !important;
-        min-height: 100mm !important;
-        max-width: 78mm !important;
-        max-height: 100mm !important;
+        width: 100mm !important;
+        height: 78mm !important;
+        min-width: 100mm !important;
+        min-height: 78mm !important;
+        max-width: 100mm !important;
+        max-height: 78mm !important;
+        padding: 3.2mm 4mm 2.8mm !important;
         margin: 0 !important;
-        padding: 0 !important;
         border: 0 !important;
         box-shadow: none !important;
         box-sizing: border-box !important;
         overflow: hidden !important;
         display: block !important;
-        page-break-after: always !important;
-        break-after: page !important;
+        position: relative !important;
         page-break-inside: avoid !important;
         break-inside: avoid !important;
-      }
-
-      #printContainer .print-rotated {
-        position: absolute !important;
-        left: 11mm !important;
-        top: -11mm !important;
-        width: 100mm !important;
-        height: 78mm !important;
-        padding: 3mm 4mm !important;
-        box-sizing: border-box !important;
-        transform: rotate(270deg) !important;
-        transform-origin: center center !important;
+        page-break-after: always !important;
+        break-after: page !important;
       }
 
       #printContainer .industrial-label:last-child {
@@ -699,24 +677,22 @@
     function printTestLabel() {
       printContainer.innerHTML = `
         <div class="industrial-label">
-          <div class="print-rotated">
           <div class="top-divider"></div>
-          <div style="text-align:center; padding-top:18mm;">
-            <div style="font-size:20pt;font-weight:900;">TEST PRINT</div>
-            <div style="font-size:13pt;margin-top:4mm;">100 × 78 mm · 90°</div>
+          <div class="label-section">
+            <div class="section-header"><span class="header-title">PN:</span></div>
+            <div class="barcode-box"><svg id="testPN"></svg></div>
+            <div class="val-pn">TEST-PN-100X78</div>
           </div>
+          <div class="label-section">
+            <div class="section-header"><span class="header-title">SN:</span></div>
+            <div class="barcode-box"><svg id="testSN"></svg></div>
+            <div class="val-sn">TEST-SN-27082026</div>
           </div>
         </div>
       `;
+      JsBarcode('#testPN', 'TEST-PN-100X78', { format: 'CODE128B', displayValue: false, margin: 0, height: 48, width: 1.18, flat: true, lineColor: '#000' });
+      JsBarcode('#testSN', 'TEST-SN-27082026', { format: 'CODE128B', displayValue: false, margin: 0, height: 48, width: 0.92, flat: true, lineColor: '#000' });
       prepareAndPrint();
-    }
-
-    function prepareAndPrint() {
-      requestAnimationFrame(() => {
-        requestAnimationFrame(() => {
-          setTimeout(() => window.print(), 150);
-        });
-      });
     }
 
     function buildLabelsHTML(itemsList, includeBrand) {
@@ -725,7 +701,6 @@
         for (let copy = 0; copy < 2; copy++) {
           html += `
             <div class="industrial-label">
-              <div class="print-rotated">
               <div class="top-divider"></div>
 
               <div class="label-section">
@@ -747,7 +722,6 @@
                   <svg id="barcodeSN_${idx}_${copy}"></svg>
                 </div>
                 <div class="val-sn">${escapeHtml(product.sn)}</div>
-              </div>
               </div>
             </div>
           `;
@@ -774,8 +748,8 @@
             format: "CODE128B",
             displayValue: false,
             margin: 0,
-            height: 42,
-            width: 1.35,
+            height: 48,
+            width: 1.18,
             flat: true,
             lineColor: "#000000"
           });
@@ -785,12 +759,20 @@
             format: "CODE128B",
             displayValue: false,
             margin: 0,
-            height: 42,
-            width: 1.05,
+            height: 48,
+            width: 0.92,
             flat: true,
             lineColor: "#000000"
           });
         }
+      });
+    }
+
+    function prepareAndPrint() {
+      requestAnimationFrame(() => {
+        requestAnimationFrame(() => {
+          setTimeout(() => window.print(), 120);
+        });
       });
     }
 
