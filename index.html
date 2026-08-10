@@ -361,6 +361,7 @@
       background-clip: padding-box;
     }
 
+    /* Верхній блок (PN) */
     .sheet1-pn-title {
       position: absolute;
       left: 0mm;
@@ -400,6 +401,33 @@
       height: 100% !important;
       display: block;
       shape-rendering: crispEdges;
+    }
+
+    /* Нижній блок (SN) */
+    .sheet1-sn-title {
+      position: absolute;
+      left: 0mm;
+      top: 34.6mm;
+      width: 130mm;
+      height: 4.8mm;
+      font-size: 16pt;
+      font-weight: bold;
+      line-height: 4.8mm;
+      padding-left: 2mm;
+    }
+
+    .sheet1-sn-val {
+      position: absolute;
+      left: 0mm;
+      top: 57.5mm;
+      width: 130mm;
+      height: 10.2mm;
+      font-size: 23pt;
+      font-weight: bold;
+      line-height: 10.2mm;
+      padding-left: 2mm;
+      white-space: nowrap;
+      overflow: hidden;
     }
 
     .sheet1-barcode-2 {
@@ -840,12 +868,14 @@
           <div class="industrial-label-sheet1">
             <div class="sheet1-pn-title">PN:</div>
             <div class="sheet1-pn-val">TEST-PN-130X76</div>
+            <div class="sheet1-sn-title">SN:</div>
+            <div class="sheet1-sn-val">TEST-SN-130X76</div>
             <div class="sheet1-barcode-1"><svg id="testPN"></svg></div>
             <div class="sheet1-barcode-2"><svg id="testSN"></svg></div>
           </div>
         `;
         JsBarcode('#testPN', 'TEST-PN-130X76', { format: 'CODE128B', displayValue: false, margin: 0, flat: true, lineColor: '#000' });
-        JsBarcode('#testSN', 'TEST-SN-27082026', { format: 'CODE128B', displayValue: false, margin: 0, flat: true, lineColor: '#000' });
+        JsBarcode('#testSN', 'TEST-SN-130X76', { format: 'CODE128B', displayValue: false, margin: 0, flat: true, lineColor: '#000' });
       }
       prepareAndPrint();
     }
@@ -879,6 +909,8 @@
                 <div class="sheet1-pn-title">PN:</div>
                 ${includeBrand ? `<div class="sheet1-brand">${escapeHtml(product.brand)}</div>` : ''}
                 <div class="sheet1-pn-val">${escapeHtml(product.pn)}</div>
+                <div class="sheet1-sn-title">SN:</div>
+                <div class="sheet1-sn-val">${escapeHtml(product.sn)}</div>
                 <div class="sheet1-barcode-1"><svg id="barcodePN_${idx}_${copy}"></svg></div>
                 <div class="sheet1-barcode-2"><svg id="barcodeSN_${idx}_${copy}"></svg></div>
               </div>
