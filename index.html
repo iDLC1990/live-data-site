@@ -247,23 +247,24 @@
     .modal-footer { padding: 16px 24px; border-top: 1px solid var(--border-color); display: flex; justify-content: flex-end; gap: 12px; }
 
     /* ==========================================
-        ЭТИКЕТКА 100x80 мм (Для TSC DA220)
+        ЭТИКЕТКА 100x80 мм (landscape)
         ========================================== */
     .industrial-label {
       width: 100mm;
       height: 80mm;
-      padding: 4mm;
       background-color: #FFFFFF;
       color: #000000;
+      padding: 4mm 5mm;
       box-sizing: border-box;
       font-family: 'Segoe UI', Arial, sans-serif;
       display: flex;
       flex-direction: column;
-      justify-content: space-between;
+      justify-content: center;
       align-items: center;
       text-align: center;
+      border: 1px solid #D1D5DB;
+      box-shadow: 0 10px 25px rgba(0, 0, 0, 0.5);
       page-break-after: always;
-      overflow: hidden;
     }
 
     .industrial-label:last-child {
@@ -274,9 +275,7 @@
       display: flex; 
       flex-direction: column; 
       align-items: center; 
-      justify-content: center;
-      width: 100%; 
-      height: 48%; 
+      width: 100%;
       position: relative;
     }
 
@@ -286,12 +285,12 @@
       display: flex;
       justify-content: center;
       align-items: center;
-      margin-bottom: 1mm;
+      margin-bottom: 2px;
     }
 
     .label-caption { 
-      font-weight: 900; 
-      font-size: 16pt;
+      font-size: 16pt; 
+      font-weight: 900;
       color: #000000; 
       letter-spacing: 1px; 
       text-transform: uppercase; 
@@ -318,62 +317,56 @@
     
     .barcode-wrapper svg { 
       max-width: 100%; 
-      height: 16mm;
+      height: 20mm;
       display: block; 
     }
 
-    .label-value-pn {
-      font-size: 18pt; 
+    .label-value-text {
+      font-size: 15pt; 
       font-weight: 900;
-      font-family: 'Consolas', monospace; 
-      color: #000;
+      font-family: 'Consolas', 'Courier New', monospace; 
+      color: #000000;
+      letter-spacing: 0.5px;
+      margin-top: 2px;
       line-height: 1.1; 
-      margin-top: 1mm;
     }
 
-    .label-value-sn {
-      font-size: 14pt; 
-      font-weight: 900;
-      font-family: 'Consolas', monospace; 
-      color: #000;
-      line-height: 1.1; 
-      margin-top: 1mm;
+    .label-spacer {
+      height: 3mm;
+      width: 100%;
     }
 
     /* ==========================================
         НАСТРОЙКИ ДЛЯ ТЕРМОПЕЧАТИ TSC DA220
         ========================================== */
     @page { 
-      size: 100mm 80mm; 
+      size: 100mm 80mm landscape; 
       margin: 0; 
     }
 
     @media print {
-      html, body {
+      body { background: #ffffff !important; color: #000000 !important; }
+      .app-container, .modal-backdrop { display: none !important; }
+      #printContainer, #printContainer * { visibility: visible !important; }
+      #printContainer {
+        display: flex !important;
+        flex-direction: column !important;
+        justify-content: center !important;
+        align-items: center !important;
+        position: absolute !important;
+        left: 0 !important; top: 0 !important;
         width: 100mm !important;
         height: 80mm !important;
-        background: #ffffff !important; 
-        color: #000000 !important;
         margin: 0 !important;
         padding: 0 !important;
-      }
-      .app-container, .modal-backdrop { display: none !important; }
-      #printContainer {
-        display: block !important;
-        position: absolute !important;
-        left: 0 !important; 
-        top: 0 !important;
-        width: 100mm !important;
-        height: 80mm !important;
         background: #FFFFFF !important;
       }
-      #printContainer .industrial-label {
+      #printContainer .industrial-label { 
+        border: none !important; 
+        box-shadow: none !important; 
         width: 100mm !important;
         height: 80mm !important;
-        border: none !important; 
-        box-shadow: none !important;
-        margin: 0 !important;
-        page-break-after: always;
+        padding: 4mm 5mm !important;
       }
     }
   </style>
@@ -446,7 +439,6 @@
   <div id="printContainer" style="display: none;"></div>
 
   <script>
-    // --- НАСТРОЙКИ SUPABASE ---
     const SUPABASE_URL = 'https://xgjggfnfgrmkuclgjmih.supabase.co';
     const SUPABASE_KEY = 'sb_publishable_MLyF6CMVplwDyDqSeDnSBA__RakJscC';
     const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
@@ -659,19 +651,21 @@
                   ${includeBrand ? `<span class="label-brand-right">${escapeHtml(product.brand)}</span>` : ''}
                 </div>
                 <div class="barcode-wrapper">
-                  <svg class="barcode-pn" data-index="${idx}_${copy}" data-value="${escapeHtml(product.pn)}"></svg>
+                  <svg id="barcodePN_${idx}_${copy}"></svg>
                 </div>
-                <span class="label-value-pn">${escapeHtml(product.pn)}</span>
+                <span class="label-value-text">${escapeHtml(product.pn)}</span>
               </div>
+
+              <div class="label-spacer"></div>
 
               <div class="label-block">
                 <div class="label-header-row">
                   <span class="label-caption">SN</span>
                 </div>
                 <div class="barcode-wrapper">
-                  <svg class="barcode-sn" data-index="${idx}_${copy}" data-value="${escapeHtml(product.sn)}"></svg>
+                  <svg id="barcodeSN_${idx}_${copy}"></svg>
                 </div>
-                <span class="label-value-sn">${escapeHtml(product.sn)}</span>
+                <span class="label-value-text">${escapeHtml(product.sn)}</span>
               </div>
             </div>
           `;
@@ -684,14 +678,28 @@
       const container = document.querySelector(containerSelector);
       if (!container) return;
 
-      container.querySelectorAll('.barcode-pn').forEach(svg => {
-        const val = svg.getAttribute('data-value');
-        JsBarcode(svg, val, { format: "CODE128", displayValue: false, margin: 0, height: 45, width: 2 });
-      });
+      const barcodeOptions = {
+        format: "CODE128",
+        displayValue: false,
+        margin: 0,
+        height: 48,
+        width: 1.55,
+        lineColor: "#000000",
+        background: "transparent"
+      };
 
-      container.querySelectorAll('.barcode-sn').forEach(svg => {
-        const val = svg.getAttribute('data-value');
-        JsBarcode(svg, val, { format: "CODE128", displayValue: false, margin: 0, height: 45, width: 2 });
+      container.querySelectorAll('.industrial-label').forEach((label, idx) => {
+        const svgPn = label.querySelector('[id^="barcodePN_"]');
+        const svgSn = label.querySelector('[id^="barcodeSN_"]');
+        
+        if (svgPn && svgSn) {
+          // Получаем значения через соседние блоки
+          const pnVal = label.children[0].querySelector('.label-value-text').innerText;
+          const snVal = label.children[2].querySelector('.label-value-text').innerText;
+          
+          JsBarcode(svgPn, pnVal, barcodeOptions);
+          JsBarcode(svgSn, snVal, barcodeOptions);
+        }
       });
     }
 
