@@ -50,6 +50,11 @@
       align-items: flex-end; 
     }
     .page-title { font-size: 26px; font-weight: 700; color: #FFFFFF; }
+    
+    .header-buttons {
+      display: flex;
+      gap: 10px;
+    }
 
     .sheet-tabs {
       display: flex;
@@ -208,6 +213,8 @@
     .btn:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
     .btn-secondary { background-color: #374151; color: #F3F4F6; }
     .btn-secondary:hover { background-color: #4B5563; }
+    .btn-test { background-color: #111827; border: 1px solid #4B5563; color: #F9FAFB; }
+    .btn-test:hover { background-color: #000000; border-color: #9CA3AF; }
 
     .btn-brand { background-color: var(--brand-color); }
     .btn-brand:hover { background-color: var(--brand-hover); }
@@ -242,11 +249,11 @@
     .modal-footer { padding: 16px 24px; border-top: 1px solid var(--border-color); display: flex; justify-content: flex-end; gap: 12px; }
 
     /* ==========================================
-        ТОЧНИЙ МАКЕТ ЕТИКЕТКИ (ЗІ СКРІНШОТА)
+        ТОЧНИЙ МАКЕТ ЕТИКЕТКИ
         ========================================== */
     .industrial-label {
       width: 100mm;
-      height: 78mm; /* Захист від аварійної зупинки принтера */
+      height: 78mm;
       background-color: #FFFFFF;
       color: #000000;
       padding: 3mm 5mm 2mm 5mm;
@@ -261,7 +268,37 @@
       overflow: hidden;
     }
 
-    /* Лінія зверху */
+    /* Стиль для суцільного тестового друку */
+    .test-fill-label {
+      width: 100mm !important;
+      height: 78mm !important;
+      background-color: #000000 !important;
+      color: #FFFFFF !important;
+      padding: 0 !important;
+      margin: 0 !important;
+      display: flex !important;
+      flex-direction: column !important;
+      align-items: center !important;
+      justify-content: center !important;
+      border: none !important;
+    }
+
+    .test-fill-box {
+      width: 100%;
+      height: 100%;
+      background: #000000;
+      border: 2px solid #FFFFFF;
+      box-sizing: border-box;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      color: #FFFFFF;
+      font-weight: 900;
+      font-size: 18pt;
+      text-align: center;
+    }
+
     .top-border {
       width: 100%;
       border-top: 2px solid #000000;
@@ -333,7 +370,7 @@
       line-height: 1;
       text-align: center;
       margin-top: 1mm;
-      transform: scaleX(0.85); /* Стискає довгий SN як на фото */
+      transform: scaleX(0.85);
       display: inline-block;
     }
 
@@ -396,6 +433,15 @@
         break-after: page !important;
       }
 
+      #printContainer .test-fill-label {
+        width: 100mm !important;
+        height: 78mm !important;
+        padding: 0 !important;
+        background-color: #000000 !important;
+        -webkit-print-color-adjust: exact !important;
+        print-color-adjust: exact !important;
+      }
+
       #printContainer .industrial-label:last-child {
         page-break-after: avoid !important;
         break-after: avoid !important;
@@ -410,7 +456,8 @@
       <div>
         <h1 class="page-title">🖨️ Друк етикеток (TSC DA220)</h1>
       </div>
-      <div>
+      <div class="header-buttons">
+        <button class="btn btn-test" onclick="printTestLabel()">⬛ Тестовий друк</button>
         <button class="btn btn-secondary" onclick="fetchDataFromGoogleSheet(true)">🔄 Оновити зараз</button>
       </div>
     </header>
@@ -671,6 +718,19 @@
       return div.innerHTML;
     }
 
+    /* ФУНКЦІЯ ТЕСТОВОГО СУЦІЛЬНОГО ДРУКУ */
+    function printTestLabel() {
+      printContainer.innerHTML = `
+        <div class="industrial-label test-fill-label">
+          <div class="test-fill-box">
+            <span>TEST PRINT</span>
+            <span style="font-size: 12pt; margin-top: 4mm;">100 x 78 mm</span>
+          </div>
+        </div>
+      `;
+      window.print();
+    }
+
     function buildLabelsHTML(itemsList, includeBrand) {
       let html = '';
       itemsList.forEach((product, idx) => {
@@ -710,7 +770,7 @@
       const container = document.querySelector(containerSelector);
       if (!container) return;
 
-      container.querySelectorAll('.industrial-label').forEach((label) => {
+      container.querySelectorAll('.industrial-label:not(.test-fill-label)').forEach((label) => {
         const svgPn = label.querySelector('[id^="barcodePN_"]');
         const svgSn = label.querySelector('[id^="barcodeSN_"]');
         
@@ -732,7 +792,7 @@
             displayValue: false,
             margin: 0,
             height: 40,
-            width: 1.25, /* Вужчі лінії штрихкоду для SN */
+            width: 1.25,
             lineColor: "#000000"
           });
         }
