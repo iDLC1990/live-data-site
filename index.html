@@ -346,23 +346,31 @@
     }
 
     /* ==========================================
-        ДРУК — РЕАЛЬНИЙ РОЗМІР 100 x 78 мм
+        ДРУК — РЕАЛЬНИЙ РОЗМІР 100 x 78 мм (ПОРТРЕТ)
         ========================================== */
     @page {
-      size: 100mm 78mm;
+      size: 100mm 78mm portrait;
       margin: 0;
     }
 
     @media print {
+      html {
+        writing-mode: horizontal-tb !important;
+        transform: none !important;
+      }
+
       html, body {
         width: 100mm !important;
-        height: auto !important;
+        height: 78mm !important;
         min-width: 100mm !important;
+        min-height: 78mm !important;
+        max-width: 100mm !important;
+        max-height: 78mm !important;
         margin: 0 !important;
         padding: 0 !important;
         background: #ffffff !important;
         display: block !important;
-        overflow: visible !important;
+        overflow: hidden !important;
       }
 
       .app-container,
@@ -374,6 +382,7 @@
         display: block !important;
         position: static !important;
         width: 100mm !important;
+        height: 78mm !important;
         margin: 0 !important;
         padding: 0 !important;
       }
@@ -394,7 +403,6 @@
         display: block !important;
         position: relative !important;
         
-        /* КРИТИЧНО ДЛЯ ОКРЕМИХ ЕТИКЕТОК */
         page-break-before: always !important;
         page-break-after: always !important;
         page-break-inside: avoid !important;
@@ -403,7 +411,6 @@
         break-inside: avoid !important;
       }
 
-      /* Першу етикетку не треба штучно відривати перед початком */
       #printContainer .industrial-label:first-child {
         page-break-before: avoid !important;
         break-before: avoid !important;
