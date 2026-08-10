@@ -233,137 +233,145 @@
     .modal-footer { padding: 16px 24px; border-top: 1px solid var(--border-color); display: flex; justify-content: flex-end; gap: 12px; }
 
     /* ==========================================
-        МАКЕТ ЕТИКЕТКИ (100x78 mm)
-        ========================================== */
+       ЕТИКЕТКА — ФІЗИЧНИЙ ФОРМАТ 100x78 мм
+       Друк у landscape без flexbox у print-layout
+       ========================================== */
     .industrial-label {
+      width: 78mm;
+      height: 100mm;
+      position: relative;
+      background: #fff;
+      color: #000;
+      box-sizing: border-box;
+      padding: 0;
+      font-family: Arial, Helvetica, sans-serif;
+      display: block;
+      overflow: hidden;
+      border: 1px solid #d1d5db;
+    }
+
+    .print-rotated {
+      position: absolute;
+      left: -11mm;
+      top: 11mm;
       width: 100mm;
       height: 78mm;
-      background-color: #FFFFFF;
-      color: #000000;
       padding: 3mm 4mm;
       box-sizing: border-box;
-      font-family: Arial, Helvetica, sans-serif;
-      display: flex;
-      flex-direction: column;
-      justify-content: space-between;
-      gap: 1.5mm;
-      border: 1px solid #D1D5DB;
-      box-shadow: 0 10px 25px rgba(0, 0, 0, 0.5);
+      background: #fff;
+      transform: rotate(90deg);
+      transform-origin: center center;
       overflow: hidden;
-      background-clip: padding-box;
     }
 
     .top-divider {
       width: 100%;
       height: 0;
-      border-top: 2px solid #000000;
-      margin: 0 0 1.5mm 0;
+      border-top: 2px solid #000;
+      margin: 0 0 2.5mm 0;
     }
 
     .label-section {
       width: 100%;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      flex: 1;
-      min-height: 0;
+      display: block;
+      margin: 0;
+      padding: 0;
+    }
+
+    .label-section + .label-section {
+      margin-top: 3.5mm;
     }
 
     .section-header {
       width: 100%;
-      display: flex;
-      justify-content: center;
-      align-items: center;
+      height: 7mm;
+      display: block;
       position: relative;
-      margin-bottom: 1.5mm;
+      margin: 0 0 1.5mm 0;
+      line-height: 1;
     }
 
     .header-title {
+      display: block;
+      width: 100%;
       font-size: 13pt;
       font-weight: 900;
-      line-height: 1;
+      line-height: 7mm;
       text-align: center;
     }
 
     .brand-tag {
       position: absolute;
-      right: 1mm;
+      right: 0;
       top: 0;
       font-weight: 900;
       font-size: 10pt;
       text-transform: uppercase;
-      line-height: 1;
+      line-height: 7mm;
+      white-space: nowrap;
     }
 
     .barcode-box {
       width: 100%;
-      height: 14mm;
-      display: flex;
-      align-items: center;
-      justify-content: center;
+      height: 13mm;
+      display: block;
       overflow: hidden;
+      text-align: center;
     }
 
     .barcode-box svg {
+      width: auto !important;
       max-width: 100%;
-      height: 100%;
-      display: block;
+      height: 13mm !important;
+      display: inline-block;
+      vertical-align: top;
       shape-rendering: crispEdges;
     }
 
-    .val-pn {
-      font-size: 19pt;
-      font-weight: 900;
-      line-height: 1.1;
+    .val-pn,
+    .val-sn {
+      width: 100%;
+      box-sizing: border-box;
       text-align: center;
-      letter-spacing: -0.2px;
-      margin-top: 0.8mm;
+      font-weight: 900;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: clip;
+      margin: 1.2mm 0 0 0;
+      line-height: 1;
+    }
+
+    .val-pn {
+      font-size: 18pt;
+      letter-spacing: 0;
     }
 
     .val-sn {
-      font-size: 15.5pt;
-      font-weight: 900;
-      font-family: 'Arial Narrow', Arial, sans-serif;
-      line-height: 1.1;
-      text-align: center;
-      letter-spacing: -0.4px;
-      margin-top: 0.8mm;
-      white-space: nowrap;
+      font-size: 15pt;
+      font-family: Arial, Helvetica, sans-serif;
+      letter-spacing: 0;
     }
 
     /* ==========================================
-        ДРУК НА TSC DA220
-        ========================================== */
-    /* ==========================================
-       НАДІЙНИЙ ДРУК НА TSC DA220
-       Кожна етикетка = окрема сторінка 100×78 мм.
+       ДРУК — ОКРЕМИЙ PRINT LAYOUT
        ========================================== */
     @page {
-      size: 100mm 78mm;
+      size: 78mm 100mm;
       margin: 0;
     }
 
     @media print {
-      * {
-        -webkit-print-color-adjust: exact !important;
-        print-color-adjust: exact !important;
-      }
-
       html, body {
-        width: 100% !important;
-        height: auto !important;
-        min-width: 0 !important;
-        min-height: 0 !important;
+        width: 78mm !important;
+        height: 100mm !important;
         margin: 0 !important;
         padding: 0 !important;
         background: #fff !important;
-        display: block !important;
-        overflow: visible !important;
+        overflow: hidden !important;
       }
 
       body {
-        position: static !important;
+        display: block !important;
       }
 
       .app-container,
@@ -373,36 +381,43 @@
 
       #printContainer {
         display: block !important;
-        position: static !important;
-        width: 100% !important;
+        width: 78mm !important;
         height: auto !important;
         margin: 0 !important;
         padding: 0 !important;
+        position: static !important;
       }
 
       #printContainer .industrial-label {
-        width: 100mm !important;
-        height: 78mm !important;
-        min-width: 100mm !important;
-        max-width: 100mm !important;
-        min-height: 78mm !important;
-        max-height: 78mm !important;
+        width: 78mm !important;
+        height: 100mm !important;
+        min-width: 78mm !important;
+        min-height: 100mm !important;
+        max-width: 78mm !important;
+        max-height: 100mm !important;
         margin: 0 !important;
-        padding: 3mm 4mm !important;
-        border: none !important;
+        padding: 0 !important;
+        border: 0 !important;
         box-shadow: none !important;
         box-sizing: border-box !important;
         overflow: hidden !important;
-
-        display: flex !important;
-        flex-direction: column !important;
-
-        page-break-before: auto !important;
-        page-break-inside: avoid !important;
+        display: block !important;
         page-break-after: always !important;
-        break-before: auto !important;
-        break-inside: avoid !important;
         break-after: page !important;
+        page-break-inside: avoid !important;
+        break-inside: avoid !important;
+      }
+
+      #printContainer .print-rotated {
+        position: absolute !important;
+        left: -11mm !important;
+        top: 11mm !important;
+        width: 100mm !important;
+        height: 78mm !important;
+        padding: 3mm 4mm !important;
+        box-sizing: border-box !important;
+        transform: rotate(90deg) !important;
+        transform-origin: center center !important;
       }
 
       #printContainer .industrial-label:last-child {
@@ -681,23 +696,27 @@
       return div.innerHTML;
     }
 
-    function runPrint() {
-      // Даємо браузеру завершити розкладку та промалювати штрихкоди
-      requestAnimationFrame(() => {
-        requestAnimationFrame(() => {
-          window.print();
-        });
-      });
-    }
-
     function printTestLabel() {
       printContainer.innerHTML = `
-        <div class="industrial-label" style="justify-content: center; align-items: center; text-align: center;">
-          <h2 style="font-size: 20pt; font-weight: 900;">TEST PRINT</h2>
-          <p style="font-size: 13pt; margin-top: 5mm;">100 x 78 mm — OK</p>
+        <div class="industrial-label">
+          <div class="print-rotated">
+          <div class="top-divider"></div>
+          <div style="text-align:center; padding-top:18mm;">
+            <div style="font-size:20pt;font-weight:900;">TEST PRINT</div>
+            <div style="font-size:13pt;margin-top:4mm;">100 × 78 mm · 90°</div>
+          </div>
+          </div>
         </div>
       `;
-      runPrint();
+      prepareAndPrint();
+    }
+
+    function prepareAndPrint() {
+      requestAnimationFrame(() => {
+        requestAnimationFrame(() => {
+          setTimeout(() => window.print(), 150);
+        });
+      });
     }
 
     function buildLabelsHTML(itemsList, includeBrand) {
@@ -706,6 +725,7 @@
         for (let copy = 0; copy < 2; copy++) {
           html += `
             <div class="industrial-label">
+              <div class="print-rotated">
               <div class="top-divider"></div>
 
               <div class="label-section">
@@ -727,6 +747,7 @@
                   <svg id="barcodeSN_${idx}_${copy}"></svg>
                 </div>
                 <div class="val-sn">${escapeHtml(product.sn)}</div>
+              </div>
               </div>
             </div>
           `;
@@ -753,8 +774,8 @@
             format: "CODE128B",
             displayValue: false,
             margin: 0,
-            height: 50,
-            width: 1.5,
+            height: 42,
+            width: 1.35,
             flat: true,
             lineColor: "#000000"
           });
@@ -764,8 +785,8 @@
             format: "CODE128B",
             displayValue: false,
             margin: 0,
-            height: 50,
-            width: 1.15,
+            height: 42,
+            width: 1.05,
             flat: true,
             lineColor: "#000000"
           });
@@ -779,7 +800,7 @@
 
       printContainer.innerHTML = buildLabelsHTML([product], includeBrand);
       renderBarcodesInContainer('#printContainer');
-      runPrint();
+      prepareAndPrint();
     }
 
     function printBatch(includeBrand) {
@@ -792,7 +813,7 @@
 
       printContainer.innerHTML = buildLabelsHTML(itemsToPrint, includeBrand);
       renderBarcodesInContainer('#printContainer');
-      runPrint();
+      prepareAndPrint();
     }
 
     function openPreview(index, includeBrand) {
@@ -831,16 +852,6 @@
         printSingle(products.indexOf(modalActiveItem), modalActiveBrand);
         closeModal();
       }
-    });
-
-    // Після друку очищаємо контейнер, щоб наступний друк починався чисто.
-    window.addEventListener('afterprint', () => {
-      printContainer.innerHTML = '';
-    });
-
-
-    window.addEventListener('afterprint', () => {
-      printContainer.innerHTML = '';
     });
 
     document.addEventListener('DOMContentLoaded', () => {
