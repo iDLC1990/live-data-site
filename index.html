@@ -5,7 +5,6 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Печать этикеток — TSC DA220</title>
   
-  <!-- Библиотеки -->
   <script src="https://cdn.jsdelivr.net/npm/jsbarcode@3.11.6/dist/JsBarcode.all.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
@@ -248,12 +247,12 @@
     .modal-footer { padding: 16px 24px; border-top: 1px solid var(--border-color); display: flex; justify-content: flex-end; gap: 12px; }
 
     /* ==========================================
-        ЭТИКЕТКА 100x80 мм (Оптимизировано для TSC DA220)
+        ЭТИКЕТКА 100x80 мм (Для TSC DA220)
         ========================================== */
     .industrial-label {
       width: 100mm;
       height: 80mm;
-      padding: 3mm;
+      padding: 4mm;
       background-color: #FFFFFF;
       color: #000000;
       box-sizing: border-box;
@@ -263,8 +262,8 @@
       justify-content: space-between;
       align-items: center;
       text-align: center;
-      border: 1px solid #D1D5DB;
       page-break-after: always;
+      overflow: hidden;
     }
 
     .industrial-label:last-child {
@@ -292,7 +291,7 @@
 
     .label-caption { 
       font-weight: 900; 
-      font-size: 20pt;
+      font-size: 16pt;
       color: #000000; 
       letter-spacing: 1px; 
       text-transform: uppercase; 
@@ -303,9 +302,9 @@
       position: absolute;
       right: 0;
       top: 50%;
-      transform: translateY(-50%) scaleY(1.3);
+      transform: translateY(-50%);
       font-weight: 900;
-      font-size: 18pt;
+      font-size: 14pt;
       color: #000000;
       line-height: 1;
     }
@@ -319,50 +318,63 @@
     
     .barcode-wrapper svg { 
       max-width: 100%; 
-      height: 20mm;
+      height: 16mm;
       display: block; 
     }
 
     .label-value-pn {
-      font-size: 24pt; 
-      font-weight: 900;
-      font-family: 'Consolas', monospace; 
-      color: #000;
-      line-height: 1.1; 
-      margin-top: 1mm;
-      transform: scaleY(1.3);
-    }
-
-    .label-value-sn {
       font-size: 18pt; 
       font-weight: 900;
       font-family: 'Consolas', monospace; 
       color: #000;
       line-height: 1.1; 
       margin-top: 1mm;
-      transform: scaleY(1.3);
+    }
+
+    .label-value-sn {
+      font-size: 14pt; 
+      font-weight: 900;
+      font-family: 'Consolas', monospace; 
+      color: #000;
+      line-height: 1.1; 
+      margin-top: 1mm;
     }
 
     /* ==========================================
         НАСТРОЙКИ ДЛЯ ТЕРМОПЕЧАТИ TSC DA220
         ========================================== */
     @page { 
-      size: 100mm 80mm landscape; 
+      size: 100mm 80mm; 
       margin: 0; 
     }
 
     @media print {
-      body { background: #ffffff !important; color: #000000 !important; }
+      html, body {
+        width: 100mm !important;
+        height: 80mm !important;
+        background: #ffffff !important; 
+        color: #000000 !important;
+        margin: 0 !important;
+        padding: 0 !important;
+      }
       .app-container, .modal-backdrop { display: none !important; }
-      #printContainer, #printContainer * { visibility: visible !important; }
       #printContainer {
         display: block !important;
         position: absolute !important;
-        left: 0 !important; top: 0 !important;
+        left: 0 !important; 
+        top: 0 !important;
         width: 100mm !important;
+        height: 80mm !important;
         background: #FFFFFF !important;
       }
-      #printContainer .industrial-label { border: none !important; box-shadow: none !important; }
+      #printContainer .industrial-label {
+        width: 100mm !important;
+        height: 80mm !important;
+        border: none !important; 
+        box-shadow: none !important;
+        margin: 0 !important;
+        page-break-after: always;
+      }
     }
   </style>
 </head>
@@ -378,7 +390,6 @@
       </div>
     </header>
 
-    <!-- Панель переключения листов и индикатор фоновой синхронизации -->
     <div class="sheet-tabs">
       <button class="sheet-tab-btn active" id="tabBtn0" onclick="switchSheet('0')">Лист 1 <kbd>Alt + 1</kbd></button>
       <button class="sheet-tab-btn" id="tabBtn193025884" onclick="switchSheet('193025884')">Лист 2 <kbd>Alt + 2</kbd></button>
@@ -389,7 +400,6 @@
       </div>
     </div>
 
-    <!-- Панель массовой печати выбранных -->
     <div class="batch-actions-bar">
       <div class="batch-info" id="selectedCountText">Выбрано позиций: 0</div>
       <div class="batch-buttons">
@@ -507,7 +517,6 @@
       const activeBtn = document.getElementById(`tabBtn${gid}`);
       if (activeBtn) activeBtn.classList.add('active');
 
-      // При переключении показываем индикатор загрузки только если таблица пустая
       if (products.length === 0) {
         tableBody.innerHTML = `<tr><td colspan="6" style="text-align: center; padding: 30px;">Загрузка данных с листа...</td></tr>`;
       }
@@ -581,12 +590,10 @@
           <td class="code-text">${escapeHtml(product.pn)}</td>
           <td><span style="background: #374151; padding: 3px 8px; border-radius: 4px; font-size: 12px; font-weight: 600;">${escapeHtml(product.brand)}</span></td>
           <td class="actions-cell">
-            <!-- Обычная печать (х2) -->
             <div class="action-group">
               <button class="btn btn-secondary" onclick="openPreview(${index}, false)" title="Предпросмотр">👁️</button>
               <button class="btn" onclick="printSingle(${index}, false)" title="Сразу печать 2 копии">🖨️ х2</button>
             </div>
-            <!-- Печать с Brand (х2) -->
             <div class="action-group">
               <button class="btn btn-secondary" onclick="openPreview(${index}, true)" title="Предпросмотр с Brand">👁️</button>
               <button class="btn btn-brand" onclick="printSingle(${index}, true)" title="Сразу печать 2 копии с Brand">🖨️ х2</button>
@@ -679,12 +686,12 @@
 
       container.querySelectorAll('.barcode-pn').forEach(svg => {
         const val = svg.getAttribute('data-value');
-        JsBarcode(svg, val, { format: "CODE128", displayValue: false, margin: 0, height: 60, width: 2 });
+        JsBarcode(svg, val, { format: "CODE128", displayValue: false, margin: 0, height: 45, width: 2 });
       });
 
       container.querySelectorAll('.barcode-sn').forEach(svg => {
         const val = svg.getAttribute('data-value');
-        JsBarcode(svg, val, { format: "CODE128", displayValue: false, margin: 0, height: 95, width: 2 });
+        JsBarcode(svg, val, { format: "CODE128", displayValue: false, margin: 0, height: 45, width: 2 });
       });
     }
 
@@ -727,7 +734,6 @@
 
     function closeModal() { modal.classList.remove('is-open'); }
 
-    // Клавиши быстрого доступа Alt + 1 и Alt + 2
     document.addEventListener('keydown', (e) => {
       if (e.altKey) {
         if (e.key === '1') {
@@ -751,7 +757,6 @@
 
     document.addEventListener('DOMContentLoaded', () => {
       fetchDataFromGoogleSheet(true);
-      // Фоновое обновление каждые 30 секунд без сброса интерфейса/мигания
       setInterval(() => fetchDataFromGoogleSheet(false), 10000);
     });
   </script>
