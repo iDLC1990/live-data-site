@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Друк етикеток — Багатоформатний додаток</title>
+  <title>Друк етикеток — Мультиформатний додаток (TSC & Citizen)</title>
   
   <script src="https://cdn.jsdelivr.net/npm/jsbarcode@3.11.6/dist/JsBarcode.all.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -230,7 +230,7 @@
     .modal-footer { padding: 16px 24px; border-top: 1px solid var(--border-color); display: flex; justify-content: flex-end; gap: 12px; }
 
     /* ==========================================
-        ФОРМАТ 1: TSC DA220 (100 x 78 мм) - ДЛЯ ЛИСТА 1
+        ФОРМАТ 1: TSC DA220 (100 x 78 мм) - ЛИСТ 1
         ========================================== */
     .industrial-label-sheet0 {
       width: 100mm;
@@ -343,7 +343,7 @@
 
 
     /* ==========================================
-        ФОРМАТ 2: CITIZEN CL-S700 (130 x 76 мм) - ДЛЯ ЛИСТА 2
+        ФОРМАТ 2: CITIZEN CL-S700 (130 x 76 мм) - ЛИСТ 2
         ========================================== */
     .industrial-label-sheet1 {
       width: 130mm;
@@ -465,7 +465,7 @@
         padding: 0 !important;
       }
 
-      /* Якщо вибрано Лист 1 (100x78) */
+      /* Лист 1 (100x78) */
       body.sheet-0 @page {
         size: 100mm 78mm portrait;
       }
@@ -497,7 +497,7 @@
         break-before: avoid !important;
       }
 
-      /* Якщо вибрано Лист 2 (130x76) */
+      /* Лист 2 (130x76) */
       body.sheet-193025884 @page {
         size: 130mm 76mm landscape;
       }
@@ -684,7 +684,6 @@
       const activeBtn = document.getElementById(`tabBtn${gid}`);
       if (activeBtn) activeBtn.classList.add('active');
 
-      // Динамічно змінюємо клас body для коректного формату паперу при друці
       document.body.className = `sheet-${gid}`;
 
       if (products.length === 0) {
