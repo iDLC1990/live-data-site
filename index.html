@@ -5,6 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Печать этикеток — TSC DA220</title>
   
+  <!-- Библиотеки -->
   <script src="https://cdn.jsdelivr.net/npm/jsbarcode@3.11.6/dist/JsBarcode.all.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
@@ -346,36 +347,22 @@
         НАСТРОЙКИ ДЛЯ ТЕРМОПЕЧАТИ TSC DA220
         ========================================== */
     @page { 
-      size: 100mm 80mm; 
+      size: 100mm 80mm landscape; 
       margin: 0; 
     }
 
     @media print {
-      body { 
-        background: #ffffff !important; 
-        color: #000000 !important; 
-        margin: 0; 
-        padding: 0; 
-      }
-      .app-container, .modal-backdrop { 
-        display: none !important; 
-      }
-      #printContainer, #printContainer * { 
-        visibility: visible !important; 
-      }
+      body { background: #ffffff !important; color: #000000 !important; }
+      .app-container, .modal-backdrop { display: none !important; }
+      #printContainer, #printContainer * { visibility: visible !important; }
       #printContainer {
         display: block !important;
+        position: absolute !important;
+        left: 0 !important; top: 0 !important;
         width: 100mm !important;
         background: #FFFFFF !important;
       }
-      #printContainer .industrial-label { 
-        border: none !important; 
-        box-shadow: none !important; 
-        margin: 0 !important;
-        width: 100mm !important;
-        height: 80mm !important;
-        page-break-after: always;
-      }
+      #printContainer .industrial-label { border: none !important; box-shadow: none !important; }
     }
   </style>
 </head>
@@ -391,6 +378,7 @@
       </div>
     </header>
 
+    <!-- Панель переключения листов и индикатор фоновой синхронизации -->
     <div class="sheet-tabs">
       <button class="sheet-tab-btn active" id="tabBtn0" onclick="switchSheet('0')">Лист 1 <kbd>Alt + 1</kbd></button>
       <button class="sheet-tab-btn" id="tabBtn193025884" onclick="switchSheet('193025884')">Лист 2 <kbd>Alt + 2</kbd></button>
@@ -401,6 +389,7 @@
       </div>
     </div>
 
+    <!-- Панель массовой печати выбранных -->
     <div class="batch-actions-bar">
       <div class="batch-info" id="selectedCountText">Выбрано позиций: 0</div>
       <div class="batch-buttons">
@@ -592,10 +581,12 @@
           <td class="code-text">${escapeHtml(product.pn)}</td>
           <td><span style="background: #374151; padding: 3px 8px; border-radius: 4px; font-size: 12px; font-weight: 600;">${escapeHtml(product.brand)}</span></td>
           <td class="actions-cell">
+            <!-- Обычная печать (х2) -->
             <div class="action-group">
               <button class="btn btn-secondary" onclick="openPreview(${index}, false)" title="Предпросмотр">👁️</button>
               <button class="btn" onclick="printSingle(${index}, false)" title="Сразу печать 2 копии">🖨️ х2</button>
             </div>
+            <!-- Печать с Brand (х2) -->
             <div class="action-group">
               <button class="btn btn-secondary" onclick="openPreview(${index}, true)" title="Предпросмотр с Brand">👁️</button>
               <button class="btn btn-brand" onclick="printSingle(${index}, true)" title="Сразу печать 2 копии с Brand">🖨️ х2</button>
