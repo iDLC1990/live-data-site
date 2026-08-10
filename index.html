@@ -50,7 +50,6 @@
       align-items: flex-end; 
     }
     .page-title { font-size: 26px; font-weight: 700; color: #FFFFFF; }
-    
     .header-buttons { display: flex; gap: 10px; }
 
     .sheet-tabs {
@@ -234,139 +233,105 @@
     .modal-footer { padding: 16px 24px; border-top: 1px solid var(--border-color); display: flex; justify-content: flex-end; gap: 12px; }
 
     /* ==========================================
-        ТОЧНИЙ МАКЕТ ЕТИКЕТКИ ТА ТОЧНІ КООРДИНАТИ (100x78 mm)
+        НОВА НАДІЙНА СИСТЕМА МАКЕТУВАННЯ ЕТИКЕТКИ (100x78 mm)
         ========================================== */
     .industrial-label {
       width: 100mm;
       height: 78mm;
       background-color: #FFFFFF;
       color: #000000;
-      position: relative;
+      padding: 2mm 3mm;
       box-sizing: border-box;
       font-family: Arial, Helvetica, sans-serif;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
       border: 1px solid #D1D5DB;
       box-shadow: 0 10px 25px rgba(0, 0, 0, 0.5);
       overflow: hidden;
+      background-clip: padding-box;
     }
 
-    .test-fill-label {
-      width: 100mm !important;
-      height: 78mm !important;
-      padding: 0 !important;
-      margin: 0 !important;
-      border: none !important;
-      overflow: hidden !important;
+    .top-divider {
+      width: 100%;
+      height: 0;
+      border-top: 3px solid #000000;
+      margin-top: 1mm;
+      margin-bottom: 1mm;
     }
 
-    .top-border {
-      position: absolute;
-      top: 3mm;
-      left: 3mm;
-      width: 94mm;
-      border-top: 2.5px solid #000000;
+    .label-section {
+      width: 100%;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
     }
 
-    /* PN Блок (Верхній) */
-    .pn-caption {
-      position: absolute;
-      top: 5.5mm;
-      left: 0;
-      width: 100mm;
-      text-align: center;
-      font-size: 13pt;
+    .section-header {
+      width: 100%;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      position: relative;
+      margin-bottom: 1mm;
+    }
+
+    .header-title {
+      font-size: 14pt;
       font-weight: 900;
       line-height: 1;
+      text-align: center;
     }
 
-    .label-brand-right {
+    .brand-tag {
       position: absolute;
-      top: 5.5mm;
-      right: 5mm;
+      right: 2mm;
+      top: 0;
       font-weight: 900;
       font-size: 11pt;
-      line-height: 1;
       text-transform: uppercase;
+      line-height: 1;
     }
 
-    .pn-barcode-wrapper {
-      position: absolute;
-      top: 12mm;
-      left: 11mm;
-      width: 78mm;
-      height: 15mm;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-    }
-
-    .pn-barcode-wrapper svg {
+    .barcode-box {
       width: 100%;
-      height: 100%;
-      display: block;
-      shape-rendering: crispEdges;
-    }
-
-    .label-value-pn {
-      position: absolute;
-      top: 28.5mm;
-      left: 0;
-      width: 100mm;
-      font-size: 20pt;
-      font-weight: 900;
-      text-align: center;
-      line-height: 1;
-      letter-spacing: -0.3px;
-    }
-
-    /* SN Блок (Нижній) — НАЛАШТУВАННЯ З ЗНІМКУ OBRAZ_7.PNG */
-    .sn-caption {
-      position: absolute;
-      top: 41mm;
-      left: 0;
-      width: 100mm;
-      text-align: center;
-      font-size: 13pt;
-      font-weight: 900;
-      line-height: 1;
-    }
-
-    /* Точні параметри з вашої програми: X=8.5mm, Y=47.8mm, Width=77.6mm, Height=12.8mm */
-    .sn-barcode-wrapper {
-      position: absolute;
-      left: 8.5mm;
-      top: 47.8mm;
-      width: 77.6mm;
-      height: 18mm;
+      height: 16mm;
       display: flex;
-      justify-content: center;
       align-items: center;
+      justify-content: center;
       overflow: hidden;
     }
 
-    .sn-barcode-wrapper svg {
-      width: 100%;
+    .barcode-box svg {
+      max-width: 100%;
       height: 100%;
       display: block;
       shape-rendering: crispEdges;
     }
 
-    .label-value-sn {
-      position: absolute;
-      top: 62.5mm;
-      left: 0;
-      width: 100mm;
-      font-size: 19pt;
+    .val-pn {
+      font-size: 21pt;
+      font-weight: 900;
+      line-height: 1.1;
+      text-align: center;
+      letter-spacing: -0.2px;
+      margin-top: 1mm;
+    }
+
+    .val-sn {
+      font-size: 17pt;
       font-weight: 900;
       font-family: 'Arial Narrow', Arial, sans-serif;
+      line-height: 1.1;
       text-align: center;
-      line-height: 1;
-      transform: scaleX(0.82);
-      transform-origin: center;
+      letter-spacing: -0.6px;
+      margin-top: 1mm;
       white-space: nowrap;
     }
 
     /* ==========================================
-        ДРУК НА TSC DA220
+        ІДЕАЛЬНИЙ ДРУК ДЛЯ TSC DA220
         ========================================== */
     @page { 
       size: 100mm 78mm landscape; 
@@ -380,7 +345,6 @@
         margin: 0 !important;
         padding: 0 !important;
         background: #ffffff !important;
-        color: #000000 !important;
         display: block !important;
         overflow: hidden !important;
       }
@@ -392,26 +356,19 @@
 
       #printContainer {
         display: block !important;
-        position: static !important;
+        position: absolute !important;
+        top: 0 !important;
+        left: 0 !important;
         width: 100mm !important;
         height: 78mm !important;
         margin: 0 !important;
         padding: 0 !important;
-        background: #FFFFFF !important;
-        visibility: visible !important;
-        overflow: hidden !important;
-      }
-
-      #printContainer * {
-        visibility: visible !important;
       }
 
       #printContainer .industrial-label { 
         width: 100mm !important;
         height: 78mm !important;
-        max-width: 100mm !important;
-        max-height: 78mm !important;
-        margin: 0 !important;
+        padding: 2mm 3mm !important;
         border: none !important; 
         box-shadow: none !important; 
         box-sizing: border-box !important;
@@ -421,13 +378,6 @@
         break-inside: avoid !important;
         page-break-after: always !important;
         break-after: page !important;
-      }
-
-      #printContainer .test-fill-label {
-        width: 100mm !important;
-        height: 78mm !important;
-        padding: 0 !important;
-        margin: 0 !important;
       }
 
       #printContainer .industrial-label:last-child {
@@ -708,13 +658,9 @@
 
     function printTestLabel() {
       printContainer.innerHTML = `
-        <div class="industrial-label test-fill-label">
-          <svg width="100mm" height="78mm" viewBox="0 0 100 78" xmlns="http://www.w3.org/2000/svg">
-            <rect width="100" height="78" fill="#000000" />
-            <rect x="2" y="2" width="96" height="74" fill="none" stroke="#ffffff" stroke-width="1" />
-            <text x="50" y="38" fill="#ffffff" font-size="7" font-weight="900" font-family="Arial" text-anchor="middle">TEST PRINT</text>
-            <text x="50" y="48" fill="#ffffff" font-size="5" font-weight="bold" font-family="Arial" text-anchor="middle">100 x 78 mm</text>
-          </svg>
+        <div class="industrial-label" style="justify-content: center; align-items: center; text-align: center;">
+          <h2 style="font-size: 20pt; font-weight: 900;">TEST PRINT</h2>
+          <p style="font-size: 14pt; margin-top: 5mm;">100 x 78 mm — OK</p>
         </div>
       `;
       window.print();
@@ -726,20 +672,28 @@
         for (let copy = 0; copy < 2; copy++) {
           html += `
             <div class="industrial-label">
-              <div class="top-border"></div>
+              <div class="top-divider"></div>
 
-              <span class="pn-caption">PN:</span>
-              ${includeBrand ? `<span class="label-brand-right">${escapeHtml(product.brand)}</span>` : ''}
-              <div class="pn-barcode-wrapper">
-                <svg id="barcodePN_${idx}_${copy}"></svg>
+              <div class="label-section">
+                <div class="section-header">
+                  <span class="header-title">PN:</span>
+                  ${includeBrand ? `<span class="brand-tag">${escapeHtml(product.brand)}</span>` : ''}
+                </div>
+                <div class="barcode-box">
+                  <svg id="barcodePN_${idx}_${copy}"></svg>
+                </div>
+                <div class="val-pn">${escapeHtml(product.pn)}</div>
               </div>
-              <span class="label-value-pn">${escapeHtml(product.pn)}</span>
 
-              <span class="sn-caption">SN:</span>
-              <div class="sn-barcode-wrapper">
-                <svg id="barcodeSN_${idx}_${copy}"></svg>
+              <div class="label-section">
+                <div class="section-header">
+                  <span class="header-title">SN:</span>
+                </div>
+                <div class="barcode-box">
+                  <svg id="barcodeSN_${idx}_${copy}"></svg>
+                </div>
+                <div class="val-sn">${escapeHtml(product.sn)}</div>
               </div>
-              <span class="label-value-sn">${escapeHtml(product.sn)}</span>
             </div>
           `;
         }
@@ -747,37 +701,36 @@
       return html;
     }
 
-    /* Налаштування JsBarcode згідно з діалоговим вікном z obraz_7.png */
     function renderBarcodesInContainer(containerSelector) {
       const container = document.querySelector(containerSelector);
       if (!container) return;
 
-      container.querySelectorAll('.industrial-label:not(.test-fill-label)').forEach((label) => {
+      container.querySelectorAll('.industrial-label').forEach((label) => {
         const svgPn = label.querySelector('[id^="barcodePN_"]');
         const svgSn = label.querySelector('[id^="barcodeSN_"]');
         
         if (svgPn && svgSn) {
-          const pnVal = label.querySelector('.label-value-pn').innerText;
-          const snVal = label.querySelector('.label-value-sn').innerText;
+          const pnVal = label.querySelector('.val-pn').innerText;
+          const snVal = label.querySelector('.val-sn').innerText;
           
-          // PN Штрихкод (Code 128)
+          // Для PN (короткий)
           JsBarcode(svgPn, pnVal, {
             format: "CODE128",
             displayValue: false,
             margin: 0,
-            height: 48,
-            width: 2,
+            height: 50,
+            width: 1.6,
             flat: true,
             lineColor: "#000000"
           });
 
-          // SN Штрихкод (Точно за налаштуваннями з obraz_7.png: Code 128, Szerokość modułu: 2, Auto)
+          // Для SN (довгий) — адаптивна ширина модуля 1.15 для 100% вміщення
           JsBarcode(svgSn, snVal, {
             format: "CODE128",
             displayValue: false,
             margin: 0,
-            height: 48, // Відповідає висоті 12.8 мм
-            width: 2,   // Szerokość modułu: 2
+            height: 50,
+            width: 1.15,
             flat: true,
             lineColor: "#000000"
           });
