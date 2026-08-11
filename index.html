@@ -3,9 +3,8 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Друк етикеток — TSC DA220</title>
+  <title>Прямий друк етикеток — TSC DA220</title>
   
-  <script src="https://cdn.jsdelivr.net/npm/jsbarcode@3.11.6/dist/JsBarcode.all.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
   <style>
@@ -24,7 +23,6 @@
       --border-color: #374151;
       --radius: 12px;
       --shadow-lg: 0 10px 25px -5px rgba(0, 0, 0, 0.5);
-      --shadow-modal: 0 25px 50px -12px rgba(0, 0, 0, 0.7);
     }
 
     * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -50,7 +48,7 @@
       align-items: flex-end; 
     }
     .page-title { font-size: 26px; font-weight: 700; color: #FFFFFF; }
-    .header-buttons { display: flex; gap: 10px; }
+    .header-buttons { display: flex; gap: 10px; flex-wrap: wrap; }
 
     .sheet-tabs {
       display: flex;
@@ -197,186 +195,8 @@
     .btn-secondary:hover { background-color: #4B5563; }
     .btn-test { background-color: #111827; border: 1px solid #4B5563; color: #F9FAFB; }
     .btn-test:hover { background-color: #000000; border-color: #9CA3AF; }
-
     .btn-brand { background-color: var(--brand-color); }
     .btn-brand:hover { background-color: var(--brand-hover); }
-
-    /* ==========================================
-        ЕТИКЕТКА TSC DA220 — 100 x 78 мм
-        ФІКСОВАНИЙ ГОРИЗОНТАЛЬНИЙ PRINT LAYOUT
-        ========================================== */
-    .industrial-label {
-      width: 100mm;
-      height: 78mm;
-      position: relative;
-      background: #FFFFFF;
-      color: #000000;
-      padding: 3.2mm 4mm 2.8mm;
-      box-sizing: border-box;
-      font-family: Arial, Helvetica, sans-serif;
-      display: block;
-      overflow: hidden;
-      border: 1px solid #D1D5DB;
-      box-shadow: 0 10px 25px rgba(0, 0, 0, 0.5);
-      background-clip: padding-box;
-    }
-
-    .top-divider {
-      width: 100%;
-      height: 0;
-      border-top: 1.5px solid #000000;
-      margin: 0 0 2.2mm 0;
-    }
-
-    .label-section {
-      width: 100%;
-      display: block;
-      margin: 0;
-      padding: 0;
-    }
-
-    .label-section + .label-section {
-      margin-top: 3.1mm;
-    }
-
-    .section-header {
-      width: 100%;
-      height: 5.5mm;
-      display: block;
-      position: relative;
-      margin: 0 0 1.1mm 0;
-      line-height: 5.5mm;
-      text-align: center;
-    }
-
-    .header-title {
-      display: block;
-      width: 100%;
-      font-size: 16.5pt;
-      font-weight: 900;
-      line-height: 5.5mm;
-      text-align: center;
-    }
-
-    .brand-tag {
-      position: absolute;
-      right: 3.5mm;
-      top: 0;
-      font-weight: 900;
-      font-size: 16.5pt;
-      text-transform: uppercase;
-      line-height: 5.5mm;
-      white-space: nowrap;
-    }
-
-    .barcode-box {
-      width: 82mm;
-      height: 15.5mm;
-      margin: 0 auto;
-      display: block;
-      overflow: hidden;
-      text-align: center;
-    }
-
-    .barcode-box svg {
-      width: auto !important;
-      max-width: 100% !important;
-      height: 15.5mm !important;
-      display: inline-block;
-      vertical-align: top;
-      shape-rendering: crispEdges;
-    }
-
-    .val-pn,
-    .val-sn {
-      width: 100%;
-      box-sizing: border-box;
-      text-align: center;
-      font-weight: 900;
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: clip;
-      line-height: 1;
-      letter-spacing: 0;
-      margin: 1.1mm 0 0 0;
-    }
-
-    .val-pn {
-      font-size: 18pt;
-      font-family: Arial, Helvetica, sans-serif;
-    }
-
-    .val-sn {
-      font-size: 13pt;
-      font-family: Arial, Helvetica, sans-serif;
-      transform: scale(1, 1.8);
-      transform-origin: center top;
-      margin-top: 3.5mm;
-    }
-
-    /* ==========================================
-        ДРУК — РЕАЛЬНИЙ РОЗМІР 100 x 78 мм
-        ========================================== */
-    @page {
-      size: 100mm 78mm;
-      margin: 0;
-    }
-
-    @media print {
-      html, body {
-        width: 100mm !important;
-        height: auto !important;
-        min-width: 100mm !important;
-        margin: 0 !important;
-        padding: 0 !important;
-        background: #ffffff !important;
-        display: block !important;
-        overflow: visible !important;
-      }
-
-      .app-container {
-        display: none !important;
-      }
-
-      #printContainer {
-        display: block !important;
-        position: static !important;
-        width: 100mm !important;
-        margin: 0 !important;
-        padding: 0 !important;
-      }
-
-      #printContainer .industrial-label {
-        width: 100mm !important;
-        height: 78mm !important;
-        min-width: 100mm !important;
-        min-height: 78mm !important;
-        max-width: 100mm !important;
-        max-height: 78mm !important;
-        padding: 3.2mm 4mm 2.8mm !important;
-        margin: 0 !important;
-        border: 0 !important;
-        box-shadow: none !important;
-        box-sizing: border-box !important;
-        overflow: hidden !important;
-        display: block !important;
-        position: relative !important;
-        
-        /* КРИТИЧНО ДЛЯ ОКРЕМИХ ЕТИКЕТОК */
-        page-break-before: always !important;
-        page-break-after: always !important;
-        page-break-inside: avoid !important;
-        break-before: page !important;
-        break-after: page !important;
-        break-inside: avoid !important;
-      }
-
-      /* Першу етикетку не треба штучно відривати перед початком */
-      #printContainer .industrial-label:first-child {
-        page-break-before: avoid !important;
-        break-before: avoid !important;
-      }
-    }
   </style>
 </head>
 <body>
@@ -387,14 +207,15 @@
         <h1 class="page-title">🖨️ Друк етикеток (TSC DA220)</h1>
       </div>
       <div class="header-buttons">
+        <button class="btn btn-secondary" id="connectPrinterBtn" onclick="initSerialPort()">🔌 Підключити принтер</button>
         <button class="btn btn-test" onclick="printTestLabel()">⬛ Тестовий друк</button>
         <button class="btn btn-secondary" onclick="fetchDataFromGoogleSheet(true)">🔄 Оновити зараз</button>
       </div>
     </header>
 
     <div class="sheet-tabs">
-      <button class="sheet-tab-btn active" id="tabBtn0" onclick="switchSheet('0')">FI    1 <kbd>Alt + 1</kbd></button>
-      <button class="sheet-tab-btn" id="tabBtn193025884" onclick="switchSheet('193025884')">FI    2 <kbd>Alt + 2</kbd></button>
+      <button class="sheet-tab-btn active" id="tabBtn0" onclick="switchSheet('0')">FI 1 <kbd>Alt + 1</kbd></button>
+      <button class="sheet-tab-btn" id="tabBtn193025884" onclick="switchSheet('193025884')">FI 2 <kbd>Alt + 2</kbd></button>
       
       <div class="sync-indicator" id="syncIndicator">
         <div class="spinner"></div>
@@ -405,8 +226,8 @@
     <div class="batch-actions-bar">
       <div class="batch-info" id="selectedCountText">Вибрано позицій: 0</div>
       <div class="batch-buttons">
-        <button class="btn btn-secondary" id="batchPrintNormalBtn" disabled onclick="printBatch(false)">🖨️ Друк вибраних </button>
-        <button class="btn btn-brand" id="batchPrintBrandBtn" disabled onclick="printBatch(true)">🖨️ Друк вибраних з Brand </button>
+        <button class="btn btn-secondary" id="batchPrintNormalBtn" disabled onclick="printBatch(false)">🖨️ Друк вибраних</button>
+        <button class="btn btn-brand" id="batchPrintBrandBtn" disabled onclick="printBatch(true)">🖨️ Друк вибраних з Brand</button>
       </div>
     </div>
 
@@ -431,8 +252,6 @@
     </main>
   </div>
 
-  <div id="printContainer" style="display: none;"></div>
-
   <script>
     const SUPABASE_URL = 'https://xgjggfnfgrmkuclgjmih.supabase.co';
     const SUPABASE_KEY = 'sb_publishable_MLyF6CMVplwDyDqSeDnSBA__RakJscC';
@@ -447,12 +266,61 @@
     
     let currentGid = '0';
     let products = [];
-    let selectedSerials = new Set(); // Зберігаємо унікальні Serial Number вибраних елементів
+    let selectedSerials = new Set();
     let isInitialLoad = true;
+    let serialPort = null;
 
     const tableBody = document.getElementById('productsTableBody');
-    const printContainer = document.getElementById('printContainer');
     const syncIndicator = document.getElementById('syncIndicator');
+
+    // ПІДКЛЮЧЕННЯ ДО ПРИНТЕРА ЧЕРЕЗ WEB SERIAL API
+    async function initSerialPort() {
+      if (!('serial' in navigator)) {
+        alert('Ваш браузер не підтримує Web Serial API. Використовуйте Google Chrome або Microsoft Edge.');
+        return;
+      }
+
+      try {
+        serialPort = await navigator.serial.requestPort();
+        await serialPort.open({ baudRate: 9600 });
+        updatePrinterStatus(true);
+      } catch (error) {
+        console.error('Помилка підключення до порту:', error);
+        alert('Не вдалося підключитися до принтера.');
+      }
+    }
+
+    function updatePrinterStatus(isConnected) {
+      const btn = document.getElementById('connectPrinterBtn');
+      if (isConnected) {
+        btn.innerHTML = '✅ Принтер підключено';
+        btn.style.background = 'var(--brand-color)';
+      } else {
+        btn.innerHTML = '🔌 Підключити принтер';
+        btn.style.background = '';
+      }
+    }
+
+    async function sendTSPL(tsplData) {
+      if (!serialPort) {
+        await initSerialPort();
+        if (!serialPort) return false;
+      }
+
+      try {
+        const writer = serialPort.writable.getWriter();
+        const encoder = new TextEncoder();
+        await writer.write(encoder.encode(tsplData));
+        writer.releaseLock();
+        return true;
+      } catch (err) {
+        console.error('Помилка передачі даних на принтер:', err);
+        alert('Зв’язок із принтером втрачено. Будь ласка, перепідключіть його.');
+        serialPort = null;
+        updatePrinterStatus(false);
+        return false;
+      }
+    }
 
     function parseCSV(str) {
       const arr = [];
@@ -484,18 +352,11 @@
           const upperSn = sn.toUpperCase();
           if (upperSn.startsWith('TBV') && upperSn.length >= 12) {
             const prefix = upperSn.substring(0, 12);
-            return {
-              pn: `750${prefix}N000`,
-              brand: "PHP[PHP]"
-            };
+            return { pn: `750${prefix}N000`, brand: "PHP[PHP]" };
           } else if (upperSn.startsWith('TOV') && upperSn.length >= 12) {
             const prefix = upperSn.substring(0, 12);
-            return {
-              pn: `730${prefix}N000`,
-              brand: "PHP[PHP]"
-            };
+            return { pn: `730${prefix}N000`, brand: "PHP[PHP]" };
           }
-
           return { pn: "NOT_FOUND_IN_DB", brand: "-" };
         }
         return { 
@@ -552,15 +413,10 @@
 
         for (const sn of lastSnList) {
           const dbData = await getProductFromDatabase(sn);
-          validItems.push({ 
-            pn: dbData.pn, 
-            brand: dbData.brand, 
-            sn: sn 
-          });
+          validItems.push({ pn: dbData.pn, brand: dbData.brand, sn: sn });
         }
 
         products = validItems;
-        // Зверніть увагу: ми НЕ очищуємо selectedSerials тут, тому галочки залишаються!
         renderTable();
         updateBatchBar();
       } catch (error) {
@@ -588,8 +444,8 @@
           <td class="code-text">${escapeHtml(product.pn)}</td>
           <td><span style="background: #374151; padding: 3px 8px; border-radius: 4px; font-size: 12px; font-weight: 600;">${escapeHtml(product.brand)}</span></td>
           <td class="actions-cell">
-            <button class="btn" onclick="printSingle(${index}, false)" title="Друк 2 копії">🖨️ </button>
-            <button class="btn btn-brand" onclick="printSingle(${index}, true)" title="Друк 2 копії з Brand">🖨️  Brand</button>
+            <button class="btn" onclick="printSingle(${index}, false)" title="Друк 2 копії">🖨️</button>
+            <button class="btn btn-brand" onclick="printSingle(${index}, true)" title="Друк 2 копії з Brand">🖨️ Brand</button>
           </td>
         `;
         tableBody.appendChild(row);
@@ -641,115 +497,53 @@
       return div.innerHTML;
     }
 
-    function printTestLabel() {
-      printContainer.innerHTML = `
-        <div class="industrial-label">
-          <div class="top-divider"></div>
-          <div class="label-section">
-            <div class="section-header"><span class="header-title">PN:</span></div>
-            <div class="barcode-box"><svg id="testPN"></svg></div>
-            <div class="val-pn">TEST-PN-100X78</div>
-          </div>
-          <div class="label-section">
-            <div class="section-header"><span class="header-title">SN:</span></div>
-            <div class="barcode-box"><svg id="testSN"></svg></div>
-            <div class="val-sn">TEST-SN-27082026</div>
-          </div>
-        </div>
-      `;
-      JsBarcode('#testPN', 'TEST-PN-100X78', { format: 'CODE128B', displayValue: false, margin: 0, height: 48, width: 1.18, flat: true, lineColor: '#000' });
-      JsBarcode('#testSN', 'TEST-SN-27082026', { format: 'CODE128B', displayValue: false, margin: 0, height: 48, width: 0.92, flat: true, lineColor: '#000' });
-      prepareAndPrint();
-    }
-
-    function buildLabelsHTML(itemsList, includeBrand) {
-      let html = '';
-      itemsList.forEach((product, idx) => {
+    // ГЕНЕРАЦІЯ TSPL КОДІВ ДЛЯ ПРИНТЕРА TSC DA220 (100x78 мм)
+    function buildTSPL(itemsList, includeBrand) {
+      let tspl = "";
+      itemsList.forEach(product => {
+        // У вашому оригінальному коді друкувалося 2 копії для кожного елемента
         for (let copy = 0; copy < 2; copy++) {
-          html += `
-            <div class="industrial-label">
-              <div class="top-divider"></div>
-
-              <div class="label-section">
-                <div class="section-header">
-                  <span class="header-title">PN:</span>
-                  ${includeBrand ? `<span class="brand-tag">${escapeHtml(product.brand)}</span>` : ''}
-                </div>
-                <div class="barcode-box">
-                  <svg id="barcodePN_${idx}_${copy}"></svg>
-                </div>
-                <div class="val-pn">${escapeHtml(product.pn)}</div>
-              </div>
-
-              <div class="label-section">
-                <div class="section-header">
-                  <span class="header-title">SN:</span>
-                </div>
-                <div class="barcode-box">
-                  <svg id="barcodeSN_${idx}_${copy}"></svg>
-                </div>
-                <div class="val-sn">${escapeHtml(product.sn)}</div>
-              </div>
-            </div>
-          `;
-        }
-      });
-      return html;
-    }
-
-    function renderBarcodesInContainer(containerSelector) {
-      const container = document.querySelector(containerSelector);
-      if (!container) return;
-
-      container.querySelectorAll('.industrial-label').forEach((label) => {
-        const svgPn = label.querySelector('[id^="barcodePN_"]');
-        const svgSn = label.querySelector('[id^="barcodeSN_"]');
-        
-        if (svgPn && svgSn) {
-          const pnVal = label.querySelector('.val-pn').innerText;
-          const snVal = label.querySelector('.val-sn').innerText;
+          tspl += "SIZE 100 mm, 78 mm\n";
+          tspl += "GAP 3 mm, 0 mm\n";
+          tspl += "CLS\n";
           
-          JsBarcode(svgPn, pnVal, {
-            format: "CODE128B",
-            displayValue: false,
-            margin: 0,
-            height: 48,
-            width: 1.18,
-            flat: true,
-            lineColor: "#000000"
-          });
+          // Верхня лінія
+          tspl += "BOX 32, 24, 768, 28, 2\n";
 
-          JsBarcode(svgSn, snVal, {
-            format: "CODE128B",
-            displayValue: false,
-            margin: 0,
-            height: 48,
-            width: 0.92,
-            flat: true,
-            lineColor: "#000000"
-          });
+          // Блок PN
+          tspl += `TEXT 40, 45, "3", 0, 1, 1, "PN:"\n`;
+          if (includeBrand && product.brand) {
+            tspl += `TEXT 550, 45, "3", 0, 1, 1, "${product.brand}"\n`;
+          }
+          tspl += `BARCODE 40, 95, "128", 55, 0, 0, 2, 5, "${product.pn}"\n`;
+          tspl += `TEXT 40, 165, "4", 0, 1, 1, "${product.pn}"\n`;
+
+          // Блок SN
+          tspl += `TEXT 40, 260, "3", 0, 1, 1, "SN:"\n`;
+          tspl += `BARCODE 40, 310, "128", 55, 0, 0, 2, 5, "${product.sn}"\n`;
+          tspl += `TEXT 40, 385, "4", 0, 1, 2, "${product.sn}"\n`;
+
+          tspl += "PRINT 1, 1\n";
         }
       });
+      return tspl;
     }
 
-    function prepareAndPrint() {
-      requestAnimationFrame(() => {
-        requestAnimationFrame(() => {
-          setTimeout(() => window.print(), 120);
-        });
-      });
+    async function printTestLabel() {
+      const testItem = { pn: "TEST-PN-100X78", sn: "TEST-SN-27082026", brand: "PHP[PHP]" };
+      const tsplCode = buildTSPL([testItem], true);
+      await sendTSPL(tsplCode);
     }
 
-    function printSingle(index, includeBrand) {
+    async function printSingle(index, includeBrand) {
       const product = products[index];
       if (!product) return;
 
-      printContainer.innerHTML = buildLabelsHTML([product], includeBrand);
-      renderBarcodesInContainer('#printContainer');
-      prepareAndPrint();
+      const tsplCode = buildTSPL([product], includeBrand);
+      await sendTSPL(tsplCode);
     }
 
-    function printBatch(includeBrand) {
+    async function printBatch(includeBrand) {
       if (selectedSerials.size === 0) return;
 
       const itemsToPrint = [];
@@ -761,19 +555,18 @@
 
       if (itemsToPrint.length === 0) return;
 
-      printContainer.innerHTML = buildLabelsHTML(itemsToPrint, includeBrand);
-      renderBarcodesInContainer('#printContainer');
-      prepareAndPrint();
+      const tsplCode = buildTSPL(itemsToPrint, includeBrand);
+      const success = await sendTSPL(tsplCode);
 
-      // Знімаємо виділення ТІЛЬКИ після виклику друку
-      selectedSerials.clear();
-      renderTable();
-      updateBatchBar();
+      if (success) {
+        selectedSerials.clear();
+        renderTable();
+        updateBatchBar();
+      }
     }
 
     // ОБРОБКА ГАРЯЧИХ КЛАВІШ
     document.addEventListener('keydown', (e) => {
-      // Перемикання вкладки: Alt + 1 / Alt + 2
       if (e.altKey) {
         if (e.key === '1') {
           e.preventDefault();
@@ -784,16 +577,12 @@
         }
       }
 
-      // Перехоплення комбінації Ctrl+P / Cmd+P
       if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'p') {
-        e.preventDefault(); // Забороняємо стандартний старий друк
-
+        e.preventDefault();
         if (products.length > 0) {
           if (selectedSerials.size > 0) {
-            // Якщо є позначені чекбоксом елементи — друкуємо їх і очищуємо виділення
             printBatch(false);
           } else {
-            // Якщо нічого не вибрано — беремо СВІЖИЙ перший елемент (індекс 0)
             printSingle(0, false);
           }
         }
