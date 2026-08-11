@@ -3,14 +3,14 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Друк етикеток — TSC DA220 (Зі збільшеним PN)</title>
+  <title>Друк етикеток — TSC DA220</title>
   
   <script src="https://cdn.jsdelivr.net/npm/jsbarcode@3.11.6/dist/JsBarcode.all.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
   <style>
     /* ==========================================
-        СТИЛІ ІНТЕРФЕЙСУ (ТЕМНА ТЕМА) - БЕЗ ЗМІН
+        СТИЛІ ІНТЕРФЕЙСУ (ТЕМНА ТЕМА)
         ========================================== */
     :root {
       --bg-color: #111827;
@@ -300,44 +300,22 @@
       white-space: nowrap;
     }
 
-    /* === ЗМІНЕНО: Контейнер для штрих-коду PN === */
-    .barcode-box-pn {
+    .barcode-box {
       width: 82mm;
-      height: 31.0mm; /* Збільшено висоту контейнера PN (було 15.5mm) */
+      height: 15.5mm;
       margin: 0 auto;
       display: block;
       overflow: hidden;
       text-align: center;
     }
 
-    /* === ЗМІНЕНО: Контейнер для штрих-коду SN === */
-    .barcode-box-sn {
-      width: 82mm;
-      height: 15.5mm; /* SN залишається оригінальним */
-      margin: 0 auto;
-      display: block;
-      overflow: hidden;
-      text-align: center;
-    }
-
-    /* Налаштування для SVG всередині обох контейнерів */
-    .barcode-box-pn svg,
-    .barcode-box-sn svg {
+    .barcode-box svg {
       width: auto !important;
       max-width: 100% !important;
+      height: 15.5mm !important;
       display: inline-block;
       vertical-align: top;
-      /*shape-rendering: crispEdges; /* Критично для чіткості при друці */
-    }
-
-    /* Висота SVG для PN */
-    .barcode-box-pn svg {
-      height: 31.0mm !important; /* SVG заповнює збільшену висоту */
-    }
-
-    /* Висота SVG для SN */
-    .barcode-box-sn svg {
-      height: 15.5mm !important; /* SVG заповнює стандартну висоту */
+      shape-rendering: crispEdges;
     }
 
     .val-pn,
@@ -438,7 +416,7 @@
   <div class="app-container">
     <header class="page-header">
       <div>
-        <h1 class="page-title">🖨️ Друк етикеток (TSC DA220) - Високий PN</h1>
+        <h1 class="page-title">🖨️ Друк етикеток (TSC DA220)</h1>
       </div>
       <div class="header-buttons">
         <button class="btn btn-test" onclick="printTestLabel()">⬛ Тестовий друк</button>
@@ -488,7 +466,7 @@
   <div class="modal-backdrop" id="labelModal">
     <div class="modal-card">
       <div class="modal-header">
-        <h2 class="modal-title" id="modalTitleText">Попередній перегляд етикетки (Зі збільшеним PN)</h2>
+        <h2 class="modal-title" id="modalTitleText">Попередній перегляд етикетки</h2>
         <button class="modal-close-btn" id="closeModalCross">&times;</button>
       </div>
       <div class="modal-body" id="modalPreviewBody"></div>
@@ -718,24 +696,22 @@
     }
 
     function printTestLabel() {
-      // Оновлено: Тестовий друк використовує ті ж контейнери
       printContainer.innerHTML = `
         <div class="industrial-label">
           <div class="top-divider"></div>
           <div class="label-section">
             <div class="section-header"><span class="header-title">PN:</span></div>
-            <div class="barcode-box-pn"><svg id="testPN"></svg></div>
+            <div class="barcode-box"><svg id="testPN"></svg></div>
             <div class="val-pn">TEST-PN-100X78</div>
           </div>
           <div class="label-section">
             <div class="section-header"><span class="header-title">SN:</span></div>
-            <div class="barcode-box-sn"><svg id="testSN"></svg></div>
+            <div class="barcode-box"><svg id="testSN"></svg></div>
             <div class="val-sn">TEST-SN-27082026</div>
           </div>
         </div>
       `;
-      // Зверніть увагу: height: 96 для PN в тестовому друку
-      JsBarcode('#testPN', 'TEST-PN-100X78', { format: 'CODE128B', displayValue: false, margin: 0, height: 96, width: 1.18, flat: true, lineColor: '#000' });
+      JsBarcode('#testPN', 'TEST-PN-100X78', { format: 'CODE128B', displayValue: false, margin: 0, height: 48, width: 1.18, flat: true, lineColor: '#000' });
       JsBarcode('#testSN', 'TEST-SN-27082026', { format: 'CODE128B', displayValue: false, margin: 0, height: 48, width: 0.92, flat: true, lineColor: '#000' });
       prepareAndPrint();
     }
@@ -753,7 +729,7 @@
                   <span class="header-title">PN:</span>
                   ${includeBrand ? `<span class="brand-tag">${escapeHtml(product.brand)}</span>` : ''}
                 </div>
-                <div class="barcode-box-pn">
+                <div class="barcode-box">
                   <svg id="barcodePN_${idx}_${copy}"></svg>
                 </div>
                 <div class="val-pn">${escapeHtml(product.pn)}</div>
@@ -763,7 +739,7 @@
                 <div class="section-header">
                   <span class="header-title">SN:</span>
                 </div>
-                <div class="barcode-box-sn">
+                <div class="barcode-box">
                   <svg id="barcodeSN_${idx}_${copy}"></svg>
                 </div>
                 <div class="val-sn">${escapeHtml(product.sn)}</div>
@@ -787,18 +763,16 @@
           const pnVal = label.querySelector('.val-pn').innerText;
           const snVal = label.querySelector('.val-sn').innerText;
           
-          // === ЗМІНЕНО: Висота для PN штрих-коду ===
           JsBarcode(svgPn, pnVal, {
             format: "CODE128B",
             displayValue: false,
             margin: 0,
-            height: 96, // Збільшено висоту малювання (було 48)
-            width: 1.18, // Ширина залишається оригінальною
+            height: 48,
+            width: 1.18,
             flat: true,
             lineColor: "#000000"
           });
 
-          // SN залишається оригінальним
           JsBarcode(svgSn, snVal, {
             format: "CODE128B",
             displayValue: false,
@@ -849,7 +823,7 @@
       modalActiveItem = product;
       modalActiveBrand = includeBrand;
 
-      document.getElementById('modalTitleText').innerText = includeBrand ? 'Перегляд (з Brand - Високий PN)' : 'Перегляд (Звичайна - Високий PN)';
+      document.getElementById('modalTitleText').innerText = includeBrand ? 'Перегляд (з Brand - 2 копії)' : 'Перегляд (Звичайна - 2 копії)';
 
       modalPreviewBody.innerHTML = buildLabelsHTML([product], includeBrand);
       renderBarcodesInContainer('#modalPreviewBody');
