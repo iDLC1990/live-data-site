@@ -833,7 +833,9 @@
 
     function closeModal() { modal.classList.remove('is-open'); }
 
+    // ОБРОБКА ГАРЯЧИХ КЛАВІШ
     document.addEventListener('keydown', (e) => {
+      // Перемикання вкладки: Alt + 1 / Alt + 2
       if (e.altKey) {
         if (e.key === '1') {
           e.preventDefault();
@@ -841,6 +843,21 @@
         } else if (e.key === '2') {
           e.preventDefault();
           switchSheet('193025884');
+        }
+      }
+
+      // Перехоплення комбінації Ctrl+P / Cmd+P
+      if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'p') {
+        e.preventDefault(); // Забороняємо стандартний старий друк
+
+        if (products.length > 0) {
+          if (selectedIndices.size > 0) {
+            // Якщо є позначені чекбоксом елементи — друкуємо їх
+            printBatch(false);
+          } else {
+            // Якщо нічого не вибрано — беремо СВІЖИЙ перший елемент (індекс 0)
+            printSingle(0, false);
+          }
         }
       }
     });
