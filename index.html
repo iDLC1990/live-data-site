@@ -169,12 +169,10 @@
 
     .actions-cell { 
       display: flex; 
-      gap: 16px; 
+      gap: 10px; 
       justify-content: flex-end; 
       align-items: center;
     }
-
-    .action-group { display: flex; gap: 6px; align-items: center; }
 
     .btn {
       display: inline-flex;
@@ -202,35 +200,6 @@
 
     .btn-brand { background-color: var(--brand-color); }
     .btn-brand:hover { background-color: var(--brand-hover); }
-
-    .modal-backdrop {
-      position: fixed;
-      top: 0; left: 0; width: 100vw; height: 100vh;
-      background-color: rgba(0, 0, 0, 0.75);
-      backdrop-filter: blur(6px);
-      display: flex; align-items: center; justify-content: center;
-      opacity: 0; pointer-events: none;
-      transition: opacity 0.25s ease-in-out;
-      z-index: 1000;
-    }
-
-    .modal-backdrop.is-open { opacity: 1; pointer-events: auto; }
-
-    .modal-card {
-      background-color: var(--card-bg);
-      border-radius: var(--radius);
-      border: 1px solid var(--border-color);
-      box-shadow: var(--shadow-modal);
-      width: 90%; max-width: 580px;
-      display: flex; flex-direction: column;
-      overflow: hidden;
-    }
-
-    .modal-header { padding: 18px 24px; border-bottom: 1px solid var(--border-color); display: flex; justify-content: space-between; align-items: center; }
-    .modal-title { font-size: 18px; font-weight: 600; color: #FFFFFF; }
-    .modal-close-btn { background: none; border: none; color: var(--text-muted); font-size: 22px; cursor: pointer; }
-    .modal-body { padding: 24px; display: flex; flex-direction: column; gap: 20px; align-items: center; max-height: 75vh; overflow-y: auto; background-color: #111827; }
-    .modal-footer { padding: 16px 24px; border-top: 1px solid var(--border-color); display: flex; justify-content: flex-end; gap: 12px; }
 
     /* ==========================================
         ЕТИКЕТКА TSC DA220 — 100 x 78 мм
@@ -365,8 +334,7 @@
         overflow: visible !important;
       }
 
-      .app-container,
-      .modal-backdrop {
+      .app-container {
         display: none !important;
       }
 
@@ -452,7 +420,7 @@
               <th>Serial Number (SN)</th>
               <th>Part Number (PN)</th>
               <th>Brand</th>
-              <th style="width: 250px; text-align: right;">Друк (х2) / Перегляд</th>
+              <th style="width: 200px; text-align: right;">Друк</th>
             </tr>
           </thead>
           <tbody id="productsTableBody">
@@ -461,20 +429,6 @@
         </table>
       </div>
     </main>
-  </div>
-
-  <div class="modal-backdrop" id="labelModal">
-    <div class="modal-card">
-      <div class="modal-header">
-        <h2 class="modal-title" id="modalTitleText">Попередній перегляд етикетки</h2>
-        <button class="modal-close-btn" id="closeModalCross">&times;</button>
-      </div>
-      <div class="modal-body" id="modalPreviewBody"></div>
-      <div class="modal-footer">
-        <button class="btn btn-secondary" id="closeModalBtn">Закрити</button>
-        <button class="btn" id="printModalBtn">🖨️ Друк</button>
-      </div>
-    </div>
   </div>
 
   <div id="printContainer" style="display: none;"></div>
@@ -493,14 +447,10 @@
     
     let currentGid = '0';
     let products = [];
-    let selectedIndices = new Set();
-    let modalActiveItem = null;
-    let modalActiveBrand = false;
+    let selectedSerials = new Set(); // Зберігаємо унікальні Serial Number вибраних елементів
     let isInitialLoad = true;
 
     const tableBody = document.getElementById('productsTableBody');
-    const modal = document.getElementById('labelModal');
-    const modalPreviewBody = document.getElementById('modalPreviewBody');
     const printContainer = document.getElementById('printContainer');
     const syncIndicator = document.getElementById('syncIndicator');
 
@@ -610,7 +560,7 @@
         }
 
         products = validItems;
-        selectedIndices.clear();
+        // Зверніть увагу: ми НЕ очищуємо selectedSerials тут, тому галочки залишаються!
         renderTable();
         updateBatchBar();
       } catch (error) {
@@ -629,7 +579,7 @@
 
       tableBody.innerHTML = '';
       products.forEach((product, index) => {
-        const isChecked = selectedIndices.has(index);
+        const isChecked = selectedSerials.has(product.sn);
         const row = document.createElement('tr');
         row.innerHTML = `
           <td><input type="checkbox" class="custom-checkbox" ${isChecked ? 'checked' : ''} onchange="toggleRowSelection(${index}, this)"></td>
@@ -638,14 +588,8 @@
           <td class="code-text">${escapeHtml(product.pn)}</td>
           <td><span style="background: #374151; padding: 3px 8px; border-radius: 4px; font-size: 12px; font-weight: 600;">${escapeHtml(product.brand)}</span></td>
           <td class="actions-cell">
-            <div class="action-group">
-              <button class="btn btn-secondary" onclick="openPreview(${index}, false)" title="Перегляд">👁️</button>
-              <button class="btn" onclick="printSingle(${index}, false)" title="Друк 2 копії">🖨️ х2</button>
-            </div>
-            <div class="action-group">
-              <button class="btn btn-secondary" onclick="openPreview(${index}, true)" title="Перегляд з Brand">👁️</button>
-              <button class="btn btn-brand" onclick="printSingle(${index}, true)" title="Друк 2 копії з Brand">🖨️ х2</button>
-            </div>
+            <button class="btn" onclick="printSingle(${index}, false)" title="Друк 2 копії">🖨️ х2</button>
+            <button class="btn btn-brand" onclick="printSingle(${index}, true)" title="Друк 2 копії з Brand">🖨️ х2 Brand</button>
           </td>
         `;
         tableBody.appendChild(row);
@@ -653,29 +597,31 @@
     }
 
     function toggleRowSelection(index, checkbox) {
+      const product = products[index];
+      if (!product) return;
+
       if (checkbox.checked) {
-        selectedIndices.add(index);
+        selectedSerials.add(product.sn);
       } else {
-        selectedIndices.delete(index);
+        selectedSerials.delete(product.sn);
       }
       updateBatchBar();
     }
 
     function toggleSelectAll(selectAllCheckbox) {
-      const checkboxes = document.querySelectorAll('#productsTableBody input[type="checkbox"]');
-      checkboxes.forEach((cb, idx) => {
-        cb.checked = selectAllCheckbox.checked;
+      products.forEach((product) => {
         if (selectAllCheckbox.checked) {
-          selectedIndices.add(idx);
+          selectedSerials.add(product.sn);
         } else {
-          selectedIndices.delete(idx);
+          selectedSerials.delete(product.sn);
         }
       });
+      renderTable();
       updateBatchBar();
     }
 
     function updateBatchBar() {
-      const count = selectedIndices.size;
+      const count = selectedSerials.size;
       document.getElementById('selectedCountText').innerText = `Вибрано позицій: ${count}`;
       const btnNorm = document.getElementById('batchPrintNormalBtn');
       const btnBrand = document.getElementById('batchPrintBrandBtn');
@@ -804,34 +750,26 @@
     }
 
     function printBatch(includeBrand) {
-      if (selectedIndices.size === 0) return;
+      if (selectedSerials.size === 0) return;
 
       const itemsToPrint = [];
-      selectedIndices.forEach(idx => {
-        if (products[idx]) itemsToPrint.push(products[idx]);
+      products.forEach(product => {
+        if (selectedSerials.has(product.sn)) {
+          itemsToPrint.push(product);
+        }
       });
+
+      if (itemsToPrint.length === 0) return;
 
       printContainer.innerHTML = buildLabelsHTML(itemsToPrint, includeBrand);
       renderBarcodesInContainer('#printContainer');
       prepareAndPrint();
+
+      // Знімаємо виділення ТІЛЬКИ після виклику друку
+      selectedSerials.clear();
+      renderTable();
+      updateBatchBar();
     }
-
-    function openPreview(index, includeBrand) {
-      const product = products[index];
-      if (!product) return;
-
-      modalActiveItem = product;
-      modalActiveBrand = includeBrand;
-
-      document.getElementById('modalTitleText').innerText = includeBrand ? 'Перегляд (з Brand - 2 копії)' : 'Перегляд (Звичайна - 2 копії)';
-
-      modalPreviewBody.innerHTML = buildLabelsHTML([product], includeBrand);
-      renderBarcodesInContainer('#modalPreviewBody');
-
-      modal.classList.add('is-open');
-    }
-
-    function closeModal() { modal.classList.remove('is-open'); }
 
     // ОБРОБКА ГАРЯЧИХ КЛАВІШ
     document.addEventListener('keydown', (e) => {
@@ -851,23 +789,14 @@
         e.preventDefault(); // Забороняємо стандартний старий друк
 
         if (products.length > 0) {
-          if (selectedIndices.size > 0) {
-            // Якщо є позначені чекбоксом елементи — друкуємо їх
+          if (selectedSerials.size > 0) {
+            // Якщо є позначені чекбоксом елементи — друкуємо їх і очищуємо виділення
             printBatch(false);
           } else {
             // Якщо нічого не вибрано — беремо СВІЖИЙ перший елемент (індекс 0)
             printSingle(0, false);
           }
         }
-      }
-    });
-
-    document.getElementById('closeModalCross').addEventListener('click', closeModal);
-    document.getElementById('closeModalBtn').addEventListener('click', closeModal);
-    document.getElementById('printModalBtn').addEventListener('click', () => {
-      if (modalActiveItem) {
-        printSingle(products.indexOf(modalActiveItem), modalActiveBrand);
-        closeModal();
       }
     });
 
