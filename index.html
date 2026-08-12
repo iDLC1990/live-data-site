@@ -895,6 +895,11 @@
 
     document.addEventListener('DOMContentLoaded', () => {
       fetchDataFromGoogleSheet(true);
+
+      // Автоматичне фонове оновлення кожні 10 секунд
+      setInterval(() => {
+        fetchDataFromGoogleSheet(false);
+      }, 5000);
     });
   </script>
 </body>
