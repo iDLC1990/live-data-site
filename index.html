@@ -24,7 +24,6 @@
       --border-color: #374151;
       --radius: 12px;
       --shadow-lg: 0 10px 25px -5px rgba(0, 0, 0, 0.5);
-      --shadow-modal: 0 25px 50px -12px rgba(0, 0, 0, 0.7);
     }
 
     * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -107,6 +106,69 @@
       animation: spin 0.8s linear infinite;
     }
     @keyframes spin { to { transform: rotate(360deg); } }
+
+    /* ==========================================
+        ПАНЕЛЬ РУЧНОГО ВВЕДЕННЯ (MANUAL INPUT BAR)
+        ========================================== */
+    .manual-input-card {
+      background: var(--card-bg);
+      border: 1px solid var(--border-color);
+      padding: 20px;
+      border-radius: var(--radius);
+      margin-bottom: 20px;
+      box-shadow: var(--shadow-lg);
+    }
+
+    .manual-input-title {
+      font-size: 15px;
+      font-weight: 600;
+      margin-bottom: 12px;
+      color: #E5E7EB;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .manual-form-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr auto auto;
+      gap: 12px;
+      align-items: center;
+    }
+
+    @media (max-width: 850px) {
+      .manual-form-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .form-group {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+
+    .form-group label {
+      font-size: 12px;
+      font-weight: 500;
+      color: var(--text-muted);
+    }
+
+    .form-input {
+      background-color: #111827;
+      border: 1px solid var(--border-color);
+      border-radius: 8px;
+      padding: 10px 14px;
+      color: #FFFFFF;
+      font-size: 14px;
+      font-family: inherit;
+      outline: none;
+      transition: border-color 0.2s;
+    }
+
+    .form-input:focus {
+      border-color: var(--accent-color);
+    }
 
     .batch-actions-bar {
       background: var(--card-bg);
@@ -203,7 +265,6 @@
 
     /* ==========================================
         ЕТИКЕТКА TSC DA220 — 100 x 78 мм
-        ФІКСОВАНИЙ ГОРИЗОНТАЛЬНИЙ PRINT LAYOUT
         ========================================== */
     .industrial-label {
       width: 100mm;
@@ -362,7 +423,6 @@
         display: block !important;
         position: relative !important;
         
-        /* КРИТИЧНО ДЛЯ ОКРЕМИХ ЕТИКЕТОК */
         page-break-before: always !important;
         page-break-after: always !important;
         page-break-inside: avoid !important;
@@ -371,7 +431,6 @@
         break-inside: avoid !important;
       }
 
-      /* Першу етикетку не треба штучно відривати перед початком */
       #printContainer .industrial-label:first-child {
         page-break-before: avoid !important;
         break-before: avoid !important;
@@ -391,6 +450,32 @@
         <button class="btn btn-secondary" onclick="fetchDataFromGoogleSheet(true)">🔄 Оновити зараз</button>
       </div>
     </header>
+
+    <div class="manual-input-card">
+      <div class="manual-input-title">✍️ Ручне додавання та друк етикетки</div>
+      <div class="manual-form-grid">
+        <div class="form-group">
+          <label for="manualSn">Serial Number (SN)</label>
+          <input type="text" id="manualSn" class="form-input code-text" placeholder="Наприклад: SN12345678">
+        </div>
+        <div class="form-group">
+          <label for="manualPn">Part Number (PN)</label>
+          <input type="text" id="manualPn" class="form-input code-text" placeholder="Наприклад: PN98765432">
+        </div>
+        <div class="form-group">
+          <label for="manualBrand">Brand</label>
+          <input type="text" id="manualBrand" class="form-input" placeholder="Наприклад: TPV">
+        </div>
+        <div class="form-group" style="justify-content: flex-end;">
+          <label>&nbsp;</label>
+          <button class="btn btn-secondary" onclick="printManual(false)">🖨️ Друк</button>
+        </div>
+        <div class="form-group" style="justify-content: flex-end;">
+          <label>&nbsp;</label>
+          <button class="btn btn-brand" onclick="printManual(true)">🖨️ З Brand</button>
+        </div>
+      </div>
+    </div>
 
     <div class="sheet-tabs">
       <button class="sheet-tab-btn active" id="tabBtn0" onclick="switchSheet('0')">FI    1 <kbd>Alt + 1</kbd></button>
@@ -447,7 +532,7 @@
     
     let currentGid = '0';
     let products = [];
-    let selectedSerials = new Set(); // Зберігаємо унікальні Serial Number вибраних елементів
+    let selectedSerials = new Set();
     let isInitialLoad = true;
 
     const tableBody = document.getElementById('productsTableBody');
@@ -560,11 +645,10 @@
         }
 
         products = validItems;
-        // Зверніть увагу: ми НЕ очищуємо selectedSerials тут, тому галочки залишаються!
         renderTable();
         updateBatchBar();
       } catch (error) {
-        console.error('Помилка оновлення:', error);
+        console.warn('Мережа або база тимчасово недоступні. Використовуйте ручне введення вище.');
       } finally {
         isInitialLoad = false;
         syncIndicator.classList.remove('visible');
@@ -573,7 +657,7 @@
 
     function renderTable() {
       if (products.length === 0) {
-        tableBody.innerHTML = `<tr><td colspan="6" style="text-align: center; padding: 20px;">Записів не знайдено</td></tr>`;
+        tableBody.innerHTML = `<tr><td colspan="6" style="text-align: center; padding: 20px;">Записів із таблиці не завантажено. Скористайтеся ручним введенням вище.</td></tr>`;
         return;
       }
 
@@ -659,6 +743,23 @@
       `;
       JsBarcode('#testPN', 'TEST-PN-100X78', { format: 'CODE128B', displayValue: false, margin: 0, height: 48, width: 1.18, flat: true, lineColor: '#000' });
       JsBarcode('#testSN', 'TEST-SN-27082026', { format: 'CODE128B', displayValue: false, margin: 0, height: 48, width: 0.92, flat: true, lineColor: '#000' });
+      prepareAndPrint();
+    }
+
+    // ФУНКЦІЯ ДРУКУ З РУЧНИХ ПОЛІВ
+    function printManual(includeBrand) {
+      const sn = document.getElementById('manualSn').value.trim();
+      const pn = document.getElementById('manualPn').value.trim();
+      const brand = document.getElementById('manualBrand').value.trim() || '-';
+
+      if (!sn || !pn) {
+        alert('Будь ласка, заповніть Serial Number та Part Number!');
+        return;
+      }
+
+      const manualProduct = { sn, pn, brand };
+      printContainer.innerHTML = buildLabelsHTML([manualProduct], includeBrand);
+      renderBarcodesInContainer('#printContainer');
       prepareAndPrint();
     }
 
@@ -765,15 +866,12 @@
       renderBarcodesInContainer('#printContainer');
       prepareAndPrint();
 
-      // Знімаємо виділення ТІЛЬКИ після виклику друку
       selectedSerials.clear();
       renderTable();
       updateBatchBar();
     }
 
-    // ОБРОБКА ГАРЯЧИХ КЛАВІШ
     document.addEventListener('keydown', (e) => {
-      // Перемикання вкладки: Alt + 1 / Alt + 2
       if (e.altKey) {
         if (e.key === '1') {
           e.preventDefault();
@@ -784,16 +882,12 @@
         }
       }
 
-      // Перехоплення комбінації Ctrl+P / Cmd+P
       if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'p') {
-        e.preventDefault(); // Забороняємо стандартний старий друк
-
+        e.preventDefault(); 
         if (products.length > 0) {
           if (selectedSerials.size > 0) {
-            // Якщо є позначені чекбоксом елементи — друкуємо їх і очищуємо виділення
             printBatch(false);
           } else {
-            // Якщо нічого не вибрано — беремо СВІЖИЙ перший елемент (індекс 0)
             printSingle(0, false);
           }
         }
@@ -802,7 +896,6 @@
 
     document.addEventListener('DOMContentLoaded', () => {
       fetchDataFromGoogleSheet(true);
-      setInterval(() => fetchDataFromGoogleSheet(false), 5000);
     });
   </script>
 </body>
