@@ -567,14 +567,14 @@
 
         if (error || !data) {
           const upperSn = sn.toUpperCase();
-          if (upperSn.startsWith('TBV') && upperSn.length >= 12) {
-            const prefix = upperSn.substring(0, 12);
+          if (upperSn.startsWith('TBV') && upperSn.length >= 11) {
+            const prefix = upperSn.substring(0, 11);
             return {
               pn: `750${prefix}N000`,
               brand: "PHP[PHP]"
             };
-          } else if (upperSn.startsWith('TOV') && upperSn.length >= 12) {
-            const prefix = upperSn.substring(0, 12);
+          } else if (upperSn.startsWith('TOV') && upperSn.length >= 11) {
+            const prefix = upperSn.substring(0, 11);
             return {
               pn: `730${prefix}N000`,
               brand: "PHP[PHP]"
@@ -746,7 +746,6 @@
       prepareAndPrint();
     }
 
-    // ФУНКЦІЯ ДРУКУ З РУЧНИХ ПОЛІВ
     function printManual(includeBrand) {
       const sn = document.getElementById('manualSn').value.trim();
       const pn = document.getElementById('manualPn').value.trim();
