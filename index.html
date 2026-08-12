@@ -108,7 +108,7 @@
     @keyframes spin { to { transform: rotate(360deg); } }
 
     /* ==========================================
-        ПАНЕЛЬ РУЧНОГО ВВЕДЕННЯ (MANUAL INPUT BAR)
+        ПАНЕЛЬ РУЧНОГО ВВЕДЕННЯ
         ========================================== */
     .manual-input-card {
       background: var(--card-bg);
@@ -563,9 +563,9 @@
           .from(TABLE_NAME)
           .select(`${COLUMN_PN}, ${COLUMN_BRAND}`)
           .eq(COLUMN_SN, sn)
-          .single();
+          .limit(1);
 
-        if (error || !data) {
+        if (error || !data || data.length === 0) {
           const upperSn = sn.toUpperCase();
           if (upperSn.startsWith('TBV') && upperSn.length >= 11) {
             const prefix = upperSn.substring(0, 11);
@@ -583,9 +583,11 @@
 
           return { pn: "NOT_FOUND_IN_DB", brand: "-" };
         }
+
+        const record = data[0];
         return { 
-          pn: data[COLUMN_PN] || "N/A", 
-          brand: data[COLUMN_BRAND] || "-" 
+          pn: record[COLUMN_PN] || "N/A", 
+          brand: record[COLUMN_BRAND] || "-" 
         };
       } catch (e) {
         return { pn: "DB_ERROR", brand: "ERR" };
@@ -648,7 +650,7 @@
         renderTable();
         updateBatchBar();
       } catch (error) {
-        console.warn('Мережа або база тимчасово недоступні. Використовуйте ручне введення вище.');
+        console.warn('Мережа або база тимчасово недоступні.');
       } finally {
         isInitialLoad = false;
         syncIndicator.classList.remove('visible');
@@ -896,7 +898,6 @@
     document.addEventListener('DOMContentLoaded', () => {
       fetchDataFromGoogleSheet(true);
 
-      // Автоматичне фонове оновлення кожні 5 секунд
       setInterval(() => {
         fetchDataFromGoogleSheet(false);
       }, 5000);
