@@ -452,7 +452,7 @@
     </header>
 
     <div class="manual-input-card">
-      <div class="manual-input-title">✍️ Ручне додавання та друк етикетки</div>
+      <div class="manual-input-title">✍️ Ручне введення та друк етикетки</div>
       <div class="manual-form-grid">
         <div class="form-group">
           <label for="manualSn">Serial Number (SN)</label>
@@ -519,11 +519,11 @@
   <div id="printContainer" style="display: none;"></div>
 
   <script>
-    const SUPABASE_URL = 'https://xgjggfnfgrmkuclgjmih.supabase.co';
-    const SUPABASE_KEY = 'sb_publishable_MLyF6CMVplwDyDqSeDnSBA__RakJscC';
+    const SUPABASE_URL = 'https://wtqvaeongxncufvpvvge.supabase.co';
+    const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Ind0cXZhZW9uZ3huY3VmdnB2dmdlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODY1NDM5MjIsImV4cCI6MjEwMjExOTkyMn0.tRsrb29_b9ev3K75npD5zt_Dz9FMltzaRkdK0RPDn-U';
     const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
-    const TABLE_NAME = 'products_db';
+    const TABLE_NAME = 'television';
     const COLUMN_PN = 'tpv_pn';
     const COLUMN_SN = 'panel_sn';
     const COLUMN_BRAND = 'brand';
@@ -896,7 +896,7 @@
     document.addEventListener('DOMContentLoaded', () => {
       fetchDataFromGoogleSheet(true);
 
-      // Автоматичне фонове оновлення кожні 10 секунд
+      // Автоматичне фонове оновлення кожні 5 секунд
       setInterval(() => {
         fetchDataFromGoogleSheet(false);
       }, 5000);
