@@ -105,6 +105,19 @@
       border-radius: 50%;
       animation: spin 0.8s linear infinite;
     }
+
+    /* Маленький спинер для ячейки таблицы */
+    .table-spinner {
+      display: inline-block;
+      width: 14px;
+      height: 14px;
+      border: 2px solid var(--border-color);
+      border-top-color: var(--accent-color);
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+      vertical-align: middle;
+    }
+
     @keyframes spin { to { transform: rotate(360deg); } }
 
     /* ==========================================
@@ -537,7 +550,7 @@
 
     // Кеш для результатів Supabase та контролю запитів
     const dbCache = new Map();
-    const RETRY_DELAY_MS = 10 * 60 * 1000; // 10 хвилин затримки для повторного пошуку
+    const RETRY_DELAY_MS = 5 * 60 * 1000; // 5 хвилин затримки для повторного пошуку
 
     const tableBody = document.getElementById('productsTableBody');
     const printContainer = document.getElementById('printContainer');
@@ -570,18 +583,18 @@
         return cachedEntry.data;
       }
 
-      // 2. Якщо PN раніше не знайдено, блокуємо запит до БД на 10 хвилин
+      // 2. Якщо PN раніше не знайдено, блокуємо запит до БД на 5 хвилин і показуємо спинер
       if (cachedEntry && cachedEntry.status === 'NOT_FOUND') {
         const timePassed = now - cachedEntry.lastFetched;
         if (timePassed < RETRY_DELAY_MS) {
           return {
-            pn: "SEARCH_PENDING...",
+            pn: `<span class="table-spinner"></span>`,
             brand: cachedEntry.data ? cachedEntry.data.brand : "-"
           };
         }
       }
 
-      // 3. За запитом або після закінчення 10 хвилин робимо запит до Supabase
+      // 3. За запитом або після закінчення 5 хвилин робимо запит до Supabase
       try {
         const { data, error } = await supabaseClient
           .from(TABLE_NAME)
@@ -706,11 +719,16 @@
       products.forEach((product, index) => {
         const isChecked = selectedSerials.has(product.sn);
         const row = document.createElement('tr');
+        
+        const renderedPn = product.pn.includes('table-spinner') 
+          ? product.pn 
+          : escapeHtml(product.pn);
+
         row.innerHTML = `
           <td><input type="checkbox" class="custom-checkbox" ${isChecked ? 'checked' : ''} onchange="toggleRowSelection(${index}, this)"></td>
           <td><strong>${index + 1}</strong></td>
           <td class="code-text">${escapeHtml(product.sn)}</td>
-          <td class="code-text">${escapeHtml(product.pn)}</td>
+          <td class="code-text">${renderedPn}</td>
           <td><span style="background: #374151; padding: 3px 8px; border-radius: 4px; font-size: 12px; font-weight: 600;">${escapeHtml(product.brand)}</span></td>
           <td class="actions-cell">
             <button class="btn" onclick="printSingle(${index}, false)" title="Друк 2 копії">🖨️ </button>
@@ -944,7 +962,7 @@
 
       setInterval(() => {
         fetchDataFromGoogleSheet(false);
-      }, 1000);
+      }, 2000);
     });
   </script>
 </body>
