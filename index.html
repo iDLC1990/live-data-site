@@ -535,6 +535,10 @@
     let selectedSerials = new Set();
     let isInitialLoad = true;
 
+    // Кеш для результатів Supabase та контролю запитів
+    const dbCache = new Map();
+    const RETRY_DELAY_MS = 10 * 60 * 1000; // 10 хвилин затримки для повторного пошуку
+
     const tableBody = document.getElementById('productsTableBody');
     const printContainer = document.getElementById('printContainer');
     const syncIndicator = document.getElementById('syncIndicator');
@@ -558,6 +562,26 @@
     }
 
     async function getProductFromDatabase(sn) {
+      const now = Date.now();
+      const cachedEntry = dbCache.get(sn);
+
+      // 1. Повертаємо з кешу, якщо запис успішно знайдений
+      if (cachedEntry && cachedEntry.status === 'FOUND') {
+        return cachedEntry.data;
+      }
+
+      // 2. Якщо PN раніше не знайдено, блокуємо запит до БД на 10 хвилин
+      if (cachedEntry && cachedEntry.status === 'NOT_FOUND') {
+        const timePassed = now - cachedEntry.lastFetched;
+        if (timePassed < RETRY_DELAY_MS) {
+          return {
+            pn: "SEARCH_PENDING...",
+            brand: cachedEntry.data ? cachedEntry.data.brand : "-"
+          };
+        }
+      }
+
+      // 3. За запитом або після закінчення 10 хвилин робимо запит до Supabase
       try {
         const { data, error } = await supabaseClient
           .from(TABLE_NAME)
@@ -567,30 +591,37 @@
 
         if (error || !data || data.length === 0) {
           const upperSn = sn.toUpperCase();
+          let fallbackResult = null;
+
           if (upperSn.startsWith('TBV') && upperSn.length >= 11) {
-            const prefix = upperSn.substring(0, 11);
-            return {
-              pn: `750${prefix}N000`,
-              brand: "PHP[PHP]"
-            };
+            fallbackResult = { pn: `750${upperSn.substring(0, 11)}N000`, brand: "PHP[PHP]" };
           } else if (upperSn.startsWith('TOV') && upperSn.length >= 11) {
-            const prefix = upperSn.substring(0, 11);
-            return {
-              pn: `730${prefix}N000`,
-              brand: "PHP[PHP]"
-            };
+            fallbackResult = { pn: `730${upperSn.substring(0, 11)}N000`, brand: "PHP[PHP]" };
           }
 
-          return { pn: "NOT_FOUND_IN_DB", brand: "-" };
+          if (fallbackResult) {
+            dbCache.set(sn, { status: 'FOUND', data: fallbackResult, lastFetched: now });
+            return fallbackResult;
+          }
+
+          const notFoundData = { pn: "NOT_FOUND_IN_DB", brand: "-" };
+          dbCache.set(sn, { status: 'NOT_FOUND', data: notFoundData, lastFetched: now });
+          return notFoundData;
         }
 
         const record = data[0];
-        return { 
+        const result = { 
           pn: record[COLUMN_PN] || "N/A", 
           brand: record[COLUMN_BRAND] || "-" 
         };
+
+        dbCache.set(sn, { status: 'FOUND', data: result, lastFetched: now });
+        return result;
+
       } catch (e) {
-        return { pn: "DB_ERROR", brand: "ERR" };
+        const errData = { pn: "DB_ERROR", brand: "ERR" };
+        dbCache.set(sn, { status: 'NOT_FOUND', data: errData, lastFetched: now });
+        return errData;
       }
     }
 
@@ -636,6 +667,14 @@
 
         const lastSnList = rawSnList.slice(-10).reverse();
         const validItems = [];
+        const currentSnSet = new Set(lastSnList);
+
+        // Видалення з кешу номерів, яких немає у поточному списку
+        for (const [cachedSn] of dbCache.entries()) {
+          if (!currentSnSet.has(cachedSn)) {
+            dbCache.delete(cachedSn);
+          }
+        }
 
         for (const sn of lastSnList) {
           const dbData = await getProductFromDatabase(sn);
@@ -680,6 +719,11 @@
         `;
         tableBody.appendChild(row);
       });
+
+      const selectAllCb = document.getElementById('selectAllCheckbox');
+      if (selectAllCb) {
+        selectAllCb.checked = products.length > 0 && products.every(p => selectedSerials.has(p.sn));
+      }
     }
 
     function toggleRowSelection(index, checkbox) {
