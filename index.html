@@ -645,20 +645,38 @@
       const text = document.getElementById('bigTextInput').value.trim().toUpperCase();
       if (!text) { alert('Введіть текст!'); return; }
 
-      // Динамічний прорахунок розміру та масштабу в залежності від довжини тексту
-      let fontSize = 200;
-      let scaleY = 1.1;
-      const len = text.length;
+      // Створюємо тимчасовий SVG для точного вимірювання фізичних розмірів введеного тексту
+      const svgNS = "http://www.w3.org/2000/svg";
+      const tempSvg = document.createElementNS(svgNS, "svg");
+      const tempText = document.createElementNS(svgNS, "text");
+      tempText.setAttribute("font-family", "Arial, Helvetica, sans-serif");
+      tempText.setAttribute("font-weight", "900");
+      tempText.setAttribute("font-size", "100");
+      tempText.textContent = text;
+      tempSvg.appendChild(tempText);
+      
+      tempSvg.style.position = 'absolute';
+      tempSvg.style.visibility = 'hidden';
+      document.body.appendChild(tempSvg);
+      
+      const bbox = tempText.getBBox();
+      document.body.removeChild(tempSvg);
 
-      if (len <= 2) { fontSize = 200; scaleY = 1.1; }         // Наприклад: OK
-      else if (len <= 4) { fontSize = 130; scaleY = 1.5; } 
-      else if (len <= 6) { fontSize = 100; scaleY = 1.8; }    // Наприклад: SCRAP
-      else if (len <= 8) { fontSize = 75; scaleY = 2.2; }     // Наприклад: WAITING
-      else { fontSize = 55; scaleY = 2.5; }                   // Занадто довгий текст
+      // Динамічно вираховуємо viewBox, щоб текст ІДЕАЛЬНО розтягнувся до самих країв (як на шаблоні)
+      const paddingX = bbox.width * 0.02; // Мінімальний відступ з боків
+      const paddingY = bbox.height * 0.05; // Відступ зверху/знизу
+      
+      const vbX = bbox.x - paddingX;
+      const vbY = bbox.y - paddingY;
+      const vbW = bbox.width + (paddingX * 2);
+      const vbH = bbox.height + (paddingY * 2);
 
+      // Використовуємо SVG з preserveAspectRatio="none" для брутального розтягування тексту
       printContainer.innerHTML = `
-        <div class="industrial-label" style="padding: 0 !important; display: flex !important; align-items: center !important; justify-content: center !important; background: #ffffff !important; border: none !important;">
-          <span style="font-family: Arial, Helvetica, sans-serif; font-weight: 900; color: #000000; text-transform: uppercase; line-height: 0.8; font-size: ${fontSize}pt; transform: scale(1, ${scaleY});">${escapeHtml(text)}</span>
+        <div class="industrial-label" style="padding: 0 !important; display: block !important; background: #ffffff !important; border: none !important; width: 100mm; height: 78mm; overflow: hidden;">
+          <svg width="100%" height="100%" viewBox="${vbX} ${vbY} ${vbW} ${vbH}" preserveAspectRatio="none" style="display: block; width: 100mm; height: 78mm;">
+            <text x="${bbox.x + bbox.width/2}" y="${bbox.y + bbox.height/2}" dominant-baseline="central" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-weight="900" font-size="100">${escapeHtml(text)}</text>
+          </svg>
         </div>
       `;
       prepareAndPrint();
@@ -668,14 +686,23 @@
       const text = document.getElementById('repeatTextInput').value.trim().toUpperCase();
       if (!text) { alert('Введіть текст!'); return; }
 
-      let divs = '';
-      for(let i = 0; i < 10; i++) {
-        // font-size: 20pt ідеально вписує TRANSPORTATION FRAME по ширині і висоті (10 рядків)
-        divs += `<div style="font-family: Arial, Helvetica, sans-serif; font-weight: 900; font-size: 20pt; text-align: center; line-height: 1; text-transform: uppercase; color: #000000; letter-spacing: -0.5px;">${escapeHtml(text)}</div>`;
+      // Розбиваємо текст на слова (наприклад, ["TRANSPORTATION", "FRAME"])
+      const words = text.split(/\s+/);
+      let lines = [];
+      
+      // Формуємо рівно 10 рядків, чергуючи слова, як на вашому малюнку
+      for (let i = 0; i < 10; i++) {
+        lines.push(words[i % words.length]);
       }
 
+      let divs = '';
+      lines.forEach(line => {
+        // Шрифт 26pt ідеально підходить для слова TRANSPORTATION по ширині
+        divs += `<div style="font-family: Arial, Helvetica, sans-serif; font-weight: 900; font-size: 26pt; text-align: center; text-transform: uppercase; color: #000000; letter-spacing: -0.5px; transform: scaleY(1.15); line-height: 1;">${escapeHtml(line)}</div>`;
+      });
+
       printContainer.innerHTML = `
-        <div class="industrial-label" style="padding: 3mm 4mm !important; display: flex !important; flex-direction: column !important; justify-content: space-between !important; align-items: stretch !important; background: #ffffff !important; border: none !important;">
+        <div class="industrial-label" style="padding: 1.5mm 0 !important; display: flex !important; flex-direction: column !important; justify-content: space-evenly !important; align-items: stretch !important; background: #ffffff !important; border: none !important;">
           ${divs}
         </div>
       `;
