@@ -682,26 +682,25 @@
       prepareAndPrint();
     }
 
-   function printRepeatText() {
+  function printRepeatText() {
       const text = document.getElementById('repeatTextInput').value.trim().toUpperCase();
       if (!text) { alert('Введіть текст!'); return; }
 
       let divs = '';
       
-      // Просто дублюємо весь введений текст 10 разів із 20-м шрифтом, як ви і просили
-      for (let i = 0; i < 10; i++) {
-        divs += `<div style="font-family: Arial, Helvetica, sans-serif; font-weight: 900; font-size: 20pt; text-align: center; text-transform: uppercase; color: #000000; line-height: 1;">${escapeHtml(text)}</div>`;
+      // Дублюємо текст 20 разів. Шрифт зменшено до 11pt, щоб вмістити всі рядки у 78 мм
+      for (let i = 0; i < 20; i++) {
+        divs += `<div style="font-family: Arial, Helvetica, sans-serif; font-weight: 900; font-size: 11pt; text-align: center; text-transform: uppercase; color: #000000; line-height: 1;">${escapeHtml(text)}</div>`;
       }
 
       // Використовуємо justify-content: space-between для рівномірного розподілу по висоті
       printContainer.innerHTML = `
-        <div class="industrial-label" style="padding: 4mm 2mm !important; display: flex !important; flex-direction: column !important; justify-content: space-between !important; align-items: stretch !important; background: #ffffff !important; border: none !important;">
+        <div class="industrial-label" style="padding: 3mm 2mm !important; display: flex !important; flex-direction: column !important; justify-content: space-between !important; align-items: stretch !important; background: #ffffff !important; border: none !important;">
           ${divs}
         </div>
       `;
       prepareAndPrint();
     }
-
     // ==========================================
     // ЛОГІКА ДРУКУ СТАНДАРТНИХ ЕТИКЕТОК
     // ==========================================
