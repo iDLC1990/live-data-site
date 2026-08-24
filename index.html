@@ -688,14 +688,14 @@
 
       let divs = '';
       
-      // Дублюємо текст рівно 13 разів зі шрифтом 16pt
-      for (let i = 0; i < 13; i++) {
-        divs += `<div style="font-family: Arial, Helvetica, sans-serif; font-weight: 900; font-size: 16pt; text-align: center; text-transform: uppercase; color: #000000; line-height: 1;">${escapeHtml(text)}</div>`;
+      // Дублюємо текст рівно 11 разів зі шрифтом 18pt для гарної читабельності
+      for (let i = 0; i < 11; i++) {
+        divs += `<div style="font-family: Arial, Helvetica, sans-serif; font-weight: 900; font-size: 18pt; text-align: center; text-transform: uppercase; color: #000000; line-height: 1.1;">${escapeHtml(text)}</div>`;
       }
 
-      // Використовуємо justify-content: space-between для рівномірного розподілу по всій висоті етикетки
+      // Використовуємо space-between та внутрішні відступи для ідеального проміжку між рядками
       printContainer.innerHTML = `
-        <div class="industrial-label" style="padding: 3mm 2mm !important; display: flex !important; flex-direction: column !important; justify-content: space-between !important; align-items: stretch !important; background: #ffffff !important; border: none !important;">
+        <div class="industrial-label" style="padding: 4mm 2mm !important; display: flex !important; flex-direction: column !important; justify-content: space-between !important; align-items: stretch !important; background: #ffffff !important; border: none !important;">
           ${divs}
         </div>
       `;
