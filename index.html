@@ -669,14 +669,14 @@
       if (!text) { alert('Введіть текст!'); return; }
 
       let divs = '';
-      // Робимо рівно 9 рядків зі зручним великим шрифтом 20pt
-      for (let i = 0; i < 10; i++) {
-        divs += `<div style="font-family: Arial, Helvetica, sans-serif; font-weight: 900; font-size: 15pt; text-align: center; text-transform: uppercase; color: #000000; line-height: 1.2;">${escapeHtml(text)}</div>`;
+      // Робимо рівно 7 рядків зі шрифтом 20pt, як у вашій програмі
+      for (let i = 0; i < 8; i++) {
+        divs += `<div style="font-family: Arial, Helvetica, sans-serif; font-weight: normal; font-size: 20pt; text-align: center; text-transform: uppercase; color: #000000; line-height: 1;">${escapeHtml(text)}</div>`;
       }
 
-      // Збільшуємо відступи зверху/знизу та простір між рядками для зручного різання
+      // Розподіляємо їх на висоту етикетки (78-80 мм) з однаковими проміжками
       printContainer.innerHTML = `
-        <div class="industrial-label" style="padding: 6mm 2mm !important; display: flex !important; flex-direction: column !important; justify-content: space-between !important; align-items: stretch !important; background: #ffffff !important; border: none !important;">
+        <div class="industrial-label" style="padding: 2mm 2mm !important; display: flex !important; flex-direction: column !important; justify-content: space-between !important; align-items: stretch !important; background: #ffffff !important; border: none !important; height: 78mm !important;">
           ${divs}
         </div>
       `;
