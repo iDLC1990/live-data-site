@@ -645,6 +645,15 @@
       const text = document.getElementById('bigTextInput').value.trim().toUpperCase();
       if (!text) { alert('Введіть текст!'); return; }
 
+      // Використовуємо фіксований великий шрифт і примусове розтягування у висоту через scaleY(1.8)
+      printContainer.innerHTML = `
+        <div class="industrial-label" style="padding: 0 !important; display: flex !important; align-items: center !important; justify-content: center !important; background: #ffffff !important; border: none !important; width: 100mm; height: 78mm; overflow: hidden;">
+          <span style="font-family: Arial, Helvetica, sans-serif; font-weight: 900; color: #000000; text-transform: uppercase; font-size: 110pt; line-height: 1; transform: scale(1, 1.8); display: inline-block; text-align: center;">${escapeHtml(text)}</span>
+        </div>
+      `;
+      prepareAndPrint();
+    }
+
       // Створюємо тимчасовий SVG для точного вимірювання фізичних розмірів введеного тексту
       const svgNS = "http://www.w3.org/2000/svg";
       const tempSvg = document.createElementNS(svgNS, "svg");
