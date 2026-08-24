@@ -9,9 +9,6 @@
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
   <style>
-    /* ==========================================
-        СТИЛІ ІНТЕРФЕЙСУ (ТЕМНА ТЕМА)
-        ========================================== */
     :root {
       --bg-color: #111827;
       --card-bg: #1F2937;
@@ -119,9 +116,6 @@
 
     @keyframes spin { to { transform: rotate(360deg); } }
 
-    /* ==========================================
-        ПАНЕЛЬ ВВЕДЕННЯ
-        ========================================== */
     .manual-input-card {
       background: var(--card-bg);
       border: 1px solid var(--border-color);
@@ -149,9 +143,7 @@
     }
 
     @media (max-width: 850px) {
-      .manual-form-grid {
-        grid-template-columns: 1fr;
-      }
+      .manual-form-grid { grid-template-columns: 1fr; }
     }
 
     .form-group {
@@ -244,9 +236,6 @@
     .btn-brand { background-color: var(--brand-color); }
     .btn-brand:hover { background-color: var(--brand-hover); }
 
-    /* ==========================================
-        ЕТИКЕТКА TSC DA220 — 100 x 78 мм
-        ========================================== */
     .industrial-label {
       width: 100mm; height: 78mm; position: relative; background: #FFFFFF; color: #000000;
       padding: 3.2mm 4mm 2.8mm; box-sizing: border-box; font-family: Arial, Helvetica, sans-serif;
@@ -266,9 +255,6 @@
     .val-pn { font-size: 18pt; font-family: Arial, Helvetica, sans-serif; }
     .val-sn { font-size: 13pt; font-family: Arial, Helvetica, sans-serif; transform: scale(1, 1.8); transform-origin: center top; margin-top: 3.5mm; }
 
-    /* ==========================================
-        ДРУК
-        ========================================== */
     @page { size: 100mm 78mm; margin: 0; }
     @media print {
       html, body {
@@ -350,8 +336,8 @@
       <div class="batch-actions-bar">
         <div class="batch-info" id="selectedCountText">Вибрано позицій: 0</div>
         <div class="batch-buttons">
-          <button class="btn btn-secondary" id="batchPrintNormalBtn" disabled onclick="printBatch(false)">🖨️ Друк вибраних </button>
-          <button class="btn btn-brand" id="batchPrintBrandBtn" disabled onclick="printBatch(true)">🖨️ Друк вибраних з Brand </button>
+          <button class="btn btn-secondary" id="batchPrintNormalBtn" disabled onclick="printBatch(false)">🖨️ Друк вибраних</button>
+          <button class="btn btn-brand" id="batchPrintBrandBtn" disabled onclick="printBatch(true)">🖨️ Друк вибраних з Brand</button>
         </div>
       </div>
 
@@ -393,7 +379,7 @@
       </div>
 
       <div class="manual-input-card">
-        <div class="manual-input-title">🔂 Друк рамки / повторюваного тексту (10 рядків)</div>
+        <div class="manual-input-title">🔂 Друк рамки / повторюваного тексту (11 рядків)</div>
         <div class="manual-form-grid" style="grid-template-columns: 1fr auto;">
           <div class="form-group">
             <label>Текст для дублювання</label>
@@ -401,7 +387,7 @@
           </div>
           <div class="form-group" style="justify-content: flex-end;">
             <label>&nbsp;</label>
-            <button class="btn btn-brand" onclick="printRepeatText()">🖨️ Друк 10 рядків</button>
+            <button class="btn btn-brand" onclick="printRepeatText()">🖨️ Друк 11 рядків</button>
           </div>
         </div>
       </div>
@@ -510,7 +496,7 @@
       if (gid === 'custom') {
         sectionStandard.style.display = 'none';
         sectionCustom.style.display = 'block';
-        return; // Не робимо запит до таблиці
+        return;
       } else {
         sectionStandard.style.display = 'block';
         sectionCustom.style.display = 'none';
@@ -523,7 +509,7 @@
     }
 
     async function fetchDataFromGoogleSheet(showIndicator = false) {
-      if (currentGid === 'custom') return; // Зупиняємо запити, якщо відкрита вкладка спец. друку
+      if (currentGid === 'custom') return;
 
       try {
         if (showIndicator || isInitialLoad) syncIndicator.classList.add('visible');
@@ -584,8 +570,8 @@
           <td class="code-text">${renderedPn}</td>
           <td><span style="background: #374151; padding: 3px 8px; border-radius: 4px; font-size: 12px; font-weight: 600;">${escapeHtml(product.brand)}</span></td>
           <td class="actions-cell">
-            <button class="btn" onclick="printSingle(${index}, false)" title="Друк 2 копії">🖨️ </button>
-            <button class="btn btn-brand" onclick="printSingle(${index}, true)" title="Друк 2 копії з Brand">🖨️  Brand</button>
+            <button class="btn" onclick="printSingle(${index}, false)" title="Друк 2 копії">🖨️</button>
+            <button class="btn btn-brand" onclick="printSingle(${index}, true)" title="Друк 2 копії з Brand">🖨️ Brand</button>
           </td>
         `;
         tableBody.appendChild(row);
@@ -637,15 +623,10 @@
       });
     }
 
-    // ==========================================
-    // ЛОГІКА ДРУКУ СПЕЦ. ЕТИКЕТОК (3-Й ТАБ)
-    // ==========================================
-    
     function printBigText() {
       const text = document.getElementById('bigTextInput').value.trim().toUpperCase();
       if (!text) { alert('Введіть текст!'); return; }
 
-      // Використовуємо фіксований великий шрифт і примусове розтягування у висоту через scaleY(1.8)
       printContainer.innerHTML = `
         <div class="industrial-label" style="padding: 0 !important; display: flex !important; align-items: center !important; justify-content: center !important; background: #ffffff !important; border: none !important; width: 100mm; height: 78mm; overflow: hidden;">
           <span style="font-family: Arial, Helvetica, sans-serif; font-weight: 900; color: #000000; text-transform: uppercase; font-size: 110pt; line-height: 1; transform: scale(1, 1.8); display: inline-block; text-align: center;">${escapeHtml(text)}</span>
@@ -654,55 +635,15 @@
       prepareAndPrint();
     }
 
-      // Створюємо тимчасовий SVG для точного вимірювання фізичних розмірів введеного тексту
-      const svgNS = "http://www.w3.org/2000/svg";
-      const tempSvg = document.createElementNS(svgNS, "svg");
-      const tempText = document.createElementNS(svgNS, "text");
-      tempText.setAttribute("font-family", "Arial, Helvetica, sans-serif");
-      tempText.setAttribute("font-weight", "900");
-      tempText.setAttribute("font-size", "100");
-      tempText.textContent = text;
-      tempSvg.appendChild(tempText);
-      
-      tempSvg.style.position = 'absolute';
-      tempSvg.style.visibility = 'hidden';
-      document.body.appendChild(tempSvg);
-      
-      const bbox = tempText.getBBox();
-      document.body.removeChild(tempSvg);
-
-      // Динамічно вираховуємо viewBox, щоб текст ІДЕАЛЬНО розтягнувся до самих країв (як на шаблоні)
-      const paddingX = bbox.width * 0.02; // Мінімальний відступ з боків
-      const paddingY = bbox.height * 0.05; // Відступ зверху/знизу
-      
-      const vbX = bbox.x - paddingX;
-      const vbY = bbox.y - paddingY;
-      const vbW = bbox.width + (paddingX * 2);
-      const vbH = bbox.height + (paddingY * 2);
-
-      // Використовуємо SVG з preserveAspectRatio="none" для брутального розтягування тексту
-      printContainer.innerHTML = `
-        <div class="industrial-label" style="padding: 0 !important; display: block !important; background: #ffffff !important; border: none !important; width: 100mm; height: 78mm; overflow: hidden;">
-          <svg width="100%" height="100%" viewBox="${vbX} ${vbY} ${vbW} ${vbH}" preserveAspectRatio="none" style="display: block; width: 100mm; height: 78mm;">
-            <text x="${bbox.x + bbox.width/2}" y="${bbox.y + bbox.height/2}" dominant-baseline="central" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-weight="900" font-size="100">${escapeHtml(text)}</text>
-          </svg>
-        </div>
-      `;
-      prepareAndPrint();
-    }
-
-  function printRepeatText() {
+    function printRepeatText() {
       const text = document.getElementById('repeatTextInput').value.trim().toUpperCase();
       if (!text) { alert('Введіть текст!'); return; }
 
       let divs = '';
-      
-      // Дублюємо текст рівно 11 разів зі шрифтом 18pt для гарної читабельності
       for (let i = 0; i < 10; i++) {
         divs += `<div style="font-family: Arial, Helvetica, sans-serif; font-weight: 900; font-size: 18pt; text-align: center; text-transform: uppercase; color: #000000; line-height: 1.1;">${escapeHtml(text)}</div>`;
       }
 
-      // Використовуємо space-between та внутрішні відступи для ідеального проміжку між рядками
       printContainer.innerHTML = `
         <div class="industrial-label" style="padding: 4mm 2mm !important; display: flex !important; flex-direction: column !important; justify-content: space-between !important; align-items: stretch !important; background: #ffffff !important; border: none !important;">
           ${divs}
@@ -710,9 +651,6 @@
       `;
       prepareAndPrint();
     }
-    // ==========================================
-    // ЛОГІКА ДРУКУ СТАНДАРТНИХ ЕТИКЕТОК
-    // ==========================================
 
     function printTestLabel() {
       printContainer.innerHTML = `
@@ -807,14 +745,11 @@
       updateBatchBar();
     }
 
-    // ==========================================
-    // ГАРЯЧІ КЛАВІШІ
-    // ==========================================
     document.addEventListener('keydown', (e) => {
       if (e.altKey) {
         if (e.key === '1') { e.preventDefault(); switchSheet('0'); } 
         else if (e.key === '2') { e.preventDefault(); switchSheet('193025884'); }
-        else if (e.key === '3') { e.preventDefault(); switchSheet('custom'); } // Гаряча клавіша для 3 вкладки
+        else if (e.key === '3') { e.preventDefault(); switchSheet('custom'); }
       }
 
       if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'p') {
