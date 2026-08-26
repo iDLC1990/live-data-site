@@ -246,9 +246,34 @@
     .top-divider { width: 100%; height: 0; border-top: 1.5px solid #000000; margin: 0 0 2.2mm 0; }
     .label-section { width: 100%; display: block; margin: 0; padding: 0; }
     .label-section + .label-section { margin-top: 3.1mm; }
-    .section-header { width: 100%; height: 5.5mm; display: block; position: relative; margin: 0 0 1.1mm 0; line-height: 5.5mm; text-align: center; }
-    .header-title { display: block; width: 100%; font-size: 16.5pt; font-weight: 900; line-height: 5.5mm; text-align: center; }
-    .brand-tag { position: absolute; right: 3.5mm; top: 0; font-weight: 900; font-size: 16.5pt; text-transform: uppercase; line-height: 5.5mm; white-space: nowrap; }
+    
+    /* Оновлена верстка шапки для захисту від накладання */
+    .section-header { 
+      width: 100%; 
+      height: 5.5mm; 
+      display: flex; 
+      justify-content: space-between; 
+      align-items: center; 
+      margin: 0 0 1.1mm 0; 
+      line-height: 5.5mm; 
+    }
+    .header-title { 
+      font-size: 16.5pt; 
+      font-weight: 900; 
+      line-height: 5.5mm; 
+    }
+    .brand-tag { 
+      font-weight: 900; 
+      font-size: 11pt; 
+      text-transform: uppercase; 
+      line-height: 5.5mm; 
+      white-space: nowrap; 
+      overflow: hidden; 
+      text-overflow: ellipsis; 
+      max-width: 70%; 
+      text-align: right; 
+    }
+    
     .barcode-box { width: 82mm; height: 15.5mm; margin: 0 auto; display: block; overflow: hidden; text-align: center; }
     .barcode-box svg { width: auto !important; max-width: 100% !important; height: 15.5mm !important; display: inline-block; vertical-align: top; shape-rendering: crispEdges; }
     .val-pn, .val-sn { width: 100%; box-sizing: border-box; text-align: center; font-weight: 900; white-space: nowrap; overflow: hidden; text-overflow: clip; line-height: 1; letter-spacing: 0; margin: 1.1mm 0 0 0; }
@@ -627,7 +652,6 @@
       const text = document.getElementById('bigTextInput').value.trim().toUpperCase();
       if (!text) { alert('Введіть текст!'); return; }
 
-      // Створюємо тимчасовий SVG для точного вимірювання фізичних розмірів введеного тексту
       const svgNS = "http://www.w3.org/2000/svg";
       const tempSvg = document.createElementNS(svgNS, "svg");
       const tempText = document.createElementNS(svgNS, "text");
@@ -644,16 +668,14 @@
       const bbox = tempText.getBBox();
       document.body.removeChild(tempSvg);
 
-      // Динамічно вираховуємо viewBox, щоб текст ІДЕАЛЬНО розтягнувся до самих країв (як на шаблоні)
-      const paddingX = bbox.width * 0.02; // Мінімальний відступ з боків
-      const paddingY = bbox.height * 0.05; // Відступ зверху/знизу
+      const paddingX = bbox.width * 0.02;
+      const paddingY = bbox.height * 0.05;
       
       const vbX = bbox.x - paddingX;
       const vbY = bbox.y - paddingY;
       const vbW = bbox.width + (paddingX * 2);
       const vbH = bbox.height + (paddingY * 2);
 
-      // Використовуємо SVG з preserveAspectRatio="none" для брутального розтягування тексту
       printContainer.innerHTML = `
         <div class="industrial-label" style="padding: 0 !important; display: block !important; background: #ffffff !important; border: none !important; width: 100mm; height: 78mm; overflow: hidden;">
           <svg width="100%" height="100%" viewBox="${vbX} ${vbY} ${vbW} ${vbH}" preserveAspectRatio="none" style="display: block; width: 100mm; height: 78mm;">
@@ -669,12 +691,10 @@
       if (!text) { alert('Введіть текст!'); return; }
 
       let divs = '';
-      // Робимо рівно 7 рядків зі шрифтом 20pt, як у вашій програмі
       for (let i = 0; i < 8; i++) {
         divs += `<div style="font-family: Arial, Helvetica, sans-serif; font-weight: normal; font-size: 20pt; text-align: center; text-transform: uppercase; color: #000000; line-height: 1;">${escapeHtml(text)}</div>`;
       }
 
-      // Розподіляємо їх на висоту етикетки (78-80 мм) з однаковими проміжками
       printContainer.innerHTML = `
         <div class="industrial-label" style="padding: 2mm 2mm !important; display: flex !important; flex-direction: column !important; justify-content: space-between !important; align-items: stretch !important; background: #ffffff !important; border: none !important; height: 78mm !important;">
           ${divs}
