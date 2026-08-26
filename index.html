@@ -247,20 +247,36 @@
     .label-section { width: 100%; display: block; margin: 0; padding: 0; }
     .label-section + .label-section { margin-top: 3.1mm; }
     
-    /* Оновлена верстка шапки для захисту від накладання */
+    /* Стандартна шапка для обычной этикетки (все по центру) */
     .section-header { 
       width: 100%; 
       height: 5.5mm; 
-      display: flex; 
-      justify-content: space-between; 
-      align-items: center; 
+      display: block; 
+      position: relative; 
       margin: 0 0 1.1mm 0; 
       line-height: 5.5mm; 
+      text-align: center; 
     }
     .header-title { 
+      display: block; 
+      width: 100%; 
       font-size: 16.5pt; 
       font-weight: 900; 
       line-height: 5.5mm; 
+      text-align: center; 
+    }
+
+    /* Шапка ТОЛЬКО для этикетки с Brand */
+    .section-header.has-brand { 
+      display: flex; 
+      justify-content: space-between; 
+      align-items: center; 
+      text-align: left; 
+    }
+    .section-header.has-brand .header-title { 
+      display: inline-block; 
+      width: auto; 
+      text-align: left; 
     }
     .brand-tag { 
       font-weight: 900; 
@@ -742,7 +758,7 @@
             <div class="industrial-label">
               <div class="top-divider"></div>
               <div class="label-section">
-                <div class="section-header">
+                <div class="section-header ${includeBrand ? 'has-brand' : ''}">
                   <span class="header-title">PN:</span>
                   ${includeBrand ? `<span class="brand-tag">${escapeHtml(product.brand)}</span>` : ''}
                 </div>
