@@ -3,204 +3,355 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Друк етикеток</title>
-  <script src="https://cdn.jsdelivr.net/npm/jsbarcode@3.11.5/dist/JsBarcode.all.min.js"></script>
+  <title>Друк етикеток — TSC DA220</title>
+  
+  <script src="https://cdn.jsdelivr.net/npm/jsbarcode@3.11.6/dist/JsBarcode.all.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
   <style>
     :root {
-      --bg-color: #f4f6f9;
-      --card-bg: #ffffff;
-      --text-color: #333333;
-      --text-muted: #6c757d;
-      --border-color: #e0e0e0;
-      --primary-color: #007bff;
-      --primary-hover: #0056b3;
-      --brand-color: #28a745;
-      --brand-hover: #218838;
+      --bg-color: #111827;
+      --card-bg: #1F2937;
+      --accent-color: #2563EB;
+      --accent-hover: #1D4ED8;
+      --brand-color: #059669;
+      --brand-hover: #047857;
+      --text-main: #F9FAFB;
+      --text-muted: #9CA3AF;
+      --border-color: #374151;
+      --radius: 12px;
+      --shadow-lg: 0 10px 25px -5px rgba(0, 0, 0, 0.5);
     }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
 
     body {
-      font-family: Arial, Helvetica, sans-serif;
       background-color: var(--bg-color);
-      color: var(--text-color);
-      margin: 0;
-      padding: 20px;
+      color: var(--text-main);
+      font-family: 'Segoe UI', -apple-system, BlinkMacSystemFont, Roboto, sans-serif;
+      min-height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: flex-start;
+      padding: 40px 20px;
+      line-height: 1.5;
     }
 
-    .container {
-      max-width: 1000px;
-      margin: 0 auto;
+    .app-container { max-width: 1020px; width: 100%; }
+    
+    .page-header { 
+      margin-bottom: 28px; 
+      display: flex; 
+      justify-content: space-between; 
+      align-items: flex-end; 
     }
+    .page-title { font-size: 26px; font-weight: 700; color: #FFFFFF; }
+    .header-buttons { display: flex; gap: 10px; }
+
+    .sheet-tabs {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 20px;
+      align-items: center;
+    }
+
+    .sheet-tab-btn {
+      background-color: #374151;
+      color: var(--text-muted);
+      border: 1px solid var(--border-color);
+      padding: 10px 18px;
+      border-radius: 8px;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .sheet-tab-btn.active {
+      background-color: var(--accent-color);
+      color: #FFFFFF;
+      border-color: var(--accent-color);
+    }
+
+    .sheet-tab-btn kbd {
+      background: rgba(0, 0, 0, 0.3);
+      padding: 2px 6px;
+      border-radius: 4px;
+      font-size: 11px;
+      margin-left: 6px;
+      border: 1px solid rgba(255, 255, 255, 0.2);
+    }
+
+    .sync-indicator {
+      margin-left: auto;
+      font-size: 13px;
+      color: var(--text-muted);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      opacity: 0;
+      transition: opacity 0.3s ease;
+    }
+    .sync-indicator.visible { opacity: 1; }
+    
+    .spinner {
+      width: 14px;
+      height: 14px;
+      border: 2px solid var(--border-color);
+      border-top-color: var(--accent-color);
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+    }
+
+    .table-spinner {
+      display: inline-block;
+      width: 14px;
+      height: 14px;
+      border: 2px solid var(--border-color);
+      border-top-color: var(--accent-color);
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+      vertical-align: middle;
+    }
+
+    @keyframes spin { to { transform: rotate(360deg); } }
 
     .manual-input-card {
       background: var(--card-bg);
-      border-radius: 8px;
+      border: 1px solid var(--border-color);
       padding: 20px;
-      box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+      border-radius: var(--radius);
       margin-bottom: 20px;
+      box-shadow: var(--shadow-lg);
     }
 
     .manual-input-title {
-      font-size: 18px;
-      font-weight: bold;
-      margin-bottom: 15px;
+      font-size: 15px;
+      font-weight: 600;
+      margin-bottom: 12px;
+      color: #E5E7EB;
+      display: flex;
+      align-items: center;
+      gap: 8px;
     }
 
     .manual-form-grid {
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-      gap: 15px;
-      align-items: end;
+      grid-template-columns: 1fr 1fr 1fr auto auto;
+      gap: 12px;
+      align-items: center;
+    }
+
+    @media (max-width: 850px) {
+      .manual-form-grid { grid-template-columns: 1fr; }
     }
 
     .form-group {
       display: flex;
       flex-direction: column;
+      gap: 4px;
     }
 
     .form-group label {
-      font-size: 13px;
-      font-weight: 600;
-      margin-bottom: 5px;
+      font-size: 12px;
+      font-weight: 500;
+      color: var(--text-muted);
     }
 
     .form-input {
-      padding: 8px 12px;
+      background-color: #111827;
       border: 1px solid var(--border-color);
-      border-radius: 4px;
+      border-radius: 8px;
+      padding: 10px 14px;
+      color: #FFFFFF;
+      font-size: 14px;
       font-family: inherit;
-      font-size: 13px;
       outline: none;
+      transition: border-color 0.2s;
     }
 
     textarea.form-input {
       resize: vertical;
-      min-height: 70px;
+      min-height: 72px;
       font-size: 13px;
       line-height: 1.4;
     }
 
-    .code-text {
-      font-family: monospace;
+    .form-input:focus { border-color: var(--accent-color); }
+
+    .batch-actions-bar {
+      background: var(--card-bg);
+      border: 1px solid var(--border-color);
+      padding: 14px 20px;
+      border-radius: var(--radius);
+      margin-bottom: 20px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      box-shadow: var(--shadow-lg);
     }
+
+    .batch-info { font-size: 14px; font-weight: 500; color: var(--text-muted); }
+    .batch-buttons { display: flex; gap: 12px; }
+
+    .card {
+      background-color: var(--card-bg);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow-lg);
+      border: 1px solid var(--border-color);
+      overflow: hidden;
+    }
+
+    .table-container { width: 100%; overflow-x: auto; }
+    .data-table { width: 100%; border-collapse: collapse; text-align: left; }
+    .data-table th {
+      background-color: #111827;
+      color: var(--text-muted);
+      font-size: 12px;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      padding: 16px 20px;
+      font-weight: 600;
+      border-bottom: 1px solid var(--border-color);
+    }
+    .data-table td {
+      padding: 16px 20px;
+      font-size: 14px;
+      color: #E5E7EB;
+      border-bottom: 1px solid var(--border-color);
+      vertical-align: middle;
+    }
+    .data-table tbody tr:hover { background-color: rgba(255, 255, 255, 0.03); }
+
+    .code-text { font-family: 'Consolas', 'Courier New', monospace; font-weight: 600; letter-spacing: 0.5px; }
+    .custom-checkbox { width: 18px; height: 18px; cursor: pointer; accent-color: var(--accent-color); }
+
+    .actions-cell { display: flex; gap: 10px; justify-content: flex-end; align-items: center; }
 
     .btn {
-      padding: 10px 16px;
-      border: none;
-      border-radius: 4px;
-      font-weight: bold;
-      cursor: pointer;
-      transition: background-color 0.2s;
+      display: inline-flex; align-items: center; justify-content: center; gap: 6px;
+      background-color: var(--accent-color); color: #FFFFFF; border: none; border-radius: 8px;
+      padding: 8px 12px; font-size: 13px; font-weight: 600; cursor: pointer; transition: all 0.2s ease;
+      font-family: inherit;
     }
-
-    .btn-secondary {
-      background-color: #6c757d;
-      color: #fff;
-    }
-    .btn-secondary:hover {
-      background-color: #5a6268;
-    }
-
-    .btn-brand {
-      background-color: var(--brand-color);
-      color: #fff;
-    }
-    .btn-brand:hover {
-      background-color: var(--brand-hover);
-    }
-
-    /* Стилі для друку */
-    @media print {
-      body * {
-        visibility: hidden;
-      }
-      #printContainer, #printContainer * {
-        visibility: visible;
-      }
-      #printContainer {
-        position: absolute;
-        left: 0;
-        top: 0;
-        width: 100%;
-      }
-      @page {
-        size: 100mm 78mm;
-        margin: 0;
-      }
-    }
+    .btn:hover { background-color: var(--accent-hover); transform: translateY(-1px); }
+    .btn:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
+    .btn-secondary { background-color: #374151; color: #F3F4F6; }
+    .btn-secondary:hover { background-color: #4B5563; }
+    .btn-test { background-color: #111827; border: 1px solid #4B5563; color: #F9FAFB; }
+    .btn-test:hover { background-color: #000000; border-color: #9CA3AF; }
+    .btn-brand { background-color: var(--brand-color); }
+    .btn-brand:hover { background-color: var(--brand-hover); }
 
     .industrial-label {
-      width: 100mm;
-      height: 78mm;
-      box-sizing: border-box;
-      padding: 4mm;
-      background: #fff;
-      page-break-after: always;
-      display: flex;
-      flex-direction: column;
-      justify-content: space-between;
-      border: 1px solid #ccc; /* Для попереднього перегляду на екрані */
-      margin-bottom: 10px;
+      width: 100mm; height: 78mm; position: relative; background: #FFFFFF; color: #000000;
+      padding: 3.2mm 4mm 2.8mm; box-sizing: border-box; font-family: Arial, Helvetica, sans-serif;
+      display: block; overflow: hidden; border: 1px solid #D1D5DB; box-shadow: 0 10px 25px rgba(0, 0, 0, 0.5);
+      background-clip: padding-box;
     }
 
+    .top-divider { width: 100%; height: 0; border-top: 1.5px solid #000000; margin: 0 0 2.2mm 0; }
+    .label-section { width: 100%; display: block; margin: 0; padding: 0; }
+    .label-section + .label-section { margin-top: 3.1mm; }
+    
+    .section-header { 
+      width: 100%; 
+      height: 5.5mm; 
+      display: block; 
+      position: relative; 
+      margin: 0 0 1.1mm 0; 
+      line-height: 5.5mm; 
+      text-align: center; 
+    }
+    .header-title { 
+      display: block; 
+      width: 100%; 
+      font-size: 16.5pt; 
+      font-weight: 900; 
+      line-height: 5.5mm; 
+      text-align: center; 
+    }
+
+    .section-header.has-brand { 
+      display: flex; 
+      justify-content: space-between; 
+      align-items: center; 
+      text-align: left; 
+    }
+    .section-header.has-brand .header-title { 
+      display: inline-block; 
+      width: auto; 
+      text-align: left; 
+    }
+    .brand-tag { 
+      font-weight: 900; 
+      font-size: 11pt; 
+      text-transform: uppercase; 
+      line-height: 5.5mm; 
+      white-space: nowrap; 
+      overflow: hidden; 
+      text-overflow: ellipsis; 
+      max-width: 70%; 
+      text-align: right; 
+    }
+    
+    .barcode-box { width: 82mm; height: 15.5mm; margin: 0 auto; display: block; overflow: hidden; text-align: center; }
+    .barcode-box svg { width: auto !important; max-width: 100% !important; height: 15.5mm !important; display: inline-block; vertical-align: top; shape-rendering: crispEdges; }
+    .val-pn, .val-sn { width: 100%; box-sizing: border-box; text-align: center; font-weight: 900; white-space: nowrap; overflow: hidden; text-overflow: clip; line-height: 1; letter-spacing: 0; margin: 1.1mm 0 0 0; }
+    .val-pn { font-size: 18pt; font-family: Arial, Helvetica, sans-serif; }
+    .val-sn { font-size: 13pt; font-family: Arial, Helvetica, sans-serif; transform: scale(1, 1.8); transform-origin: center top; margin-top: 3.5mm; }
+
+    @page { size: 100mm 78mm; margin: 0; }
     @media print {
-      .industrial-label {
-        border: none;
-        margin-bottom: 0;
+      html, body {
+        width: 100mm !important; height: auto !important; min-width: 100mm !important;
+        margin: 0 !important; padding: 0 !important; background: #ffffff !important;
+        display: block !important; overflow: visible !important;
       }
-    }
-
-    .top-divider {
-      height: 2px;
-      background: #000;
-      margin-bottom: 2mm;
-    }
-
-    .label-section {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      margin-bottom: 2mm;
-    }
-
-    .section-header {
-      width: 100%;
-      display: flex;
-      justify-content: space-between;
-      font-size: 12pt;
-      font-weight: bold;
-    }
-
-    .barcode-box {
-      width: 100%;
-      display: flex;
-      justify-content: center;
-      margin: 1mm 0;
-    }
-
-    .barcode-box svg {
-      max-width: 100%;
-      height: auto;
-    }
-
-    .val-pn, .val-sn {
-      font-family: monospace;
-      font-size: 11pt;
-      font-weight: bold;
-      text-align: center;
-    }
-
-    .brand-tag {
-      background: #000;
-      color: #fff;
-      padding: 1px 6px;
-      font-size: 10pt;
-      border-radius: 2px;
+      .app-container { display: none !important; }
+      #printContainer {
+        display: block !important; position: static !important; width: 100mm !important;
+        margin: 0 !important; padding: 0 !important;
+      }
+      #printContainer .industrial-label {
+        width: 100mm !important; height: 78mm !important; min-width: 100mm !important; min-height: 78mm !important;
+        max-width: 100mm !important; max-height: 78mm !important;
+        margin: 0 !important; border: 0 !important; box-shadow: none !important; box-sizing: border-box !important;
+        overflow: hidden !important; position: relative !important;
+        page-break-before: always !important; page-break-after: always !important; page-break-inside: avoid !important;
+        break-before: page !important; break-after: page !important; break-inside: avoid !important;
+      }
+      #printContainer .industrial-label:first-child {
+        page-break-before: avoid !important; break-before: avoid !important;
+      }
     }
   </style>
 </head>
 <body>
 
-  <div class="container">
+  <div class="app-container">
+    <header class="page-header">
+      <div>
+        <h1 class="page-title">🖨️ Друк етикеток (TSC DA220)</h1>
+      </div>
+      <div class="header-buttons">
+        <button class="btn btn-test" onclick="printTestLabel()">⬛ Тестовий друк</button>
+        <button class="btn btn-secondary" onclick="fetchDataFromGoogleSheet(true)">🔄 Оновити зараз</button>
+      </div>
+    </header>
+
+    <div class="sheet-tabs">
+      <button class="sheet-tab-btn active" id="tabBtn0" onclick="switchSheet('0')">FI    1 <kbd>Alt + 1</kbd></button>
+      <button class="sheet-tab-btn" id="tabBtn193025884" onclick="switchSheet('193025884')">FI    2 <kbd>Alt + 2</kbd></button>
+      <button class="sheet-tab-btn" id="tabBtnCustom" onclick="switchSheet('custom')">🔠 Спец. Етикетки <kbd>Alt + 3</kbd></button>
+      
+      <div class="sync-indicator" id="syncIndicator">
+        <div class="spinner"></div>
+        <span>Синхронізація...</span>
+      </div>
+    </div>
+
+    <!-- БЛОК ДЛЯ СТАНДАРТНИХ ЕТИКЕТОК -->
     <div id="standardLabelsSection">
       <div class="manual-input-card">
         <div class="manual-input-title">✍️ Ручне / Масове введення та друк (вставка з Google Таблиць)</div>
@@ -226,42 +377,286 @@
             <button class="btn btn-brand" onclick="printManual(true)">🖨️ З Brand</button>
           </div>
         </div>
-        <div style="font-size: 11px; color: var(--text-muted); margin-top: 8px;">
+        <div style="font-size: 12px; color: var(--text-muted); margin-top: 10px;">
           💡 <strong>Порада:</strong> Ви можете скопіювати з Google Таблиці декілька колонок (SN, PN, Brand) або стовпчик SN та вставити в поле SN — дані автоматично розділяться по рядках та полям.
+        </div>
+      </div>
+
+      <div class="batch-actions-bar">
+        <div class="batch-info" id="selectedCountText">Вибрано позицій: 0</div>
+        <div class="batch-buttons">
+          <button class="btn btn-secondary" id="batchPrintNormalBtn" disabled onclick="printBatch(false)">🖨️ Друк вибраних</button>
+          <button class="btn btn-brand" id="batchPrintBrandBtn" disabled onclick="printBatch(true)">🖨️ Друк вибраних з Brand</button>
+        </div>
+      </div>
+
+      <main class="card">
+        <div class="table-container">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th style="width: 40px;"><input type="checkbox" class="custom-checkbox" id="selectAllCheckbox" onclick="toggleSelectAll(this)"></th>
+                <th>#</th>
+                <th>Serial Number (SN)</th>
+                <th>Part Number (PN)</th>
+                <th>Brand</th>
+                <th style="width: 200px; text-align: right;">Друк</th>
+              </tr>
+            </thead>
+            <tbody id="productsTableBody">
+              <tr><td colspan="6" style="text-align: center; padding: 30px;">Завантаження даних...</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </main>
+    </div>
+
+    <!-- НОВИЙ БЛОК ДЛЯ СПЕЦИФІЧНИХ ЕТИКЕТОК -->
+    <div id="customLabelsSection" style="display: none;">
+      <div class="manual-input-card">
+        <div class="manual-input-title">🔠 Друк тексту на всю етикетку (OK, WAITING, SCRAP)</div>
+        <div class="manual-form-grid" style="grid-template-columns: 1fr auto;">
+          <div class="form-group">
+            <label>Слово або статус</label>
+            <input type="text" id="bigTextInput" class="form-input code-text" placeholder="Наприклад: OK, WAITING, SCRAP" value="OK">
+          </div>
+          <div class="form-group" style="justify-content: flex-end;">
+            <label>&nbsp;</label>
+            <button class="btn btn-brand" onclick="printBigText()">🖨️ Друк тексту</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="manual-input-card">
+        <div class="manual-input-title">🔂 Друк рамки / повторюваного тексту (11 рядків)</div>
+        <div class="manual-form-grid" style="grid-template-columns: 1fr auto;">
+          <div class="form-group">
+            <label>Текст для дублювання</label>
+            <input type="text" id="repeatTextInput" class="form-input code-text" placeholder="Наприклад: TRANSPORTATION FRAME" value="TRANSPORTATION FRAME">
+          </div>
+          <div class="form-group" style="justify-content: flex-end;">
+            <label>&nbsp;</label>
+            <button class="btn btn-brand" onclick="printRepeatText()">🖨️ Друк 11 рядків</button>
+          </div>
         </div>
       </div>
     </div>
   </div>
 
-  <div id="printContainer"></div>
+  <div id="printContainer" style="display: none;"></div>
 
   <script>
-    const selectedSerials = new Set();
-    let products = [];
-    let currentGid = '0';
-    const printContainer = document.getElementById('printContainer');
+    const SUPABASE_URL = 'https://wtqvaeongxncufvpvvge.supabase.co';
+    const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Ind0cXZhZW9uZ3huY3VmdnB2dmdlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODY1NDM5MjIsImV4cCI6MjEwMjExOTkyMn0.tRsrb29_b9ev3K75npD5zt_Dz9FMltzaRkdK0RPDn-U';
+    const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
-    // Пошук в локальній базі даних (за наявності)
+    const TABLE_NAME = 'televisions';
+    const COLUMN_PN = 'tpv_pn';
+    const COLUMN_SN = 'panel_sn';
+    const COLUMN_BRAND = 'brand';
+
+    const SHEET_ID = '10W03bvKlVFlIUcxsHkzP_v_13gtnYRBmnrrO0ujB1bU';
+    
+    let currentGid = '0';
+    let products = [];
+    let selectedSerials = new Set();
+    let isInitialLoad = true;
+
+    const dbCache = new Map();
+    const RETRY_DELAY_MS = 3000;
+
+    const tableBody = document.getElementById('productsTableBody');
+    const printContainer = document.getElementById('printContainer');
+    const syncIndicator = document.getElementById('syncIndicator');
+
+    function parseCSV(str) {
+      const arr = [];
+      let quote = false;
+      for (let row = 0, col = 0, c = 0; c < str.length; c++) {
+        let cc = str[c], nc = str[c+1];
+        arr[row] = arr[row] || [];
+        arr[row][col] = arr[row][col] || '';
+        if (cc == '"' && quote && nc == '"') { arr[row][col] += cc; ++c; continue; }
+        if (cc == '"') { quote = !quote; continue; }
+        if (cc == ',' && !quote) { ++col; continue; }
+        if (cc == '\r' && nc == '\n' && !quote) { ++row; col = 0; ++c; continue; }
+        if (cc == '\n' && !quote) { ++row; col = 0; continue; }
+        if (cc == '\r' && !quote) { ++row; col = 0; continue; }
+        arr[row][col] += cc;
+      }
+      return arr;
+    }
+
     async function getProductFromDatabase(sn) {
-      if (!products || products.length === 0) return null;
-      const found = products.find(p => p.sn === sn);
-      return found || null;
+      const now = Date.now();
+      const cachedEntry = dbCache.get(sn);
+
+      if (cachedEntry && cachedEntry.status === 'FOUND') { return cachedEntry.data; }
+      if (cachedEntry && cachedEntry.status === 'NOT_FOUND') {
+        const timePassed = now - cachedEntry.lastFetched;
+        if (timePassed < RETRY_DELAY_MS) {
+          return { pn: `<span class="table-spinner"></span>`, brand: cachedEntry.data ? cachedEntry.data.brand : "-" };
+        }
+      }
+
+      try {
+        const { data, error } = await supabaseClient.from(TABLE_NAME).select(`${COLUMN_PN}, ${COLUMN_BRAND}`).eq(COLUMN_SN, sn).limit(1);
+
+        if (error || !data || data.length === 0) {
+          const upperSn = sn.toUpperCase();
+          let fallbackResult = null;
+
+          if (upperSn.startsWith('TBV') && upperSn.length >= 11) { fallbackResult = { pn: `750${upperSn.substring(0, 11)}N000`, brand: "PHP[PHP]" }; } 
+          else if (upperSn.startsWith('TOV') && upperSn.length >= 11) { fallbackResult = { pn: `730${upperSn.substring(0, 11)}N000`, brand: "PHP[PHP]" }; }
+
+          if (fallbackResult) {
+            dbCache.set(sn, { status: 'FOUND', data: fallbackResult, lastFetched: now });
+            return fallbackResult;
+          }
+
+          const notFoundData = { pn: `<span class="table-spinner"></span>`, brand: "-" };
+          dbCache.set(sn, { status: 'NOT_FOUND', data: notFoundData, lastFetched: now });
+          return notFoundData;
+        }
+
+        const record = data[0];
+        const result = { pn: record[COLUMN_PN] || "N/A", brand: record[COLUMN_BRAND] || "-" };
+        dbCache.set(sn, { status: 'FOUND', data: result, lastFetched: now });
+        return result;
+      } catch (e) {
+        const errData = { pn: `<span class="table-spinner"></span>`, brand: "ERR" };
+        dbCache.set(sn, { status: 'NOT_FOUND', data: errData, lastFetched: now });
+        return errData;
+      }
+    }
+
+    async function switchSheet(gid) {
+      if (currentGid === gid) return;
+      currentGid = gid;
+      
+      document.querySelectorAll('.sheet-tab-btn').forEach(btn => btn.classList.remove('active'));
+      const btnId = gid === 'custom' ? 'tabBtnCustom' : `tabBtn${gid}`;
+      const activeBtn = document.getElementById(btnId);
+      if (activeBtn) activeBtn.classList.add('active');
+
+      const sectionStandard = document.getElementById('standardLabelsSection');
+      const sectionCustom = document.getElementById('customLabelsSection');
+
+      if (gid === 'custom') {
+        sectionStandard.style.display = 'none';
+        sectionCustom.style.display = 'block';
+        return;
+      } else {
+        sectionStandard.style.display = 'block';
+        sectionCustom.style.display = 'none';
+      }
+
+      if (products.length === 0) {
+        tableBody.innerHTML = `<tr><td colspan="6" style="text-align: center; padding: 30px;">Завантаження даних...</td></tr>`;
+      }
+      await fetchDataFromGoogleSheet(false);
+    }
+
+    async function fetchDataFromGoogleSheet(showIndicator = false) {
+      if (currentGid === 'custom') return;
+
+      try {
+        if (showIndicator || isInitialLoad) syncIndicator.classList.add('visible');
+
+        const url = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:csv&gid=${currentGid}&_nc=${Date.now()}`;
+        const response = await fetch(url);
+        if (!response.ok) throw new Error('Помилка Google Таблиці');
+        
+        const csvText = await response.text();
+        const rows = parseCSV(csvText);
+
+        const rawSnList = [];
+        for (let i = 1; i < rows.length; i++) {
+          const row = rows[i];
+          if (!row || row.length < 3) continue;
+          const sn = row[2] ? row[2].trim() : '';
+          if (sn && sn.toUpperCase() !== 'SERIAL NUMBER') rawSnList.push(sn);
+        }
+
+        const lastSnList = rawSnList.slice(-10).reverse();
+        const validItems = [];
+        const currentSnSet = new Set(lastSnList);
+
+        for (const [cachedSn] of dbCache.entries()) {
+          if (!currentSnSet.has(cachedSn)) dbCache.delete(cachedSn);
+        }
+
+        for (const sn of lastSnList) {
+          const dbData = await getProductFromDatabase(sn);
+          validItems.push({ pn: dbData.pn, brand: dbData.brand, sn: sn });
+        }
+
+        products = validItems;
+        renderTable();
+        updateBatchBar();
+      } catch (error) {
+        console.warn('Мережа або база тимчасово недоступні.');
+      } finally {
+        isInitialLoad = false;
+        syncIndicator.classList.remove('visible');
+      }
+    }
+
+    function renderTable() {
+      if (products.length === 0) {
+        tableBody.innerHTML = `<tr><td colspan="6" style="text-align: center; padding: 20px;">Записів із таблиці не завантажено. Скористайтеся ручним введенням вище.</td></tr>`;
+        return;
+      }
+      tableBody.innerHTML = '';
+      products.forEach((product, index) => {
+        const isChecked = selectedSerials.has(product.sn);
+        const row = document.createElement('tr');
+        const renderedPn = product.pn.includes('table-spinner') ? product.pn : escapeHtml(product.pn);
+        row.innerHTML = `
+          <td><input type="checkbox" class="custom-checkbox" ${isChecked ? 'checked' : ''} onchange="toggleRowSelection(${index}, this)"></td>
+          <td><strong>${index + 1}</strong></td>
+          <td class="code-text">${escapeHtml(product.sn)}</td>
+          <td class="code-text">${renderedPn}</td>
+          <td><span style="background: #374151; padding: 3px 8px; border-radius: 4px; font-size: 12px; font-weight: 600;">${escapeHtml(product.brand)}</span></td>
+          <td class="actions-cell">
+            <button class="btn" onclick="printSingle(${index}, false)" title="Друк 2 копії">🖨️</button>
+            <button class="btn btn-brand" onclick="printSingle(${index}, true)" title="Друк 2 копії з Brand">🖨️ Brand</button>
+          </td>
+        `;
+        tableBody.appendChild(row);
+      });
+      const selectAllCb = document.getElementById('selectAllCheckbox');
+      if (selectAllCb) selectAllCb.checked = products.length > 0 && products.every(p => selectedSerials.has(p.sn));
+    }
+
+    function toggleRowSelection(index, checkbox) {
+      const product = products[index];
+      if (!product) return;
+      if (checkbox.checked) selectedSerials.add(product.sn);
+      else selectedSerials.delete(product.sn);
+      updateBatchBar();
+    }
+
+    function toggleSelectAll(selectAllCheckbox) {
+      products.forEach((product) => {
+        if (selectAllCheckbox.checked) selectedSerials.add(product.sn);
+        else selectedSerials.delete(product.sn);
+      });
+      renderTable();
+      updateBatchBar();
     }
 
     function updateBatchBar() {
       const count = selectedSerials.size;
       const countElem = document.getElementById('selectedCountText');
       if (countElem) countElem.innerText = `Вибрано позицій: ${count}`;
-      
       const btnNorm = document.getElementById('batchPrintNormalBtn');
       const btnBrand = document.getElementById('batchPrintBrandBtn');
       if (btnNorm && btnBrand) {
         if (count > 0) {
-          btnNorm.removeAttribute('disabled'); 
-          btnBrand.removeAttribute('disabled');
+          btnNorm.removeAttribute('disabled'); btnBrand.removeAttribute('disabled');
         } else {
-          btnNorm.setAttribute('disabled', 'true'); 
-          btnBrand.setAttribute('disabled', 'true');
+          btnNorm.setAttribute('disabled', 'true'); btnBrand.setAttribute('disabled', 'true');
         }
       }
     }
@@ -282,9 +677,7 @@
     }
 
     function printBigText() {
-      const input = document.getElementById('bigTextInput');
-      if (!input) return;
-      const text = input.value.trim().toUpperCase();
+      const text = document.getElementById('bigTextInput').value.trim().toUpperCase();
       if (!text) { alert('Введіть текст!'); return; }
 
       const svgNS = "http://www.w3.org/2000/svg";
@@ -322,14 +715,12 @@
     }
 
     function printRepeatText() {
-      const input = document.getElementById('repeatTextInput');
-      if (!input) return;
-      const text = input.value.trim().toUpperCase();
+      const text = document.getElementById('repeatTextInput').value.trim().toUpperCase();
       if (!text) { alert('Введіть текст!'); return; }
 
       let divs = '';
-      for (let i = 0; i < 8; i++) {
-        divs += `<div style="font-family: Arial, Helvetica, sans-serif; font-weight: normal; font-size: 20pt; text-align: center; text-transform: uppercase; color: #000000; line-height: 1;">${escapeHtml(text)}</div>`;
+      for (let i = 0; i < 11; i++) {
+        divs += `<div style="font-family: Arial, Helvetica, sans-serif; font-weight: normal; font-size: 16pt; text-align: center; text-transform: uppercase; color: #000000; line-height: 1;">${escapeHtml(text)}</div>`;
       }
 
       printContainer.innerHTML = `
@@ -371,7 +762,6 @@
         return;
       }
 
-      // Розбиваємо ввід на окремі рядки
       const snLines = snRaw ? snRaw.split(/\r?\n/).map(s => s.trim()) : [];
       const pnLines = pnRaw ? pnRaw.split(/\r?\n/).map(s => s.trim()) : [];
       const brandLines = brandRaw ? brandRaw.split(/\r?\n/).map(s => s.trim()) : [];
@@ -382,9 +772,8 @@
       for (let i = 0; i < maxLines; i++) {
         let sn = snLines[i] || '';
         let pn = pnLines[i] || '';
-        let brand = brandLines[i] || (brandLines[0] || '-'); // якщо бренд один, застосовуємо його до всіх
+        let brand = brandLines[i] || (brandLines[0] || '-');
 
-        // Якщо рядок містить табуляцію (пряма вставка кількох колонок із Google Таблиць)
         if (sn.includes('\t')) {
           const parts = sn.split('\t').map(p => p.trim());
           sn = parts[0] || '';
@@ -392,10 +781,9 @@
           if (parts[2]) brand = parts[2];
         }
 
-        // Якщо ввели тільки SN, але немає PN — пробуємо знайти в базі даних
         if (sn && (!pn || pn === '')) {
           const dbData = await getProductFromDatabase(sn);
-          if (dbData && dbData.pn) {
+          if (dbData && dbData.pn && !dbData.pn.includes('table-spinner')) {
             pn = dbData.pn;
           }
           if ((!brand || brand === '-') && dbData && dbData.brand) {
@@ -484,16 +872,6 @@
       updateBatchBar();
     }
 
-    function renderTable() {}
-
-    function fetchDataFromGoogleSheet(isInitial) {}
-
-    function switchSheet(gid) {
-      currentGid = gid;
-      fetchDataFromGoogleSheet(true);
-    }
-
-    // Обробник гарячих клавіш
     document.addEventListener('keydown', (e) => {
       if (e.altKey) {
         if (e.key === '1') { e.preventDefault(); switchSheet('0'); } 
@@ -514,7 +892,7 @@
       fetchDataFromGoogleSheet(true);
       setInterval(() => fetchDataFromGoogleSheet(false), 2000);
 
-      // Автоматичний розбір вставки кількох колонок/рядків із Google Таблиць
+      // Автоматичне розбиття скопійованого тексту з Google Таблиць
       const manualSnElem = document.getElementById('manualSn');
       if (manualSnElem) {
         manualSnElem.addEventListener('paste', (e) => {
