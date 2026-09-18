@@ -1,10 +1,11 @@
+
 <!DOCTYPE html>
 <html lang="uk">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Друк етикеток — TSC DA220</title>
-  
+
   <script src="https://cdn.jsdelivr.net/npm/jsbarcode@3.11.6/dist/JsBarcode.all.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
@@ -16,6 +17,8 @@
       --accent-hover: #1D4ED8;
       --brand-color: #059669;
       --brand-hover: #047857;
+      --new-color: #7C3AED;
+      --new-hover: #6D28D9;
       --text-main: #F9FAFB;
       --text-muted: #9CA3AF;
       --border-color: #374151;
@@ -38,12 +41,12 @@
     }
 
     .app-container { max-width: 1020px; width: 100%; }
-    
-    .page-header { 
-      margin-bottom: 28px; 
-      display: flex; 
-      justify-content: space-between; 
-      align-items: flex-end; 
+
+    .page-header {
+      margin-bottom: 28px;
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-end;
     }
     .page-title { font-size: 26px; font-weight: 700; color: #FFFFFF; }
     .header-buttons { display: flex; gap: 10px; }
@@ -93,7 +96,7 @@
       transition: opacity 0.3s ease;
     }
     .sync-indicator.visible { opacity: 1; }
-    
+
     .spinner {
       width: 14px;
       height: 14px;
@@ -242,7 +245,10 @@
     .btn-test:hover { background-color: #000000; border-color: #9CA3AF; }
     .btn-brand { background-color: var(--brand-color); }
     .btn-brand:hover { background-color: var(--brand-hover); }
+    .btn-new { background-color: var(--new-color); }
+    .btn-new:hover { background-color: var(--new-hover); }
 
+    /* ===== Стандартний формат етикетки 100x78мм ===== */
     .industrial-label {
       width: 100mm; height: 78mm; position: relative; background: #FFFFFF; color: #000000;
       padding: 3.2mm 4mm 2.8mm; box-sizing: border-box; font-family: Arial, Helvetica, sans-serif;
@@ -253,53 +259,78 @@
     .top-divider { width: 100%; height: 0; border-top: 1.5px solid #000000; margin: 0 0 2.2mm 0; }
     .label-section { width: 100%; display: block; margin: 0; padding: 0; }
     .label-section + .label-section { margin-top: 3.1mm; }
-    
-    .section-header { 
-      width: 100%; 
-      height: 5.5mm; 
-      display: block; 
-      position: relative; 
-      margin: 0 0 1.1mm 0; 
-      line-height: 5.5mm; 
-      text-align: center; 
+
+    .section-header {
+      width: 100%;
+      height: 5.5mm;
+      display: block;
+      position: relative;
+      margin: 0 0 1.1mm 0;
+      line-height: 5.5mm;
+      text-align: center;
     }
-    .header-title { 
-      display: block; 
-      width: 100%; 
-      font-size: 16.5pt; 
-      font-weight: 900; 
-      line-height: 5.5mm; 
-      text-align: center; 
+    .header-title {
+      display: block;
+      width: 100%;
+      font-size: 16.5pt;
+      font-weight: 900;
+      line-height: 5.5mm;
+      text-align: center;
     }
 
-    .section-header.has-brand { 
-      display: flex; 
-      justify-content: space-between; 
-      align-items: center; 
-      text-align: left; 
+    .section-header.has-brand {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      text-align: left;
     }
-    .section-header.has-brand .header-title { 
-      display: inline-block; 
-      width: auto; 
-      text-align: left; 
+    .section-header.has-brand .header-title {
+      display: inline-block;
+      width: auto;
+      text-align: left;
     }
-    .brand-tag { 
-      font-weight: 900; 
-      font-size: 11pt; 
-      text-transform: uppercase; 
-      line-height: 5.5mm; 
-      white-space: nowrap; 
-      overflow: hidden; 
-      text-overflow: ellipsis; 
-      max-width: 70%; 
-      text-align: right; 
+    .brand-tag {
+      font-weight: 900;
+      font-size: 11pt;
+      text-transform: uppercase;
+      line-height: 5.5mm;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      max-width: 70%;
+      text-align: right;
     }
-    
+
     .barcode-box { width: 82mm; height: 15.5mm; margin: 0 auto; display: block; overflow: hidden; text-align: center; }
     .barcode-box svg { width: auto !important; max-width: 100% !important; height: 15.5mm !important; display: inline-block; vertical-align: top; shape-rendering: crispEdges; }
     .val-pn, .val-sn { width: 100%; box-sizing: border-box; text-align: center; font-weight: 900; white-space: nowrap; overflow: hidden; text-overflow: clip; line-height: 1; letter-spacing: 0; margin: 1.1mm 0 0 0; }
     .val-pn { font-size: 18pt; font-family: Arial, Helvetica, sans-serif; }
     .val-sn { font-size: 13pt; font-family: Arial, Helvetica, sans-serif; transform: scale(1, 1.8); transform-origin: center top; margin-top: 3.5mm; }
+
+    /* ===== Новий формат етикетки 130x76мм (для FI2) ===== */
+    .label-new {
+      width: 130mm; height: 76mm; position: relative; background: #FFFFFF; color: #000000;
+      padding: 2.8mm 6.75mm 3mm; box-sizing: border-box; font-family: Arial, Helvetica, sans-serif;
+      display: flex; flex-direction: column; align-items: center; justify-content: flex-start;
+      overflow: hidden; border: 1px solid #D1D5DB; box-shadow: 0 10px 25px rgba(0, 0, 0, 0.5);
+      background-clip: padding-box;
+    }
+    .label-new .barcode-wrap-pn {
+      width: 116.5mm; height: 15.5mm; margin: 0 auto 1.3mm; display: block; overflow: hidden; text-align: center;
+    }
+    .label-new .barcode-wrap-sn {
+      width: 124.5mm; height: 17mm; margin: 2.2mm auto 1.3mm; display: block; overflow: hidden; text-align: center;
+    }
+    .label-new .barcode-wrap-pn svg,
+    .label-new .barcode-wrap-sn svg {
+      width: 100% !important; height: 100% !important; display: inline-block; vertical-align: top; shape-rendering: crispEdges;
+    }
+    .label-new .caption {
+      font-size: 16pt; font-weight: 900; text-align: center; line-height: 1; margin: 0 0 1.1mm 0; width: 100%;
+    }
+    .label-new .value {
+      font-size: 23pt; font-weight: 900; text-align: center; line-height: 1; white-space: nowrap; width: 100%; margin: 0 0 1mm 0;
+    }
 
     @page { size: 100mm 78mm; margin: 0; }
     @media print {
@@ -324,6 +355,17 @@
       #printContainer .industrial-label:first-child {
         page-break-before: avoid !important; break-before: avoid !important;
       }
+      #printContainer .label-new {
+        width: 130mm !important; height: 76mm !important; min-width: 130mm !important; min-height: 76mm !important;
+        max-width: 130mm !important; max-height: 76mm !important;
+        margin: 0 !important; border: 0 !important; box-shadow: none !important; box-sizing: border-box !important;
+        overflow: hidden !important; position: relative !important;
+        page-break-before: always !important; page-break-after: always !important; page-break-inside: avoid !important;
+        break-before: page !important; break-after: page !important; break-inside: avoid !important;
+      }
+      #printContainer .label-new:first-child {
+        page-break-before: avoid !important; break-before: avoid !important;
+      }
     }
   </style>
 </head>
@@ -344,7 +386,7 @@
       <button class="sheet-tab-btn active" id="tabBtn0" onclick="switchSheet('0')">FI    1 <kbd>Alt + 1</kbd></button>
       <button class="sheet-tab-btn" id="tabBtn193025884" onclick="switchSheet('193025884')">FI    2 <kbd>Alt + 2</kbd></button>
       <button class="sheet-tab-btn" id="tabBtnCustom" onclick="switchSheet('custom')">🔠 Спец. Етикетки <kbd>Alt + 3</kbd></button>
-      
+
       <div class="sync-indicator" id="syncIndicator">
         <div class="spinner"></div>
         <span>Синхронізація...</span>
@@ -396,7 +438,7 @@
                 <th>Serial Number (SN)</th>
                 <th>Part Number (PN)</th>
                 <th>Brand</th>
-                <th style="width: 200px; text-align: right;">Друк</th>
+                <th style="width: 260px; text-align: right;">Друк</th>
               </tr>
             </thead>
             <tbody id="productsTableBody">
@@ -451,7 +493,8 @@
     const COLUMN_BRAND = 'brand';
 
     const SHEET_ID = '10W03bvKlVFlIUcxsHkzP_v_13gtnYRBmnrrO0ujB1bU';
-    
+    const FI2_GID = '193025884';
+
     let currentGid = '0';
     let products = [];
     let selectedSerials = new Set();
@@ -501,7 +544,7 @@
           const upperSn = sn.toUpperCase();
           let fallbackResult = null;
 
-          if (upperSn.startsWith('TBV') && upperSn.length >= 11) { fallbackResult = { pn: `750${upperSn.substring(0, 11)}N000`, brand: "PHP[PHP]" }; } 
+          if (upperSn.startsWith('TBV') && upperSn.length >= 11) { fallbackResult = { pn: `750${upperSn.substring(0, 11)}N000`, brand: "PHP[PHP]" }; }
           else if (upperSn.startsWith('TOV') && upperSn.length >= 11) { fallbackResult = { pn: `730${upperSn.substring(0, 11)}N000`, brand: "PHP[PHP]" }; }
 
           if (fallbackResult) {
@@ -528,7 +571,7 @@
     async function switchSheet(gid) {
       if (currentGid === gid) return;
       currentGid = gid;
-      
+
       document.querySelectorAll('.sheet-tab-btn').forEach(btn => btn.classList.remove('active'));
       const btnId = gid === 'custom' ? 'tabBtnCustom' : `tabBtn${gid}`;
       const activeBtn = document.getElementById(btnId);
@@ -548,6 +591,8 @@
 
       if (products.length === 0) {
         tableBody.innerHTML = `<tr><td colspan="6" style="text-align: center; padding: 30px;">Завантаження даних...</td></tr>`;
+      } else {
+        renderTable();
       }
       await fetchDataFromGoogleSheet(false);
     }
@@ -561,7 +606,7 @@
         const url = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:csv&gid=${currentGid}&_nc=${Date.now()}`;
         const response = await fetch(url);
         if (!response.ok) throw new Error('Помилка Google Таблиці');
-        
+
         const csvText = await response.text();
         const rows = parseCSV(csvText);
 
@@ -603,6 +648,7 @@
         return;
       }
       tableBody.innerHTML = '';
+      const isFi2 = currentGid === FI2_GID;
       products.forEach((product, index) => {
         const isChecked = selectedSerials.has(product.sn);
         const row = document.createElement('tr');
@@ -614,6 +660,7 @@
           <td class="code-text">${renderedPn}</td>
           <td><span style="background: #374151; padding: 3px 8px; border-radius: 4px; font-size: 12px; font-weight: 600;">${escapeHtml(product.brand)}</span></td>
           <td class="actions-cell">
+            ${isFi2 ? `<button class="btn btn-new" onclick="printSingleNew(${index})" title="Друк новий формат 130x76мм">🆕</button>` : ''}
             <button class="btn" onclick="printSingle(${index}, false)" title="Друк 2 копії">🖨️</button>
             <button class="btn btn-brand" onclick="printSingle(${index}, true)" title="Друк 2 копії з Brand">🖨️ Brand</button>
           </td>
@@ -663,7 +710,23 @@
       return div.innerHTML;
     }
 
-    function prepareAndPrint() {
+    // ===== Динамічний розмір сторінки друку =====
+    function setPageSize(widthMm, heightMm) {
+      let styleEl = document.getElementById('dynamicPageSize');
+      if (!styleEl) {
+        styleEl = document.createElement('style');
+        styleEl.id = 'dynamicPageSize';
+        document.head.appendChild(styleEl);
+      }
+      styleEl.textContent = `@page { size: ${widthMm}mm ${heightMm}mm; margin: 0; }`;
+    }
+
+    window.addEventListener('afterprint', () => {
+      setPageSize(100, 78);
+    });
+
+    function prepareAndPrint(pageW = 100, pageH = 78) {
+      setPageSize(pageW, pageH);
       requestAnimationFrame(() => {
         requestAnimationFrame(() => {
           setTimeout(() => window.print(), 120);
@@ -683,17 +746,17 @@
       tempText.setAttribute("font-size", "100");
       tempText.textContent = text;
       tempSvg.appendChild(tempText);
-      
+
       tempSvg.style.position = 'absolute';
       tempSvg.style.visibility = 'hidden';
       document.body.appendChild(tempSvg);
-      
+
       const bbox = tempText.getBBox();
       document.body.removeChild(tempSvg);
 
       const paddingX = bbox.width * 0.02;
       const paddingY = bbox.height * 0.05;
-      
+
       const vbX = bbox.x - paddingX;
       const vbY = bbox.y - paddingY;
       const vbW = bbox.width + (paddingX * 2);
@@ -706,7 +769,7 @@
           </svg>
         </div>
       `;
-      prepareAndPrint();
+      prepareAndPrint(100, 78);
     }
 
     function printRepeatText() {
@@ -723,7 +786,7 @@
           ${divs}
         </div>
       `;
-      prepareAndPrint();
+      prepareAndPrint(100, 78);
     }
 
     function printTestLabel() {
@@ -744,7 +807,7 @@
       `;
       JsBarcode('#testPN', 'TEST-PN-100X78', { format: 'CODE128B', displayValue: false, margin: 0, height: 48, width: 1.18, flat: true, lineColor: '#000' });
       JsBarcode('#testSN', 'TEST-SN-27082026', { format: 'CODE128B', displayValue: false, margin: 0, height: 48, width: 0.92, flat: true, lineColor: '#000' });
-      prepareAndPrint();
+      prepareAndPrint(100, 78);
     }
 
     async function printManual(includeBrand) {
@@ -802,9 +865,10 @@
 
       printContainer.innerHTML = buildLabelsHTML(itemsList, includeBrand);
       renderBarcodesInContainer('#printContainer');
-      prepareAndPrint();
+      prepareAndPrint(100, 78);
     }
 
+    // ===== Стандартний формат (100x78мм) =====
     function buildLabelsHTML(itemsList, includeBrand) {
       let html = '';
       itemsList.forEach((product, idx) => {
@@ -852,7 +916,7 @@
       if (!product) return;
       printContainer.innerHTML = buildLabelsHTML([product], includeBrand);
       renderBarcodesInContainer('#printContainer');
-      prepareAndPrint();
+      prepareAndPrint(100, 78);
     }
 
     function printBatch(includeBrand) {
@@ -861,21 +925,65 @@
       if (itemsToPrint.length === 0) return;
       printContainer.innerHTML = buildLabelsHTML(itemsToPrint, includeBrand);
       renderBarcodesInContainer('#printContainer');
-      prepareAndPrint();
+      prepareAndPrint(100, 78);
       selectedSerials.clear();
       renderTable();
       updateBatchBar();
     }
 
+    // ===== Новий формат (130x76мм, лише для FI2) =====
+    // Порядок блоків: штрихкод PN -> підпис "PN" -> значення PN -> підпис "SN" -> штрихкод SN -> значення SN
+    function buildNewLabelHTML(itemsList) {
+      let html = '';
+      itemsList.forEach((product, idx) => {
+        for (let copy = 0; copy < 2; copy++) {
+          html += `
+            <div class="label-new">
+              <div class="barcode-wrap-pn"><svg id="newBarcodePN_${idx}_${copy}"></svg></div>
+              <div class="caption">PN</div>
+              <div class="value new-val-pn">${escapeHtml(product.pn)}</div>
+              <div class="caption">SN</div>
+              <div class="barcode-wrap-sn"><svg id="newBarcodeSN_${idx}_${copy}"></svg></div>
+              <div class="value new-val-sn">${escapeHtml(product.sn)}</div>
+            </div>
+          `;
+        }
+      });
+      return html;
+    }
+
+    function renderNewBarcodesInContainer(containerSelector) {
+      const container = document.querySelector(containerSelector);
+      if (!container) return;
+      container.querySelectorAll('.label-new').forEach((label) => {
+        const svgPn = label.querySelector('[id^="newBarcodePN_"]');
+        const svgSn = label.querySelector('[id^="newBarcodeSN_"]');
+        if (svgPn && svgSn) {
+          const pnVal = label.querySelector('.new-val-pn').innerText;
+          const snVal = label.querySelector('.new-val-sn').innerText;
+          JsBarcode(svgPn, pnVal, { format: "CODE128B", displayValue: false, margin: 0, height: 48, width: 1.3, flat: true, lineColor: "#000000" });
+          JsBarcode(svgSn, snVal, { format: "CODE128B", displayValue: false, margin: 0, height: 48, width: 1.0, flat: true, lineColor: "#000000" });
+        }
+      });
+    }
+
+    function printSingleNew(index) {
+      const product = products[index];
+      if (!product) return;
+      printContainer.innerHTML = buildNewLabelHTML([product]);
+      renderNewBarcodesInContainer('#printContainer');
+      prepareAndPrint(130, 76);
+    }
+
     document.addEventListener('keydown', (e) => {
       if (e.altKey) {
-        if (e.key === '1') { e.preventDefault(); switchSheet('0'); } 
+        if (e.key === '1') { e.preventDefault(); switchSheet('0'); }
         else if (e.key === '2') { e.preventDefault(); switchSheet('193025884'); }
         else if (e.key === '3') { e.preventDefault(); switchSheet('custom'); }
       }
 
       if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'p') {
-        e.preventDefault(); 
+        e.preventDefault();
         if (products.length > 0 && currentGid !== 'custom') {
           if (selectedSerials.size > 0) printBatch(false);
           else printSingle(0, false);
