@@ -352,54 +352,47 @@
     }
     .label-scc svg { display: block; width: 100%; height: 100%; }
 
+    /* ===== ДРУК =====
+       Виправлення порожніх етикеток:
+       1) html/body/#printContainer БЕЗ фіксованої ширини (раніше 100mm стискало SCC 50x30 удвічі);
+       2) розрив сторінки лише МІЖ етикетками, після останньої розриву немає;
+       3) висота етикетки трохи менша за сторінку, щоб не переповнювати її при округленні. */
     @page { size: 100mm 78mm; margin: 0; }
     @media print {
       html, body {
-        width: 100mm !important; height: auto !important; min-width: 100mm !important;
-        margin: 0 !important; padding: 0 !important; background: #ffffff !important;
-        display: block !important; overflow: visible !important;
+        width: auto !important; height: auto !important;
+        min-width: 0 !important; min-height: 0 !important;
+        margin: 0 !important; padding: 0 !important;
+        background: #ffffff !important; display: block !important; overflow: visible !important;
       }
-      .app-container { display: none !important; }
+      .app-container, #copyToast { display: none !important; }
+
       #printContainer {
-        display: block !important; position: static !important; width: 100mm !important;
+        display: block !important; position: static !important;
+        width: auto !important; height: auto !important;
         margin: 0 !important; padding: 0 !important;
       }
-      #printContainer .industrial-label {
-        width: 100mm !important; height: 78mm !important; min-width: 100mm !important; min-height: 78mm !important;
-        max-width: 100mm !important; max-height: 78mm !important;
-        margin: 0 !important; border: 0 !important; box-shadow: none !important; box-sizing: border-box !important;
-        overflow: hidden !important; position: relative !important;
-        page-break-before: always !important; page-break-after: always !important; page-break-inside: avoid !important;
-        break-before: page !important; break-after: page !important; break-inside: avoid !important;
+
+      #printContainer > .industrial-label,
+      #printContainer > .label-new,
+      #printContainer > .label-scc {
+        margin: 0 !important; border: 0 !important; box-shadow: none !important;
+        box-sizing: border-box !important; overflow: hidden !important; position: relative !important;
+        break-before: auto !important; page-break-before: auto !important;
+        break-inside: avoid !important; page-break-inside: avoid !important;
       }
-      #printContainer .industrial-label:first-child {
-        page-break-before: avoid !important; break-before: avoid !important;
+
+      /* розрив лише між етикетками */
+      #printContainer > :not(:last-child) {
+        break-after: page !important; page-break-after: always !important;
       }
-      #printContainer .label-new {
-        width: 130mm !important; height: 76mm !important; min-width: 130mm !important; min-height: 76mm !important;
-        max-width: 130mm !important; max-height: 76mm !important;
-        margin: 0 !important; border: 0 !important; box-shadow: none !important; box-sizing: border-box !important;
-        overflow: hidden !important; position: relative !important;
-        page-break-before: always !important; page-break-after: always !important; page-break-inside: avoid !important;
-        break-before: page !important; break-after: page !important; break-inside: avoid !important;
+      #printContainer > :last-child {
+        break-after: auto !important; page-break-after: auto !important;
       }
-      #printContainer .label-new:first-child {
-        page-break-before: avoid !important; break-before: avoid !important;
-      }
-      #printContainer .label-scc {
-        width: 50mm !important; height: 30mm !important; min-width: 50mm !important; min-height: 30mm !important;
-        max-width: 50mm !important; max-height: 30mm !important;
-        margin: 0 !important; border: 0 !important; box-shadow: none !important; box-sizing: border-box !important;
-        overflow: hidden !important; position: relative !important;
-        page-break-before: always !important; page-break-after: always !important; page-break-inside: avoid !important;
-        break-before: page !important; break-after: page !important; break-inside: avoid !important;
-      }
-      #printContainer .label-scc:first-child {
-        page-break-before: avoid !important; break-before: avoid !important;
-      }
-      #copyToast {
-        display: none !important;
-      }
+
+      #printContainer > .industrial-label { width: 100mm !important; height: 77.6mm !important; }
+      #printContainer > .label-new        { width: 130mm !important; height: 75.6mm !important; }
+      #printContainer > .label-scc        { width: 50mm !important;  height: 29.6mm !important; }
     }
   </style>
 </head>
@@ -924,9 +917,10 @@
       const vbW = bbox.width + (paddingX * 2);
       const vbH = bbox.height + (paddingY * 2);
 
+      // Розміри етикетки задає print-CSS, тому тут використовуємо 100% (а не жорсткі 100mm x 78mm)
       printContainer.innerHTML = `
-        <div class="industrial-label" style="padding: 0 !important; display: block !important; background: #ffffff !important; border: none !important; width: 100mm; height: 78mm; overflow: hidden;">
-          <svg width="100%" height="100%" viewBox="${vbX} ${vbY} ${vbW} ${vbH}" preserveAspectRatio="none" style="display: block; width: 100mm; height: 78mm;">
+        <div class="industrial-label" style="padding: 0 !important; display: block !important; background: #ffffff !important; border: none !important; overflow: hidden;">
+          <svg width="100%" height="100%" viewBox="${vbX} ${vbY} ${vbW} ${vbH}" preserveAspectRatio="none" style="display: block; width: 100%; height: 100%;">
             <text x="${bbox.x + bbox.width/2}" y="${bbox.y + bbox.height/2}" dominant-baseline="central" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-weight="900" font-size="100">${escapeHtml(text)}</text>
           </svg>
         </div>
@@ -943,8 +937,9 @@
         divs += `<div style="font-family: Arial, Helvetica, sans-serif; font-weight: normal; font-size: 16pt; text-align: center; text-transform: uppercase; color: #000000; line-height: 1;">${escapeHtml(text)}</div>`;
       }
 
+      // Висота не задається inline — її встановлює print-CSS (77.6mm), щоб не виникало порожньої сторінки
       printContainer.innerHTML = `
-        <div class="industrial-label" style="padding: 2mm 2mm !important; display: flex !important; flex-direction: column !important; justify-content: space-between !important; align-items: stretch !important; background: #ffffff !important; border: none !important; height: 78mm !important;">
+        <div class="industrial-label" style="padding: 2mm 2mm !important; display: flex !important; flex-direction: column !important; justify-content: space-between !important; align-items: stretch !important; background: #ffffff !important; border: none !important;">
           ${divs}
         </div>
       `;
