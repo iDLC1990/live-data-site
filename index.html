@@ -695,9 +695,9 @@
         row.innerHTML = `
           <td><input type="checkbox" class="custom-checkbox" ${isChecked ? 'checked' : ''} onchange="toggleRowSelection(${index}, this)"></td>
           <td><strong>${index + 1}</strong></td>
-          <td class="code-text">${escapeHtml(product.sn)}</td>
-          <td class="code-text">${renderedPn}</td>
-          <td><span style="background: #374151; padding: 3px 8px; border-radius: 4px; font-size: 12px; font-weight: 600;">${escapeHtml(product.brand)}</span></td>
+          <td class="code-text" data-col="sn">${escapeHtml(product.sn)}</td>
+          <td class="code-text" data-col="pn">${renderedPn}</td>
+          <td data-col="brand"><span style="background: #374151; padding: 3px 8px; border-radius: 4px; font-size: 12px; font-weight: 600;">${escapeHtml(product.brand)}</span></td>
           <td class="actions-cell">
             ${isFi2 ? `<button class="btn btn-new" onclick="printSingleNew(${index})" title="Друк новий формат 130x76мм">🆕</button>` : ''}
             <button class="btn" onclick="printSingle(${index}, false)" title="Друк 2 копії">🖨️</button>
