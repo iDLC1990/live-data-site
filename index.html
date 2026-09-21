@@ -318,29 +318,30 @@
     .val-pn { font-size: 18pt; font-family: Arial, Helvetica, sans-serif; }
     .val-sn { font-size: 13pt; font-family: Arial, Helvetica, sans-serif; transform: scale(1, 1.8); transform-origin: center top; margin-top: 3.5mm; }
 
-    /* ===== Новий формат етикетки 130x76мм (для FI2) ===== */
+    /* ===== Новий формат етикетки 130x76мм (для FI2) =====
+       Друкується з полями @page: 19.05mm (верх) / 2.54mm (право) / 6.35mm (низ) / 2.54mm (ліво)
+       (= 0.75" / 0.1" / 0.25" / 0.1"). Тому робоча область = 124.92 x 50.6 мм,
+       і розміри елементів підібрані під неї. */
     .label-new {
-      width: 130mm; height: 76mm; position: relative; background: #FFFFFF; color: #000000;
-      padding: 2.8mm 6.75mm 3mm; box-sizing: border-box; font-family: Arial, Helvetica, sans-serif;
+      width: 124.92mm; height: 50.6mm; position: relative; background: #FFFFFF; color: #000000;
+      padding: 0; box-sizing: border-box; font-family: Arial, Helvetica, sans-serif;
       display: flex; flex-direction: column; align-items: center; justify-content: flex-start;
       overflow: hidden; border: 1px solid #D1D5DB; box-shadow: 0 10px 25px rgba(0, 0, 0, 0.5);
       background-clip: padding-box;
     }
-    .label-new .barcode-wrap-pn {
-      width: 116.5mm; height: 15.5mm; margin: 2.2mm auto 1.3mm; display: block; overflow: hidden; text-align: center;
-    }
+    .label-new .barcode-wrap-pn,
     .label-new .barcode-wrap-sn {
-      width: 116.5mm; height: 15.5mm; margin: 2.2mm auto 1.3mm; display: block; overflow: hidden; text-align: center;
+      width: 100%; height: 10.4mm; margin: 1.4mm auto 0.9mm; display: block; overflow: hidden; text-align: center;
     }
     .label-new .barcode-wrap-pn svg,
     .label-new .barcode-wrap-sn svg {
       width: 100% !important; height: 100% !important; display: inline-block; vertical-align: top; shape-rendering: crispEdges;
     }
     .label-new .caption {
-      font-size: 18pt; font-weight: 900; text-align: center; line-height: 1; margin: 0 0 1.1mm 0; width: 100%;
+      font-size: 12pt; font-weight: 900; text-align: center; line-height: 1; margin: 0 0 0.7mm 0; width: 100%;
     }
     .label-new .value {
-      font-size: 18pt; font-weight: 900; text-align: center; line-height: 1; white-space: nowrap; width: 100%; margin: 0 0 1mm 0;
+      font-size: 12pt; font-weight: 900; text-align: center; line-height: 1; white-space: nowrap; width: 100%; margin: 0 0 0.7mm 0;
     }
 
     /* ===== ДРУК (стандартна та FI2 етикетки) =====
@@ -383,7 +384,8 @@
       }
 
       #printContainer > .industrial-label { width: 100mm !important; height: 77.6mm !important; }
-      #printContainer > .label-new        { width: 130mm !important; height: 75.6mm !important; }
+      /* 130x76 мінус поля @page (2.54+2.54 по ширині, 19.05+6.35 по висоті) = 124.92 x 50.6 мм */
+      #printContainer > .label-new        { width: 124.9mm !important; height: 50.2mm !important; }
     }
   </style>
 </head>
@@ -533,6 +535,9 @@
 
     const SHEET_ID = '10W03bvKlVFlIUcxsHkzP_v_13gtnYRBmnrrO0ujB1bU';
     const FI2_GID = '193025884';
+
+    // Поля сторінки для формату 130x76мм (верх / право / низ / ліво) = 0.75" / 0.1" / 0.25" / 0.1"
+    const NEW_LABEL_MARGIN = '19.05mm 2.54mm 6.35mm 2.54mm';
 
     let currentGid = '0';
     let products = [];
@@ -856,23 +861,23 @@
       return div.innerHTML;
     }
 
-    // ===== Динамічний розмір сторінки друку =====
-    function setPageSize(widthMm, heightMm) {
+    // ===== Динамічний розмір сторінки друку (з полями) =====
+    function setPageSize(widthMm, heightMm, margin = '0') {
       let styleEl = document.getElementById('dynamicPageSize');
       if (!styleEl) {
         styleEl = document.createElement('style');
         styleEl.id = 'dynamicPageSize';
         document.head.appendChild(styleEl);
       }
-      styleEl.textContent = `@page { size: ${widthMm}mm ${heightMm}mm; margin: 0; }`;
+      styleEl.textContent = `@page { size: ${widthMm}mm ${heightMm}mm; margin: ${margin}; }`;
     }
 
     window.addEventListener('afterprint', () => {
       setPageSize(100, 78);
     });
 
-    function prepareAndPrint(pageW = 100, pageH = 78) {
-      setPageSize(pageW, pageH);
+    function prepareAndPrint(pageW = 100, pageH = 78, margin = '0') {
+      setPageSize(pageW, pageH, margin);
       requestAnimationFrame(() => {
         requestAnimationFrame(() => {
           setTimeout(() => window.print(), 120);
@@ -1144,7 +1149,7 @@
       if (!product) return;
       printContainer.innerHTML = buildNewLabelHTML([product]);
       renderNewBarcodesInContainer('#printContainer');
-      prepareAndPrint(130, 76);
+      prepareAndPrint(130, 76, NEW_LABEL_MARGIN);
     }
 
     // ===== SCC формат (50x30мм) =====
