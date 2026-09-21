@@ -332,6 +332,15 @@
       font-size: 18pt; font-weight: 900; text-align: center; line-height: 1; white-space: nowrap; width: 100%; margin: 0 0 1mm 0;
     }
 
+    /* ===== SCC формат етикетки 50x30мм ===== */
+    .label-scc {
+      width: 50mm; height: 30mm; position: relative; background: #FFFFFF; color: #000000;
+      padding: 2mm; box-sizing: border-box; font-family: Arial, Helvetica, sans-serif;
+      display: block; overflow: hidden; border: 1px solid #D1D5DB; box-shadow: 0 10px 25px rgba(0, 0, 0, 0.5);
+      background-clip: padding-box;
+    }
+    .label-scc svg { display: block; width: 100%; height: 100%; }
+
     @page { size: 100mm 78mm; margin: 0; }
     @media print {
       html, body {
@@ -364,6 +373,17 @@
         break-before: page !important; break-after: page !important; break-inside: avoid !important;
       }
       #printContainer .label-new:first-child {
+        page-break-before: avoid !important; break-before: avoid !important;
+      }
+      #printContainer .label-scc {
+        width: 50mm !important; height: 30mm !important; min-width: 50mm !important; min-height: 30mm !important;
+        max-width: 50mm !important; max-height: 30mm !important;
+        margin: 0 !important; border: 0 !important; box-shadow: none !important; box-sizing: border-box !important;
+        overflow: hidden !important; position: relative !important;
+        page-break-before: always !important; page-break-after: always !important; page-break-inside: avoid !important;
+        break-before: page !important; break-after: page !important; break-inside: avoid !important;
+      }
+      #printContainer .label-scc:first-child {
         page-break-before: avoid !important; break-before: avoid !important;
       }
     }
@@ -475,6 +495,25 @@
             <label>&nbsp;</label>
             <button class="btn btn-brand" onclick="printRepeatText()">🖨️ Друк 11 рядків</button>
           </div>
+        </div>
+      </div>
+
+      <div class="manual-input-card">
+        <div class="manual-input-title">🏷️ Друк етикеток SCC (50x30мм)</div>
+        <div style="display: flex; flex-direction: column; gap: 12px;">
+          <div style="display: flex; align-items: center; gap: 12px;">
+            <input type="checkbox" class="custom-checkbox" id="sccCheck1">
+            <label for="sccInput1" style="min-width: 50px; font-size: 13px; font-weight: 600; color: #E5E7EB;">SCC 1</label>
+            <input type="text" id="sccInput1" class="form-input code-text" style="flex: 1;" placeholder="Введіть значення SCC 1">
+          </div>
+          <div style="display: flex; align-items: center; gap: 12px;">
+            <input type="checkbox" class="custom-checkbox" id="sccCheck2">
+            <label for="sccInput2" style="min-width: 50px; font-size: 13px; font-weight: 600; color: #E5E7EB;">SCC 2</label>
+            <input type="text" id="sccInput2" class="form-input code-text" style="flex: 1;" placeholder="Введіть значення SCC 2">
+          </div>
+        </div>
+        <div style="margin-top: 14px; display: flex; justify-content: flex-end;">
+          <button class="btn btn-brand" onclick="printSCC()">🖨️ Друк SCC</button>
         </div>
       </div>
     </div>
@@ -973,6 +1012,61 @@
       printContainer.innerHTML = buildNewLabelHTML([product]);
       renderNewBarcodesInContainer('#printContainer');
       prepareAndPrint(130, 76);
+    }
+
+    // ===== SCC формат (50x30мм) =====
+    function buildAutoFitTextSvg(text) {
+      const svgNS = "http://www.w3.org/2000/svg";
+      const tempSvg = document.createElementNS(svgNS, "svg");
+      const tempText = document.createElementNS(svgNS, "text");
+      tempText.setAttribute("font-family", "Arial, Helvetica, sans-serif");
+      tempText.setAttribute("font-weight", "900");
+      tempText.setAttribute("font-size", "100");
+      tempText.textContent = text;
+      tempSvg.appendChild(tempText);
+
+      tempSvg.style.position = 'absolute';
+      tempSvg.style.visibility = 'hidden';
+      document.body.appendChild(tempSvg);
+
+      const bbox = tempText.getBBox();
+      document.body.removeChild(tempSvg);
+
+      const paddingX = bbox.width * 0.04;
+      const paddingY = bbox.height * 0.08;
+
+      const vbX = bbox.x - paddingX;
+      const vbY = bbox.y - paddingY;
+      const vbW = bbox.width + (paddingX * 2);
+      const vbH = bbox.height + (paddingY * 2);
+
+      return `<svg viewBox="${vbX} ${vbY} ${vbW} ${vbH}" preserveAspectRatio="none">
+        <text x="${bbox.x + bbox.width/2}" y="${bbox.y + bbox.height/2}" dominant-baseline="central" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-weight="900" font-size="100">${escapeHtml(text)}</text>
+      </svg>`;
+    }
+
+    function printSCC() {
+      const check1 = document.getElementById('sccCheck1').checked;
+      const check2 = document.getElementById('sccCheck2').checked;
+      const val1 = document.getElementById('sccInput1').value.trim();
+      const val2 = document.getElementById('sccInput2').value.trim();
+
+      const itemsToPrint = [];
+      if (check1 && val1) itemsToPrint.push(val1);
+      if (check2 && val2) itemsToPrint.push(val2);
+
+      if (itemsToPrint.length === 0) {
+        alert('Позначте галочкою хоча б одне поле SCC та заповніть значення!');
+        return;
+      }
+
+      let html = '';
+      itemsToPrint.forEach((text) => {
+        html += `<div class="label-scc">${buildAutoFitTextSvg(text)}</div>`;
+      });
+
+      printContainer.innerHTML = html;
+      prepareAndPrint(50, 30);
     }
 
     document.addEventListener('keydown', (e) => {
