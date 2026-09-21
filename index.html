@@ -336,17 +336,17 @@
     }
     .label-new .barcode-wrap-pn,
     .label-new .barcode-wrap-sn {
-      width: 100%; height: 10.4mm; margin: 1.4mm auto 0.9mm; display: block; overflow: hidden; text-align: center;
+      width: 118mm; height: 10.5mm; margin: 1.2mm auto 0.6mm; display: block; overflow: hidden; text-align: center;
     }
     .label-new .barcode-wrap-pn svg,
     .label-new .barcode-wrap-sn svg {
       width: 100% !important; height: 100% !important; display: inline-block; vertical-align: top; shape-rendering: crispEdges;
     }
     .label-new .caption {
-      font-size: 12pt; font-weight: 900; text-align: center; line-height: 1; margin: 0 0 0.7mm 0; width: 100%;
+      font-size: 17pt; font-weight: 900; text-align: center; line-height: 1; margin: 0 0 0.4mm 0; width: 100%;
     }
     .label-new .value {
-      font-size: 12pt; font-weight: 900; text-align: center; line-height: 1; white-space: nowrap; width: 100%; margin: 0 0 0.7mm 0;
+      font-size: 17pt; font-weight: 900; text-align: center; line-height: 1; white-space: nowrap; width: 100%; margin: 0 0 0.4mm 0;
     }
 
     /* ===== ДРУК (стандартна та FI2 етикетки) =====
@@ -1146,6 +1146,9 @@
           const snVal = label.querySelector('.new-val-sn').innerText;
           JsBarcode(svgPn, pnVal, { format: "CODE128B", displayValue: false, margin: 0, height: 48, width: 1.3, flat: true, lineColor: "#000000" });
           JsBarcode(svgSn, snVal, { format: "CODE128B", displayValue: false, margin: 0, height: 48, width: 1.0, flat: true, lineColor: "#000000" });
+          // Розтягуємо штрихкод на всю ширину контейнера (без збереження пропорцій), щоб він був більшим
+          svgPn.setAttribute('preserveAspectRatio', 'none');
+          svgSn.setAttribute('preserveAspectRatio', 'none');
         }
       });
     }
