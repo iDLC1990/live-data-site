@@ -1162,34 +1162,45 @@
     }
 
     // ===== SCC формат (50x30мм) =====
-    function buildAutoFitTextSvg(text) {
-      const svgNS = "http://www.w3.org/2000/svg";
-      const tempSvg = document.createElementNS(svgNS, "svg");
-      const tempText = document.createElementNS(svgNS, "text");
-      tempText.setAttribute("font-family", "Arial, Helvetica, sans-serif");
-      tempText.setAttribute("font-weight", "900");
-      tempText.setAttribute("font-size", "100");
-      tempText.textContent = text;
-      tempSvg.appendChild(tempText);
+    // Параметри автопідбору тексту SCC-етикетки.
+    // Текст переноситься по словах і підбирається до НАЙБІЛЬШОГО розміру, який влазить в етикетку.
+    // Спочатку шукаємо розмір, при якому жодне слово не розривається; якщо навіть при SCC_MIN_PT
+    // слово не влазить у рядок — дозволяємо переносити по символах.
+    const SCC_MAX_PT = 60;            // максимальний розмір шрифту
+    const SCC_MIN_PT = 8;             // мінімальний розмір (щоб було читабельно)
+    const SCC_LINE_HEIGHT = 1.1;
+    const SCC_TEXT_WIDTH_MM = 46;     // 50мм мінус padding 2мм з кожного боку
+    const SCC_TEXT_HEIGHT_MM = 25;    // 30мм мінус padding 2мм з кожного боку (з невеликим запасом)
 
-      tempSvg.style.position = 'absolute';
-      tempSvg.style.visibility = 'hidden';
-      document.body.appendChild(tempSvg);
+    function buildWrappedText(text) {
+      const MM_PX = 96 / 25.4;
+      const maxH = SCC_TEXT_HEIGHT_MM * MM_PX;
 
-      const bbox = tempText.getBBox();
-      document.body.removeChild(tempSvg);
+      const probe = document.createElement('div');
+      probe.style.cssText = `position:absolute;visibility:hidden;left:-9999px;top:0;width:${SCC_TEXT_WIDTH_MM}mm;` +
+        `font-family:Arial,Helvetica,sans-serif;font-weight:900;text-align:center;line-height:${SCC_LINE_HEIGHT};`;
+      probe.textContent = text;
+      document.body.appendChild(probe);
 
-      const paddingX = bbox.width * 0.04;
-      const paddingY = bbox.height * 0.08;
+      // Найбільший розмір (крок 0.5pt), при якому текст влазить; бінарний пошук.
+      function findFit(breakAnywhere) {
+        probe.style.overflowWrap = breakAnywhere ? 'anywhere' : 'normal';
+        let lo = SCC_MIN_PT * 2, hi = SCC_MAX_PT * 2, best = null;
+        while (lo <= hi) {
+          const mid = Math.floor((lo + hi) / 2);
+          probe.style.fontSize = (mid / 2) + 'pt';
+          const fits = probe.offsetHeight <= maxH && probe.scrollWidth <= probe.clientWidth + 1;
+          if (fits) { best = mid / 2; lo = mid + 1; } else { hi = mid - 1; }
+        }
+        return best;
+      }
 
-      const vbX = bbox.x - paddingX;
-      const vbY = bbox.y - paddingY;
-      const vbW = bbox.width + (paddingX * 2);
-      const vbH = bbox.height + (paddingY * 2);
+      let pt = findFit(false);            // без розриву слів
+      if (pt === null) pt = findFit(true); // якщо слово задовге — розрив по символах
+      if (pt === null) pt = SCC_MIN_PT;    // зовсім довгий текст — мінімальний розмір
 
-      return `<svg viewBox="${vbX} ${vbY} ${vbW} ${vbH}" preserveAspectRatio="none">
-        <text x="${bbox.x + bbox.width/2}" y="${bbox.y + bbox.height/2}" dominant-baseline="central" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-weight="900" font-size="100">${escapeHtml(text)}</text>
-      </svg>`;
+      document.body.removeChild(probe);
+      return `<div class="txt" style="font-size:${pt}pt">${escapeHtml(text)}</div>`;
     }
 
     // Логіка кількості:
@@ -1217,10 +1228,12 @@
 
       // Повна послідовність етикеток формується наперед, тому не залежимо від "Copies"/collate
       // у діалозі друку чи драйвері принтера.
+      // Автопідбір розміру робимо один раз для кожного тексту, а не для кожної копії
+      const textBlocks = setPattern.map((text) => buildWrappedText(text));
       let labelsHtml = '';
       for (let i = 0; i < copiesCount; i++) {
-        setPattern.forEach((text) => {
-          labelsHtml += `<div class="lbl">${buildAutoFitTextSvg(text)}</div>`;
+        textBlocks.forEach((block) => {
+          labelsHtml += `<div class="lbl">${block}</div>`;
         });
       }
 
@@ -1232,11 +1245,16 @@
   .lbl {
     width: 50mm; height: 29.5mm; padding: 2mm;
     box-sizing: border-box; overflow: hidden;
+    display: flex; align-items: center; justify-content: center;
     break-inside: avoid; page-break-inside: avoid;
+  }
+  .txt {
+    width: 100%; text-align: center; color: #000;
+    font-family: Arial, Helvetica, sans-serif; font-weight: 900;
+    line-height: 1.1; overflow-wrap: anywhere;
   }
   /* розрив сторінки лише МІЖ етикетками — після останньої порожньої сторінки немає */
   .lbl:not(:last-child) { break-after: page; page-break-after: always; }
-  .lbl svg { display: block; width: 100%; height: 100%; }
 </style></head>
 <body>${labelsHtml}</body></html>`;
 
