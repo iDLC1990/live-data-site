@@ -319,15 +319,20 @@
     .val-sn { font-size: 13pt; font-family: Arial, Helvetica, sans-serif; transform: scale(1, 1.8); transform-origin: center top; margin-top: 3.5mm; }
 
     /* ===== Новий формат етикетки 130x76мм (для FI2) =====
-       Друкується з полями @page: 19.05mm (верх) / 2.54mm (право) / 6.35mm (низ) / 2.54mm (ліво)
-       (= 0.75" / 0.1" / 0.25" / 0.1"). Тому робоча область = 124.92 x 50.6 мм,
-       і розміри елементів підібрані під неї. */
+       Етикетка займає всю сторінку 130x76 мм (поля @page = 0), а відступи 0.75" (верх) / 0.1" (боки) / 0.25" (низ)
+       задані через padding: 19.05 / 2.54 / 6.35 / 2.54 мм. Робоча область = 124.92 x 50.6 мм.
+       Чорна рамка малюється по краю етикетки через ::after. */
     .label-new {
-      width: 124.92mm; height: 50.6mm; position: relative; background: #FFFFFF; color: #000000;
-      padding: 0; box-sizing: border-box; font-family: Arial, Helvetica, sans-serif;
+      width: 130mm; height: 76mm; position: relative; background: #FFFFFF; color: #000000;
+      padding: 19.05mm 2.54mm 6.35mm 2.54mm; box-sizing: border-box; font-family: Arial, Helvetica, sans-serif;
       display: flex; flex-direction: column; align-items: center; justify-content: flex-start;
       overflow: hidden; border: 1px solid #D1D5DB; box-shadow: 0 10px 25px rgba(0, 0, 0, 0.5);
       background-clip: padding-box;
+    }
+    /* Чорна рамка по краю етикетки (відступ 1.5мм від краю, товщина 0.5мм) */
+    .label-new::after {
+      content: ''; position: absolute; top: 1.5mm; left: 1.5mm; right: 1.5mm; bottom: 1.5mm;
+      border: 0.5mm solid #000000; pointer-events: none; box-sizing: border-box;
     }
     .label-new .barcode-wrap-pn,
     .label-new .barcode-wrap-sn {
@@ -384,8 +389,8 @@
       }
 
       #printContainer > .industrial-label { width: 100mm !important; height: 77.6mm !important; }
-      /* 130x76 мінус поля @page (2.54+2.54 по ширині, 19.05+6.35 по висоті) = 124.92 x 50.6 мм */
-      #printContainer > .label-new        { width: 124.9mm !important; height: 50.2mm !important; }
+      /* 130x76, висота трохи менша за сторінку, щоб не виникало порожньої сторінки */
+      #printContainer > .label-new        { width: 130mm !important; height: 75.6mm !important; }
     }
   </style>
 </head>
@@ -536,8 +541,9 @@
     const SHEET_ID = '10W03bvKlVFlIUcxsHkzP_v_13gtnYRBmnrrO0ujB1bU';
     const FI2_GID = '193025884';
 
-    // Поля сторінки для формату 130x76мм (верх / право / низ / ліво) = 0.75" / 0.1" / 0.25" / 0.1"
-    const NEW_LABEL_MARGIN = '19.05mm 2.54mm 6.35mm 2.54mm';
+    // Поля @page для 130x76мм = 0: відступи 0.75" / 0.1" / 0.25" / 0.1" задані через padding у .label-new,
+    // щоб чорна рамка малювалась по краю самої етикетки.
+    const NEW_LABEL_MARGIN = '0';
 
     let currentGid = '0';
     let products = [];
