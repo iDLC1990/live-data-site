@@ -229,6 +229,17 @@
     .code-text { font-family: 'Consolas', 'Courier New', monospace; font-weight: 600; letter-spacing: 0.5px; }
     .custom-checkbox { width: 18px; height: 18px; cursor: pointer; accent-color: var(--accent-color); }
 
+    td.col-selected { background-color: rgba(37, 99, 235, 0.35) !important; }
+
+    #copyToast {
+      position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%);
+      background: #111827; color: #F9FAFB; border: 1px solid #374151;
+      padding: 10px 18px; border-radius: 8px; font-size: 13px; font-weight: 600;
+      box-shadow: 0 10px 25px rgba(0, 0, 0, 0.5); z-index: 9999;
+      opacity: 0; pointer-events: none; transition: opacity 0.2s ease;
+    }
+    #copyToast.visible { opacity: 1; }
+
     .actions-cell { display: flex; gap: 10px; justify-content: flex-end; align-items: center; }
 
     .btn {
@@ -686,6 +697,7 @@
     // Перевіряє, чи є зараз активне (непорожнє) виділення тексту саме всередині таблиці,
     // щоб не скидати його автооновленням даних кожні 2 секунди.
     function hasActiveTableSelection() {
+      if (colSelectCells.length > 0) return true;
       const sel = window.getSelection();
       if (!sel || sel.rangeCount === 0 || sel.isCollapsed) return false;
       const container = document.getElementById('productsTableBody');
@@ -696,6 +708,96 @@
       }
       return false;
     }
+
+    // ===== Виділення стовпця перетягуванням миші при затиснутому Ctrl =====
+    // Працює однаково і в Firefox, і в Chrome (нативне множинне виділення є лише у Firefox).
+    let colSelectActive = false;
+    let colSelectColumn = null;
+    let colSelectStartRow = null;
+    let colSelectCells = [];
+
+    function rowIndexOf(td) {
+      const tr = td.parentElement;
+      return Array.from(tr.parentElement.children).indexOf(tr);
+    }
+
+    function highlightColumnRange(col, startRow, endRow) {
+      const lo = Math.min(startRow, endRow);
+      const hi = Math.max(startRow, endRow);
+      const allTds = document.querySelectorAll(`td[data-col="${col}"]`);
+      colSelectCells = [];
+      allTds.forEach(td => {
+        const rowIndex = rowIndexOf(td);
+        if (rowIndex >= lo && rowIndex <= hi) {
+          td.classList.add('col-selected');
+          colSelectCells.push(td);
+        } else {
+          td.classList.remove('col-selected');
+        }
+      });
+    }
+
+    function clearColumnSelection() {
+      document.querySelectorAll('td.col-selected').forEach(td => td.classList.remove('col-selected'));
+      colSelectCells = [];
+      colSelectColumn = null;
+      colSelectStartRow = null;
+    }
+
+    function showToast(message) {
+      let toast = document.getElementById('copyToast');
+      if (!toast) {
+        toast = document.createElement('div');
+        toast.id = 'copyToast';
+        document.body.appendChild(toast);
+      }
+      toast.textContent = message;
+      toast.classList.add('visible');
+      clearTimeout(toast._hideTimer);
+      toast._hideTimer = setTimeout(() => { toast.classList.remove('visible'); }, 1800);
+    }
+
+    tableBody.addEventListener('mousedown', (e) => {
+      if (!e.ctrlKey && !e.metaKey) return;
+      const td = e.target.closest('td[data-col]');
+      if (!td) return;
+      e.preventDefault();
+      clearColumnSelection();
+      colSelectActive = true;
+      colSelectColumn = td.dataset.col;
+      colSelectStartRow = rowIndexOf(td);
+      highlightColumnRange(colSelectColumn, colSelectStartRow, colSelectStartRow);
+    });
+
+    document.addEventListener('mousemove', (e) => {
+      if (!colSelectActive) return;
+      const el = document.elementFromPoint(e.clientX, e.clientY);
+      const td = el ? el.closest(`td[data-col="${colSelectColumn}"]`) : null;
+      if (!td) return;
+      highlightColumnRange(colSelectColumn, colSelectStartRow, rowIndexOf(td));
+    });
+
+    document.addEventListener('mouseup', () => {
+      if (!colSelectActive) return;
+      colSelectActive = false;
+      if (colSelectCells.length > 0) {
+        showToast(`🖍️ Виділено ${colSelectCells.length} — Ctrl+C щоб скопіювати`);
+      }
+    });
+
+    document.addEventListener('mousedown', (e) => {
+      if (e.ctrlKey || e.metaKey) return;
+      if (colSelectCells.length > 0) clearColumnSelection();
+    });
+
+    document.addEventListener('keydown', (e) => {
+      if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'c' && colSelectCells.length > 0) {
+        const text = colSelectCells.map(td => td.textContent.trim()).join('\n');
+        if (navigator.clipboard && navigator.clipboard.writeText) {
+          navigator.clipboard.writeText(text).then(() => showToast(`✅ Скопійовано ${colSelectCells.length} значень`));
+        }
+      }
+    });
 
     function renderTable() {
       if (products.length === 0) {
