@@ -671,7 +671,9 @@
         }
 
         products = validItems;
-        renderTable();
+        if (!hasActiveTableSelection()) {
+          renderTable();
+        }
         updateBatchBar();
       } catch (error) {
         console.warn('Мережа або база тимчасово недоступні.');
@@ -679,6 +681,20 @@
         isInitialLoad = false;
         syncIndicator.classList.remove('visible');
       }
+    }
+
+    // Перевіряє, чи є зараз активне (непорожнє) виділення тексту саме всередині таблиці,
+    // щоб не скидати його автооновленням даних кожні 2 секунди.
+    function hasActiveTableSelection() {
+      const sel = window.getSelection();
+      if (!sel || sel.rangeCount === 0 || sel.isCollapsed) return false;
+      const container = document.getElementById('productsTableBody');
+      if (!container) return false;
+      for (let i = 0; i < sel.rangeCount; i++) {
+        const range = sel.getRangeAt(i);
+        if (container.contains(range.commonAncestorContainer)) return true;
+      }
+      return false;
     }
 
     function renderTable() {
