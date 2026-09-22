@@ -1260,7 +1260,7 @@
       let labelsHtml = '';
       for (let i = 0; i < copiesCount; i++) {
         textBlocks.forEach((block) => {
-          labelsHtml += `<div class="lbl">${block}</div>`;
+          labelsHtml += `<div class="lbl"><div class="lbl-cell">${block}</div></div>`;
         });
       }
 
@@ -1269,14 +1269,25 @@
 <style>
   @page { size: 50mm 30mm; margin: 0; }
   html, body { margin: 0; padding: 0; background: #fff; }
+  /* display:table/table-cell замість flex — flex align-items:center ненадійно
+     центрує по вертикалі у деяких браузерах саме в контексті друку з розривами
+     сторінок (break-after: page), через що текст "з'їжджав" до низу етикетки. */
   .lbl {
-    width: 50mm; height: 29.5mm; padding: 2mm;
+    display: table;
+    width: 50mm; height: 29.5mm;
     box-sizing: border-box; overflow: hidden;
-    display: flex; align-items: center; justify-content: center;
     break-inside: avoid; page-break-inside: avoid;
   }
+  .lbl-cell {
+    display: table-cell;
+    width: 50mm; height: 29.5mm;
+    padding: 2mm;
+    box-sizing: border-box;
+    text-align: center;
+    vertical-align: middle;
+  }
   .txt {
-    width: 100%; text-align: center; color: #000;
+    width: 100%; color: #000;
     font-family: Arial, Helvetica, sans-serif; font-weight: 900;
     line-height: 1.1; overflow-wrap: anywhere;
   }
