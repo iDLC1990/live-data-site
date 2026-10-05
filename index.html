@@ -1,5 +1,3 @@
-
-
 <!DOCTYPE html>
 <html lang="uk">
 <head>
@@ -478,10 +476,17 @@
     <div id="customLabelsSection" style="display: none;">
       <div class="manual-input-card">
         <div class="manual-input-title">🔠 Друк тексту на всю етикетку (OK, WAITING, SCRAP)</div>
-        <div class="manual-form-grid" style="grid-template-columns: 1fr auto;">
+        <div class="manual-form-grid" style="grid-template-columns: 1fr auto auto;">
           <div class="form-group">
             <label>Слово або статус</label>
             <input type="text" id="bigTextInput" class="form-input code-text" placeholder="Наприклад: OK, WAITING, SCRAP" value="OK">
+          </div>
+          <div class="form-group">
+            <label for="bigTextSize">Розмір етикетки</label>
+            <select id="bigTextSize" class="form-input">
+              <option value="100x78">100 × 78 мм</option>
+              <option value="80x68">80 × 68 мм</option>
+            </select>
           </div>
           <div class="form-group" style="justify-content: flex-end;">
             <label>&nbsp;</label>
@@ -943,15 +948,20 @@
       const vbW = bbox.width + (paddingX * 2);
       const vbH = bbox.height + (paddingY * 2);
 
-      // Розміри етикетки задає print-CSS, тому тут використовуємо 100% (а не жорсткі 100mm x 78mm)
+      // Вибраний розмір етикетки
+      const [labelW, labelH] = document.getElementById('bigTextSize').value.split('x').map(Number);
+      // Висота трохи менша за сторінку (як і в print-CSS), щоб не було порожньої сторінки
+      const labelHPrint = (labelH - 0.4).toFixed(1);
+
+      // Inline !important перебиває !important з print-CSS (100mm x 77.6mm)
       printContainer.innerHTML = `
-        <div class="industrial-label" style="padding: 0 !important; display: block !important; background: #ffffff !important; border: none !important; overflow: hidden;">
+        <div class="industrial-label" style="width: ${labelW}mm !important; height: ${labelHPrint}mm !important; padding: 0 !important; display: block !important; background: #ffffff !important; border: none !important; overflow: hidden;">
           <svg width="100%" height="100%" viewBox="${vbX} ${vbY} ${vbW} ${vbH}" preserveAspectRatio="none" style="display: block; width: 100%; height: 100%;">
             <text x="${bbox.x + bbox.width/2}" y="${bbox.y + bbox.height/2}" dominant-baseline="central" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-weight="900" font-size="100">${escapeHtml(text)}</text>
           </svg>
         </div>
       `;
-      prepareAndPrint(100, 78);
+      prepareAndPrint(labelW, labelH);
     }
 
     function printRepeatText() {
