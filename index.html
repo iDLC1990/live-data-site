@@ -190,11 +190,24 @@
       display: flex;
       justify-content: space-between;
       align-items: center;
+      gap: 16px;
+      flex-wrap: wrap;
       box-shadow: var(--shadow-lg);
     }
 
     .batch-info { font-size: 14px; font-weight: 500; color: var(--text-muted); }
     .batch-buttons { display: flex; gap: 12px; }
+
+    /* ===== Перемикач режиму Ctrl+P ===== */
+    .mode-switch { display: flex; align-items: center; gap: 8px; }
+    .mode-switch .mode-label { font-size: 13px; color: var(--text-muted); margin-right: 4px; }
+    .mode-btn {
+      background-color: #374151; color: var(--text-muted);
+      border: 1px solid var(--border-color); border-radius: 8px;
+      padding: 8px 14px; font-size: 13px; font-weight: 600;
+      cursor: pointer; transition: all 0.2s; font-family: inherit;
+    }
+    .mode-btn.active { background-color: var(--new-color); color: #FFFFFF; border-color: var(--new-color); }
 
     .card {
       background-color: var(--card-bg);
@@ -446,6 +459,13 @@
 
       <div class="batch-actions-bar">
         <div class="batch-info" id="selectedCountText">Вибрано позицій: 0</div>
+
+        <div class="mode-switch">
+          <span class="mode-label">Ctrl+P друкує:</span>
+          <button class="mode-btn active" id="modeBtn1" onclick="setPrintMode('1')">1 · Стандарт 100×78</button>
+          <button class="mode-btn" id="modeBtn2" onclick="setPrintMode('2')">2 · Новий 130×76</button>
+        </div>
+
         <div class="batch-buttons">
           <button class="btn btn-secondary" id="batchPrintNormalBtn" disabled onclick="printBatch(false)">🖨️ Друк вибраних</button>
           <button class="btn btn-brand" id="batchPrintBrandBtn" disabled onclick="printBatch(true)">🖨️ Друк вибраних з Brand</button>
@@ -555,6 +575,17 @@
     let products = [];
     let selectedSerials = new Set();
     let isInitialLoad = true;
+
+    // Режим Ctrl+P: '1' = стандарт 100x78, '2' = новий 130x76. Запам'ятовується між перезавантаженнями.
+    let ctrlPMode = '1';
+    try { ctrlPMode = localStorage.getItem('ctrlPMode') === '2' ? '2' : '1'; } catch (e) {}
+
+    function setPrintMode(mode) {
+      ctrlPMode = mode === '2' ? '2' : '1';
+      try { localStorage.setItem('ctrlPMode', ctrlPMode); } catch (e) {}
+      document.getElementById('modeBtn1').classList.toggle('active', ctrlPMode === '1');
+      document.getElementById('modeBtn2').classList.toggle('active', ctrlPMode === '2');
+    }
 
     const dbCache = new Map();
     const RETRY_DELAY_MS = 3000;
@@ -1171,6 +1202,18 @@
       prepareAndPrint(130, 76, NEW_LABEL_MARGIN);
     }
 
+    function printBatchNew() {
+      if (selectedSerials.size === 0) return;
+      const itemsToPrint = products.filter(p => selectedSerials.has(p.sn));
+      if (itemsToPrint.length === 0) return;
+      printContainer.innerHTML = buildNewLabelHTML(itemsToPrint);
+      renderNewBarcodesInContainer('#printContainer');
+      prepareAndPrint(130, 76, NEW_LABEL_MARGIN);
+      selectedSerials.clear();
+      renderTable();
+      updateBatchBar();
+    }
+
     // ===== SCC формат (50x30мм) =====
     // Параметри автопідбору тексту SCC-етикетки.
     // Текст переноситься по словах і підбирається до НАЙБІЛЬШОГО розміру, який влазить в етикетку.
@@ -1315,7 +1358,18 @@
 
       if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'p') {
         e.preventDefault();
-        if (products.length > 0 && currentGid !== 'custom') {
+        if (currentGid === 'custom' || products.length === 0) return;
+
+        // не друкуємо рядок, де PN ще не знайдено (спіннер)
+        if (selectedSerials.size === 0 && products[0].pn.includes('table-spinner')) {
+          showToast('⏳ PN ще не знайдено в базі');
+          return;
+        }
+
+        if (ctrlPMode === '2') {
+          if (selectedSerials.size > 0) printBatchNew();
+          else printSingleNew(0);
+        } else {
           if (selectedSerials.size > 0) printBatch(false);
           else printSingle(0, false);
         }
@@ -1323,6 +1377,7 @@
     });
 
     document.addEventListener('DOMContentLoaded', () => {
+      setPrintMode(ctrlPMode);
       fetchDataFromGoogleSheet(true);
       setInterval(() => fetchDataFromGoogleSheet(false), 2000);
 
