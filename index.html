@@ -1151,6 +1151,7 @@
 
     function printBatch(includeBrand) {
       if (selectedSerials.size === 0) return;
+      if (ctrlPMode === '2') { printBatchNew(); return; }
       const itemsToPrint = products.filter(p => selectedSerials.has(p.sn));
       if (itemsToPrint.length === 0) return;
       printContainer.innerHTML = buildLabelsHTML(itemsToPrint, includeBrand);
