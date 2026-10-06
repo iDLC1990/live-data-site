@@ -366,7 +366,12 @@
     .label-new .value {
       font-size: 17pt; font-weight: 900; text-align: center; line-height: 1; white-space: nowrap; width: 100%; margin: 0 0 0.4mm 0;
     }
-
+.label-new .brand-tag-new {
+  position: absolute; top: 3mm; left: 4mm; right: 4mm; height: 16mm;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 28pt; font-weight: 900; text-transform: uppercase; line-height: 1;
+  white-space: nowrap; overflow: hidden;
+}
     /* ===== ДРУК (стандартна та FI2 етикетки) =====
        SCC-етикетки (50x30мм) друкуються окремо, через ізольований iframe (див. printSCC / printInFrame),
        тому тут CSS для них не потрібен.
@@ -1151,7 +1156,7 @@
 
     function printBatch(includeBrand) {
       if (selectedSerials.size === 0) return;
-      if (ctrlPMode === '2') { printBatchNew(); return; }
+      if (ctrlPMode === '2') { printBatchNew(includeBrand); return; }
       const itemsToPrint = products.filter(p => selectedSerials.has(p.sn));
       if (itemsToPrint.length === 0) return;
       printContainer.innerHTML = buildLabelsHTML(itemsToPrint, includeBrand);
@@ -1164,24 +1169,25 @@
 
     // ===== Новий формат (130x76мм, лише для FI2) =====
     // Порядок блоків: штрихкод PN -> підпис "PN" -> значення PN -> підпис "SN" -> штрихкод SN -> значення SN
-    function buildNewLabelHTML(itemsList) {
-      let html = '';
-      itemsList.forEach((product, idx) => {
-        for (let copy = 0; copy < 2; copy++) {
-          html += `
-            <div class="label-new">
-              <div class="barcode-wrap-pn"><svg id="newBarcodePN_${idx}_${copy}"></svg></div>
-              <div class="caption">PN</div>
-              <div class="value new-val-pn">${escapeHtml(product.pn)}</div>
-              <div class="caption">SN</div>
-              <div class="barcode-wrap-sn"><svg id="newBarcodeSN_${idx}_${copy}"></svg></div>
-              <div class="value new-val-sn">${escapeHtml(product.sn)}</div>
-            </div>
-          `;
-        }
-      });
-      return html;
+    function buildNewLabelHTML(itemsList, includeBrand = false) {
+  let html = '';
+  itemsList.forEach((product, idx) => {
+    for (let copy = 0; copy < 2; copy++) {
+      html += `
+        <div class="label-new">
+          ${includeBrand ? `<div class="brand-tag-new">${escapeHtml(product.brand)}</div>` : ''}
+          <div class="barcode-wrap-pn"><svg id="newBarcodePN_${idx}_${copy}"></svg></div>
+          <div class="caption">PN</div>
+          <div class="value new-val-pn">${escapeHtml(product.pn)}</div>
+          <div class="caption">SN</div>
+          <div class="barcode-wrap-sn"><svg id="newBarcodeSN_${idx}_${copy}"></svg></div>
+          <div class="value new-val-sn">${escapeHtml(product.sn)}</div>
+        </div>
+      `;
     }
+  });
+  return html;
+}
 
     function renderNewBarcodesInContainer(containerSelector) {
       const container = document.querySelector(containerSelector);
@@ -1201,25 +1207,25 @@
       });
     }
 
-    function printSingleNew(index) {
-      const product = products[index];
-      if (!product) return;
-      printContainer.innerHTML = buildNewLabelHTML([product]);
-      renderNewBarcodesInContainer('#printContainer');
-      prepareAndPrint(130, 76, NEW_LABEL_MARGIN);
-    }
+    function printSingleNew(index, includeBrand = false) {
+  const product = products[index];
+  if (!product) return;
+  printContainer.innerHTML = buildNewLabelHTML([product], includeBrand);
+  renderNewBarcodesInContainer('#printContainer');
+  prepareAndPrint(130, 76, NEW_LABEL_MARGIN);
+}
 
-    function printBatchNew() {
-      if (selectedSerials.size === 0) return;
-      const itemsToPrint = products.filter(p => selectedSerials.has(p.sn));
-      if (itemsToPrint.length === 0) return;
-      printContainer.innerHTML = buildNewLabelHTML(itemsToPrint);
-      renderNewBarcodesInContainer('#printContainer');
-      prepareAndPrint(130, 76, NEW_LABEL_MARGIN);
-      selectedSerials.clear();
-      renderTable();
-      updateBatchBar();
-    }
+function printBatchNew(includeBrand = false) {
+  if (selectedSerials.size === 0) return;
+  const itemsToPrint = products.filter(p => selectedSerials.has(p.sn));
+  if (itemsToPrint.length === 0) return;
+  printContainer.innerHTML = buildNewLabelHTML(itemsToPrint, includeBrand);
+  renderNewBarcodesInContainer('#printContainer');
+  prepareAndPrint(130, 76, NEW_LABEL_MARGIN);
+  selectedSerials.clear();
+  renderTable();
+  updateBatchBar();
+}
 
     // ===== SCC формат (50x30мм) =====
     // Параметри автопідбору тексту SCC-етикетки.
