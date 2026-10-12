@@ -374,15 +374,6 @@
       white-space: nowrap; overflow: hidden;
     }
 
-    /* ===== Песочница для «Друк тексту на всю етикетку» (Alt+Q, Спец. Етикетки) ===== */
-    .sandbox-card { border: 1px dashed #7C3AED; }
-    .sb-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 10px; margin-bottom: 14px; }
-    .sb-preview-wrap { background: #6B7280; padding: 16px; border-radius: 8px; overflow: auto; display: flex; justify-content: center; }
-    .sb-preview-wrap > div { box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4); }
-    .sb-actions { display: flex; gap: 10px; justify-content: flex-end; margin-top: 12px; }
-    .big-label { position: relative; background: #FFFFFF; overflow: hidden; margin: 0 auto; }
-    .big-label svg { display: block; }
-
     /* ===== ДРУК (стандартна та FI2 етикетки)
        SCC-етикетки (50x30мм) друкуються окремо, через ізольований iframe (див. printSCC / printInFrame),
        тому тут CSS для них не потрібен.
@@ -538,26 +529,6 @@
         </div>
       </div>
 
-      <!-- Песочница для поля «Друк тексту на всю етикетку»: скрыта, открывается по Alt+Q -->
-      <div id="sandboxPanel" class="manual-input-card sandbox-card" style="display: none;">
-        <div class="manual-input-title">🧪 Песочница для «Друк тексту» (Alt+Q — показати/сховати)</div>
-        <div class="sb-grid">
-          <div class="form-group"><label>Ширина, мм</label><input type="number" step="0.1" min="5" id="sbW" class="form-input"></div>
-          <div class="form-group"><label>Висота, мм</label><input type="number" step="0.1" min="5" id="sbH" class="form-input"></div>
-          <div class="form-group"><label>Растяжение X, %</label><input type="number" step="1" min="1" id="sbSX" class="form-input"></div>
-          <div class="form-group"><label>Растяжение Y, %</label><input type="number" step="1" min="1" id="sbSY" class="form-input"></div>
-          <div class="form-group"><label>Смещение X, мм</label><input type="number" step="0.1" id="sbOX" class="form-input"></div>
-          <div class="form-group"><label>Смещение Y, мм</label><input type="number" step="0.1" id="sbOY" class="form-input"></div>
-          <div class="form-group"><label>Внутр. отступ, мм</label><input type="number" step="0.1" min="0" id="sbPAD" class="form-input"></div>
-          <div class="form-group"><label>Запас высоты печати, мм</label><input type="number" step="0.1" min="0" id="sbHTRIM" class="form-input"></div>
-        </div>
-        <div class="sb-preview-wrap"><div id="sbPreview"></div></div>
-        <div class="sb-actions">
-          <button class="btn btn-secondary" onclick="sbReset()">↺ Скинути</button>
-          <button class="btn btn-brand" onclick="sbPrint()">🖨️ Друк з песочниці</button>
-        </div>
-      </div>
-
       <div class="manual-input-card">
         <div class="manual-input-title">🔂 Друк рамки / повторюваного тексту (11 рядків)</div>
         <div class="manual-form-grid" style="grid-template-columns: 1fr auto;">
@@ -610,7 +581,7 @@
     const SHEET_ID = '10W03bvKlVFlIUcxsHkzP_v_13gtnYRBmnrrO0ujB1bU';
     const FI2_GID = '193025884';
 
-    // Поля @page для 130x76мм = 0: відступи 0.75" / 0.1" / 0.25" / 0.1" задані через padding у .label-new,
+    // Поля @page для 130x76мм = 0: відступи задані через padding у .label-new,
     // щоб чорна рамка малювалась по краю самої етикетки.
     const NEW_LABEL_MARGIN = '0';
 
@@ -994,7 +965,7 @@
       }, 250);
     }
 
-    // ===== Друк тексту на всю етикетку (стара логіка, без змін) =====
+    // ===== Друк тексту на всю етикетку (OK, WAITING, SCRAP) =====
     function printBigText() {
       const text = document.getElementById('bigTextInput').value.trim().toUpperCase();
       if (!text) { alert('Введіть текст!'); return; }
@@ -1037,123 +1008,6 @@
         </div>
       `;
       prepareAndPrint(labelW, labelH);
-    }
-
-    // ===== Песочница для «Друк тексту на всю етикетку» =====
-    // Параметри: розмір етикетки, растяжение X/Y (100 = заповнити область по осі),
-    // смещение, внутрішній відступ і запас висоти друку. Нічого не впливає на printBigText().
-    const SB_DEFAULTS = { w: 100, h: 78, sx: 100, sy: 100, ox: 0, oy: 0, pad: 1, hTrim: 0.4 };
-    const SB_STORAGE_KEY = 'bigTextSandbox';
-    const SB_FIELDS = { w: 'sbW', h: 'sbH', sx: 'sbSX', sy: 'sbSY', ox: 'sbOX', oy: 'sbOY', pad: 'sbPAD', hTrim: 'sbHTRIM' };
-
-    function sbRead() {
-      const out = {};
-      for (const key in SB_FIELDS) {
-        const v = parseFloat(document.getElementById(SB_FIELDS[key]).value);
-        out[key] = isNaN(v) ? SB_DEFAULTS[key] : v;
-      }
-      // Захист: нульові або від'ємні значення роблять текст невидимим
-      out.w = Math.max(out.w, 5);
-      out.h = Math.max(out.h, 5);
-      out.sx = Math.max(out.sx, 1);
-      out.sy = Math.max(out.sy, 1);
-      out.pad = Math.max(out.pad, 0);
-      out.hTrim = Math.max(out.hTrim, 0);
-      return out;
-    }
-
-    function sbWrite(p) {
-      for (const key in SB_FIELDS) document.getElementById(SB_FIELDS[key]).value = p[key];
-    }
-
-    function sbLoad() {
-      try {
-        const s = JSON.parse(localStorage.getItem(SB_STORAGE_KEY));
-        return s ? { ...SB_DEFAULTS, ...s } : { ...SB_DEFAULTS };
-      } catch (e) {
-        return { ...SB_DEFAULTS };
-      }
-    }
-
-    function sbText() {
-      return document.getElementById('bigTextInput').value.trim().toUpperCase() || 'OK';
-    }
-
-    // Текст розтягується окремо по X і по Y, щоб заповнити область етикетки.
-    // sx / sy = 100 означає повне заповнення по відповідній осі.
-    function buildBigTextSVG(text, p) {
-      const svgNS = 'http://www.w3.org/2000/svg';
-      let bb = { x: 0, y: -75, width: Math.max(text.length * 70, 1), height: 100 };
-
-      try {
-        const probe = document.createElementNS(svgNS, 'svg');
-        probe.setAttribute('style', 'position:absolute;visibility:hidden;left:-9999px;top:0;overflow:visible;');
-        const t = document.createElementNS(svgNS, 'text');
-        t.setAttribute('font-family', 'Arial, Helvetica, sans-serif');
-        t.setAttribute('font-weight', '900');
-        t.setAttribute('font-size', '100');
-        t.textContent = text;
-        probe.appendChild(t);
-        document.body.appendChild(probe);
-        const measured = t.getBBox();
-        document.body.removeChild(probe);
-        if (measured && measured.width > 0 && measured.height > 0) bb = measured;
-      } catch (e) {
-        // якщо вимірювання не вдалося, використовуємо запасні розміри з bb вище
-      }
-
-      const availW = Math.max(p.w - 2 * p.pad, 1);
-      const availH = Math.max(p.h - 2 * p.pad, 1);
-      const kx = Math.max((availW / bb.width) * p.sx / 100, 0.01);
-      const ky = Math.max((availH / bb.height) * p.sy / 100, 0.01);
-
-      const cx = p.w / 2 + p.ox;
-      const cy = p.h / 2 + p.oy;
-      const bcx = bb.x + bb.width / 2;
-      const bcy = bb.y + bb.height / 2;
-
-      return `<svg xmlns="${svgNS}" width="${p.w}mm" height="${p.h}mm" viewBox="0 0 ${p.w} ${p.h}">
-        <g transform="translate(${cx} ${cy}) scale(${kx} ${ky}) translate(${-bcx} ${-bcy})">
-          <text x="0" y="0" font-family="Arial, Helvetica, sans-serif" font-weight="900" font-size="100" fill="#000">${escapeHtml(text)}</text>
-        </g>
-      </svg>`;
-    }
-
-    function sbLabelHTML(text, p) {
-      const effH = p.h - p.hTrim;
-      return `<div class="big-label" style="width:${p.w}mm;height:${effH}mm;">${buildBigTextSVG(text, { ...p, h: effH })}</div>`;
-    }
-
-    function sbUpdate() {
-      const preview = document.getElementById('sbPreview');
-      try {
-        const p = sbRead();
-        try { localStorage.setItem(SB_STORAGE_KEY, JSON.stringify(p)); } catch (e) {}
-        preview.innerHTML = sbLabelHTML(sbText(), p);
-      } catch (err) {
-        console.error('Помилка предпросмотру песочниці:', err);
-      }
-    }
-
-    function sbReset() {
-      sbWrite(SB_DEFAULTS);
-      sbUpdate();
-    }
-
-    function sbPrint() {
-      const p = sbRead();
-      printContainer.innerHTML = sbLabelHTML(sbText(), p);
-      prepareAndPrint(p.w, p.h);
-    }
-
-    function toggleSandbox() {
-      const panel = document.getElementById('sandboxPanel');
-      const show = panel.style.display === 'none';
-      panel.style.display = show ? 'block' : 'none';
-      if (show) {
-        sbWrite(sbLoad());
-        sbUpdate();
-      }
     }
 
     function printRepeatText() {
@@ -1513,13 +1367,6 @@
     }
 
     document.addEventListener('keydown', (e) => {
-      // Alt+Q — песочница для «Друк тексту» (тільки на вкладці «Спец. Етикетки»)
-      if (e.altKey && e.code === 'KeyQ') {
-        e.preventDefault();
-        if (currentGid === 'custom') toggleSandbox();
-        return;
-      }
-
       if (e.altKey) {
         if (e.key === '1') { e.preventDefault(); switchSheet('0'); }
         else if (e.key === '2') { e.preventDefault(); switchSheet('193025884'); }
@@ -1578,13 +1425,6 @@
           }
         });
       }
-
-      // Песочница: живий предпросмотр при зміні полів і тексту
-      ['sbW', 'sbH', 'sbSX', 'sbSY', 'sbOX', 'sbOY', 'sbPAD', 'sbHTRIM']
-        .forEach(id => document.getElementById(id).addEventListener('input', sbUpdate));
-      document.getElementById('bigTextInput').addEventListener('input', () => {
-        if (document.getElementById('sandboxPanel').style.display !== 'none') sbUpdate();
-      });
     });
   </script>
   <script src="sandbox.js"></script>
