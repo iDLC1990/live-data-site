@@ -1488,7 +1488,11 @@ function printBatchNew(includeBrand = false) {
     //   create policy "chat read"  on public.chat_messages for select to anon using (true);
     //   create policy "chat write" on public.chat_messages for insert to anon with check (true);
     //   alter publication supabase_realtime add table public.chat_messages;
-    const CHAT_PASS_HASH = '57cf6e789df44e5346075c98d67b679bd1b2ba4afc2e494b589bcfe8452423e6'; // SHA-256 пароля
+    // SHA-256 пароля: TPVD12345 і TPVD12345! (обидва варіанти приймаються)
+    const CHAT_PASS_HASHES = [
+      '57cf6e789df44e5346075c98d67b679bd1b2ba4afc2e494b589bcfe8452423e6',
+      '70ab44f84354547fc73a8ea174ce9ae8d5c4830f29a4a9474f6b41ff1754abc2'
+    ];
     let chatName = '', chatChannel = null, chatUnread = 0;
     const chatSeen = new Set();
 
@@ -1516,12 +1520,13 @@ function printBatchNew(includeBrand = false) {
       const name = document.getElementById('chatName').value.trim();
       const pass = document.getElementById('chatPass').value.trim();
       if (!name) { document.getElementById('chatErr').textContent = "Введіть ім'я"; return; }
-      if (await sha256Hex(pass) !== CHAT_PASS_HASH) {
+      const hash = await sha256Hex(pass);
+      if (!CHAT_PASS_HASHES.includes(hash)) {
         document.getElementById('chatErr').textContent = 'Невірний пароль'; return;
       }
       document.getElementById('chatErr').textContent = '';
       chatName = name;
-      try { localStorage.setItem('chatAuth', JSON.stringify({ name, hash: CHAT_PASS_HASH })); } catch (e) {}
+      try { localStorage.setItem('chatAuth', JSON.stringify({ name, hash })); } catch (e) {}
       startChat();
     }
 
@@ -1595,7 +1600,7 @@ function printBatchNew(includeBrand = false) {
     (function () {
       try {
         const s = JSON.parse(localStorage.getItem('chatAuth') || 'null');
-        if (s && s.hash === CHAT_PASS_HASH && s.name) { chatName = s.name; startChat(); }
+        if (s && CHAT_PASS_HASHES.includes(s.hash) && s.name) { chatName = s.name; startChat(); }
       } catch (e) {}
     })();
   </script>
