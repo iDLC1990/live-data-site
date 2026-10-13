@@ -1514,7 +1514,7 @@ function printBatchNew(includeBrand = false) {
 
     async function chatLogin() {
       const name = document.getElementById('chatName').value.trim();
-      const pass = document.getElementById('chatPass').value;
+      const pass = document.getElementById('chatPass').value.trim();
       if (!name) { document.getElementById('chatErr').textContent = "Введіть ім'я"; return; }
       if (await sha256Hex(pass) !== CHAT_PASS_HASH) {
         document.getElementById('chatErr').textContent = 'Невірний пароль'; return;
