@@ -401,6 +401,22 @@
     .chat-msg .meta { font-size: 11px; color: var(--text-muted); margin-bottom: 2px; }
     .chat-form { display: flex; gap: 8px; padding: 10px; border-top: 1px solid var(--border-color); }
     .chat-form input { flex: 1; }
+    .chat-head-btns { display: flex; gap: 10px; align-items: center; }
+    .chat-head .chat-min { font-size: 18px; line-height: 1; padding: 0 4px; color: var(--text-main); }
+
+    /* Мигання при новому повідомленні, коли чат згорнутий */
+    #chatToggle.blink { animation: chatBtnBlink 1s ease-in-out infinite; }
+    @keyframes chatBtnBlink {
+      0%, 100% { background: var(--accent-color); transform: scale(1); }
+      50% { background: #DC2626; transform: scale(1.12); }
+    }
+    #chatNewLabel {
+      position: fixed; right: 86px; bottom: 32px; z-index: 9000; display: none; cursor: pointer;
+      background: #DC2626; color: #fff; font-weight: 800; font-size: 14px; letter-spacing: 0.5px;
+      padding: 10px 16px; border-radius: 8px; box-shadow: var(--shadow-lg);
+      animation: chatLabelBlink 1s ease-in-out infinite;
+    }
+    @keyframes chatLabelBlink { 0%, 100% { opacity: 1; } 50% { opacity: 0.2; } }
 
     /* ===== ДРУК (стандартна та FI2 етикетки) =====
        SCC-етикетки (50x30мм) друкуються окремо, через ізольований iframe (див. printSCC / printInFrame),
@@ -417,7 +433,7 @@
         margin: 0 !important; padding: 0 !important;
         background: #ffffff !important; display: block !important; overflow: visible !important;
       }
-      .app-container, #copyToast, #chatToggle, #chatBox { display: none !important; }
+      .app-container, #copyToast, #chatToggle, #chatBox, #chatNewLabel { display: none !important; }
 
       #printContainer {
         display: block !important; position: static !important;
@@ -595,11 +611,15 @@
   </div>
 
   <!-- ===== Чат операторів ===== -->
+  <div id="chatNewLabel" onclick="toggleChat()">🔔 NEW MESSAGE</div>
   <button id="chatToggle" onclick="toggleChat()">💬<span id="chatBadge"></span></button>
   <div id="chatBox">
     <div class="chat-head">
       <span>💬 Чат операторів</span>
-      <button onclick="chatLogout()" id="chatLogoutBtn" style="display:none;">Вийти</button>
+      <div class="chat-head-btns">
+        <button onclick="chatLogout()" id="chatLogoutBtn" style="display:none;">Вийти</button>
+        <button class="chat-min" onclick="toggleChat()" title="Згорнути">—</button>
+      </div>
     </div>
     <div id="chatLogin">
       <input type="text" id="chatName" class="form-input" placeholder="Ваше ім'я" maxlength="40">
@@ -1512,8 +1532,11 @@ function printBatchNew(includeBrand = false) {
 
     function updateChatBadge() {
       const b = document.getElementById('chatBadge');
-      b.style.display = chatUnread > 0 ? 'block' : 'none';
+      const show = chatUnread > 0;
+      b.style.display = show ? 'block' : 'none';
       b.textContent = chatUnread > 99 ? '99+' : chatUnread;
+      document.getElementById('chatNewLabel').style.display = show ? 'block' : 'none';
+      document.getElementById('chatToggle').classList.toggle('blink', show);
     }
 
     async function chatLogin() {
