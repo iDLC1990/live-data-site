@@ -1783,7 +1783,8 @@ function printBatchNew(includeBrand = false) {
       document.getElementById('chatLogoutBtn').style.display = 'inline';
 
       const { data } = await supabaseClient.from('chat_messages')
-        .select('*').order('created_at', { ascending: false }).limit(100);
+        .select('*').gte('created_at', new Date(Date.now() - CHAT_TTL_MS).toISOString())
+        .order('created_at', { ascending: false }).limit(100);
       (data || []).reverse().forEach(m => addChatMessage(m, true));
       retranslateAll();
 
@@ -1886,6 +1887,20 @@ function printBatchNew(includeBrand = false) {
       const l = document.getElementById('chatList');
       l.scrollTop = l.scrollHeight;
     });
+
+    // ----- Автоочищення чату: повідомлення живуть 30 хвилин -----
+    // Видалення з бази робить Supabase (pg_cron, див. SQL); тут ховаємо прострочене в інтерфейсі.
+    const CHAT_TTL_MS = 30 * 60 * 1000;
+    function sweepChat() {
+      const cutoff = Date.now() - CHAT_TTL_MS;
+      for (let i = chatEntries.length - 1; i >= 0; i--) {
+        if (new Date(chatEntries[i].m.created_at).getTime() < cutoff) {
+          chatEntries[i].el.remove();
+          chatEntries.splice(i, 1);
+        }
+      }
+    }
+    setInterval(sweepChat, 15000);
 
     // stopPropagation, щоб Alt+1/2/3 і Ctrl+P не спрацьовували під час набору в чаті
     document.getElementById('chatInput').addEventListener('keydown', e => {
