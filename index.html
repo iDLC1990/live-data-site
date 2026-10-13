@@ -401,6 +401,9 @@
     .chat-msg .meta { font-size: 11px; color: var(--text-muted); margin-bottom: 2px; }
     .chat-form { display: flex; gap: 8px; padding: 10px; border-top: 1px solid var(--border-color); }
     .chat-form input { flex: 1; }
+    .chat-lang { display: flex; align-items: center; gap: 8px; padding: 8px 12px; border-bottom: 1px solid var(--border-color); font-size: 12px; color: var(--text-muted); }
+    .chat-lang select { flex: 1; padding: 5px 8px; font-size: 12px; }
+    .chat-msg .orig { font-size: 11px; color: var(--text-muted); margin-top: 4px; padding-top: 3px; border-top: 1px dashed var(--border-color); }
     .chat-head-btns { display: flex; gap: 10px; align-items: center; }
     .chat-head .chat-min { font-size: 18px; line-height: 1; padding: 0 4px; color: var(--text-main); }
 
@@ -628,6 +631,15 @@
       <div id="chatErr" style="color:#F87171;font-size:12px;"></div>
     </div>
     <div id="chatMain">
+      <div class="chat-lang">
+        <span>🌐 Переклад:</span>
+        <select id="chatLang" class="form-input">
+          <option value="off">Оригінал (без перекладу)</option>
+          <option value="uk">Українська</option>
+          <option value="pl">Polski</option>
+          <option value="en">English</option>
+        </select>
+      </div>
       <div id="chatList"></div>
       <div class="chat-form">
         <input type="text" id="chatInput" class="form-input" placeholder="Повідомлення..." maxlength="1000">
@@ -1516,6 +1528,75 @@ function printBatchNew(includeBrand = false) {
     let chatName = '', chatChannel = null, chatUnread = 0;
     const chatSeen = new Set();
 
+    // ----- Переклад повідомлень -----
+    // Кожен оператор обирає свою мову; чужі повідомлення (будь-якою мовою, мова визначається автоматично)
+    // перекладаються на його мову, оригінал показується дрібним текстом під перекладом.
+    const CHAT_TR_LIMIT = 30; // скільки останніх повідомлень перекладати при відкритті/зміні мови
+    let chatLang = 'off';
+    try { const l = localStorage.getItem('chatLang'); if (['off', 'uk', 'pl', 'en'].includes(l)) chatLang = l; } catch (e) {}
+    const chatEntries = [];          // { el, m } у порядку появи
+    const trCache = new Map();       // "мова|текст" -> { text, src }
+    let trChain = Promise.resolve(); // черга запитів, щоб не засипати сервіс паралельними запитами
+
+    async function translateText(text, target) {
+      const key = target + '|' + text;
+      if (trCache.has(key)) return trCache.get(key);
+      try {
+        const url = 'https://translate.googleapis.com/translate_a/single?client=gtx&sl=auto&tl=' + target +
+                    '&dt=t&q=' + encodeURIComponent(text);
+        const r = await fetch(url);
+        if (!r.ok) return null;
+        const j = await r.json();
+        const result = { text: j[0].map(x => x[0]).join(''), src: j[2] };
+        trCache.set(key, result);
+        return result;
+      } catch (e) { return null; }
+    }
+
+    async function applyTranslation(entry) {
+      const { el, m } = entry;
+      const target = chatLang;
+      const bodyEl = el.querySelector('.body');
+      const origEl = el.querySelector('.orig');
+      const list = document.getElementById('chatList');
+
+      bodyEl.textContent = m.body;
+      origEl.style.display = 'none';
+      if (target === 'off' || m.author === chatName) return;
+
+      const tr = await translateText(m.body, target);
+      if (!tr || chatLang !== target) return; // не вдалося або мову вже змінили
+      if (tr.src === target || tr.text.trim() === m.body.trim()) return; // вже потрібною мовою
+
+      const nearBottom = list.scrollHeight - list.scrollTop - list.clientHeight < 80;
+      bodyEl.textContent = tr.text;
+      origEl.textContent = 'Оригінал: ' + m.body;
+      origEl.style.display = 'block';
+      if (nearBottom) list.scrollTop = list.scrollHeight;
+    }
+
+    function queueTranslation(entry) {
+      trChain = trChain.then(() => applyTranslation(entry)).catch(() => {});
+    }
+
+    function retranslateAll() {
+      const lastStart = Math.max(0, chatEntries.length - CHAT_TR_LIMIT);
+      chatEntries.forEach((entry, i) => {
+        if (i >= lastStart) queueTranslation(entry);
+        else { // старі повідомлення показуємо в оригіналі
+          entry.el.querySelector('.body').textContent = entry.m.body;
+          entry.el.querySelector('.orig').style.display = 'none';
+        }
+      });
+    }
+
+    document.getElementById('chatLang').value = chatLang;
+    document.getElementById('chatLang').addEventListener('change', (e) => {
+      chatLang = e.target.value;
+      try { localStorage.setItem('chatLang', chatLang); } catch (err) {}
+      retranslateAll();
+    });
+
     async function sha256Hex(s) {
       const buf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(s));
       return Array.from(new Uint8Array(buf)).map(b => b.toString(16).padStart(2, '0')).join('');
@@ -1557,6 +1638,7 @@ function printBatchNew(includeBrand = false) {
       try { localStorage.removeItem('chatAuth'); } catch (e) {}
       if (chatChannel) { supabaseClient.removeChannel(chatChannel); chatChannel = null; }
       chatSeen.clear();
+      chatEntries.length = 0;
       document.getElementById('chatList').innerHTML = '';
       document.getElementById('chatMain').style.display = 'none';
       document.getElementById('chatLogin').style.display = 'flex';
@@ -1572,6 +1654,7 @@ function printBatchNew(includeBrand = false) {
       const { data } = await supabaseClient.from('chat_messages')
         .select('*').order('created_at', { ascending: false }).limit(100);
       (data || []).reverse().forEach(m => addChatMessage(m, true));
+      retranslateAll();
 
       chatChannel = supabaseClient.channel('chat-room')
         .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'chat_messages' },
@@ -1588,9 +1671,12 @@ function printBatchNew(includeBrand = false) {
       const t = new Date(m.created_at).toLocaleTimeString('uk-UA', { hour: '2-digit', minute: '2-digit' });
       const el = document.createElement('div');
       el.className = 'chat-msg' + (mine ? ' mine' : '');
-      el.innerHTML = `<div class="meta">${escapeHtml(m.author)} · ${t}</div>${escapeHtml(m.body)}`;
+      el.innerHTML = `<div class="meta">${escapeHtml(m.author)} · ${t}</div><div class="body">${escapeHtml(m.body)}</div><div class="orig" style="display:none"></div>`;
       list.appendChild(el);
       if (nearBottom || mine) list.scrollTop = list.scrollHeight;
+      const entry = { el, m };
+      chatEntries.push(entry);
+      if (!silent && !mine && chatLang !== 'off') queueTranslation(entry);
       if (!silent && !mine && !document.getElementById('chatBox').classList.contains('open')) {
         chatUnread++; updateChatBadge();
       }
