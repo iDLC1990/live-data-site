@@ -1261,6 +1261,23 @@
       prepareAndPrint(100, 78);
     }
 
+    // ===== Розбір рядка, скопійованого з сайту/таблиці (колонки розділені Tab) =====
+    // Формат сайту (10+ колонок): Repair number | RID | Process | Business Model | Brand | Panel SN | OC SN | TPV PN | WO Type | Panel Status ...
+    //   -> SN = Panel SN (колонка 6), PN = TPV PN (колонка 8), Brand = Brand (колонка 5)
+    // Старий формат Google Таблиці (3 колонки): SN | PN | Brand
+    // Повертає null для заголовків та службових рядків ("Total: 2").
+    function parseSheetRow(parts) {
+      if (!parts || parts.length === 0) return null;
+      if (parts.length >= 8) {
+        if ((parts[5] || '').toLowerCase() === 'panel sn') return null; // рядок заголовків
+        if (!parts[5] && !parts[7]) return null;
+        return { sn: parts[5] || '', pn: parts[7] || '', brand: parts[4] || '' };
+      }
+      if ((parts[0] || '').toLowerCase().startsWith('total')) return null;
+      if (!parts[0]) return null;
+      return { sn: parts[0] || '', pn: parts[1] || '', brand: parts[2] || '' };
+    }
+
     async function printManual(includeBrand) {
       const snRaw = document.getElementById('manualSn').value.trim();
       const pnRaw = document.getElementById('manualPn').value.trim();
@@ -1284,10 +1301,14 @@
         let brand = brandLines[i] || (brandLines[0] || '-');
 
         if (sn.includes('\t')) {
-          const parts = sn.split('\t').map(p => p.trim());
-          sn = parts[0] || '';
-          if (parts[1]) pn = parts[1];
-          if (parts[2]) brand = parts[2];
+          const row = parseSheetRow(sn.split('\t').map(p => p.trim()));
+          if (row) {
+            sn = row.sn;
+            if (row.pn) pn = row.pn;
+            if (row.brand) brand = row.brand;
+          } else {
+            sn = '';
+          }
         }
 
         if (sn && (!pn || pn === '')) {
@@ -1620,20 +1641,17 @@ function printBatchNew(includeBrand = false) {
           if (pastedText && pastedText.includes('\t')) {
             e.preventDefault();
             const lines = pastedText.split(/\r?\n/).filter(line => line.trim() !== '');
-            const sns = [];
-            const pns = [];
-            const brands = [];
+            const rows = [];
 
             lines.forEach(line => {
-              const parts = line.split('\t').map(p => p.trim());
-              if (parts[0]) sns.push(parts[0]);
-              if (parts[1]) pns.push(parts[1]);
-              if (parts[2]) brands.push(parts[2]);
+              const row = parseSheetRow(line.split('\t').map(p => p.trim()));
+              if (row) rows.push(row);
             });
 
-            manualSnElem.value = sns.join('\n');
-            if (pns.length > 0) document.getElementById('manualPn').value = pns.join('\n');
-            if (brands.length > 0) document.getElementById('manualBrand').value = brands.join('\n');
+            // Один вставлений блок заповнює одразу SN, PN та Brand (по одному значенню на рядок)
+            manualSnElem.value = rows.map(r => r.sn).join('\n');
+            document.getElementById('manualPn').value = rows.some(r => r.pn) ? rows.map(r => r.pn).join('\n') : '';
+            document.getElementById('manualBrand').value = rows.some(r => r.brand) ? rows.map(r => r.brand).join('\n') : '';
           }
         });
       }
