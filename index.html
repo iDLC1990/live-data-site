@@ -471,28 +471,33 @@
   <div class="app-container">
     <header class="page-header">
       <div>
-        <h1 class="page-title">🖨️ Друк етикеток (TSC DA220)</h1>
+        <h1 class="page-title" data-i18n="title">🖨️ Друк етикеток (TSC DA220)</h1>
       </div>
       <div class="header-buttons">
-        <button class="btn btn-test" onclick="printTestLabel()">⬛ Тестовий друк</button>
-        <button class="btn btn-secondary" onclick="fetchDataFromGoogleSheet(true)">🔄 Оновити зараз</button>
+        <select id="uiLang" class="form-input" style="padding: 8px 10px; font-size: 13px;" title="Language / Мова / Język">
+          <option value="uk">Українська</option>
+          <option value="pl">Polski</option>
+          <option value="en">English</option>
+        </select>
+        <button class="btn btn-test" onclick="printTestLabel()" data-i18n="btn_test">⬛ Тестовий друк</button>
+        <button class="btn btn-secondary" onclick="fetchDataFromGoogleSheet(true)" data-i18n="btn_refresh">🔄 Оновити зараз</button>
       </div>
     </header>
 
     <div class="sheet-tabs">
       <button class="sheet-tab-btn active" id="tabBtn0" onclick="switchSheet('0')">FI    1 <kbd>Alt + 1</kbd></button>
       <button class="sheet-tab-btn" id="tabBtn193025884" onclick="switchSheet('193025884')">FI    2 <kbd>Alt + 2</kbd></button>
-      <button class="sheet-tab-btn" id="tabBtnCustom" onclick="switchSheet('custom')">🔠 Спец. Етикетки <kbd>Alt + 3</kbd></button>
+      <button class="sheet-tab-btn" id="tabBtnCustom" onclick="switchSheet('custom')"><span data-i18n="tab_custom">🔠 Спец. Етикетки</span> <kbd>Alt + 3</kbd></button>
 
       <div class="sync-indicator" id="syncIndicator">
         <div class="spinner"></div>
-        <span>Синхронізація...</span>
+        <span data-i18n="syncing">Синхронізація...</span>
       </div>
     </div>
 
     <div id="standardLabelsSection">
       <div class="manual-input-card">
-        <div class="manual-input-title">✍️ Ручне / Масове введення та друк (вставка з Google Таблиць)</div>
+        <div class="manual-input-title" data-i18n="manual_title">✍️ Ручне / Масове введення та друк (вставка з Google Таблиць)</div>
         <div class="manual-form-grid">
           <div class="form-group">
             <label for="manualSn">Serial Number (SN)</label>
@@ -508,11 +513,11 @@
           </div>
           <div class="form-group" style="justify-content: flex-end;">
             <label>&nbsp;</label>
-            <button class="btn btn-secondary" onclick="printManual(false)">🖨️ Друк</button>
+            <button class="btn btn-secondary" onclick="printManual(false)" data-i18n="btn_print">🖨️ Друк</button>
           </div>
           <div class="form-group" style="justify-content: flex-end;">
             <label>&nbsp;</label>
-            <button class="btn btn-brand" onclick="printManual(true)">🖨️ З Brand</button>
+            <button class="btn btn-brand" onclick="printManual(true)" data-i18n="btn_with_brand">🖨️ З Brand</button>
           </div>
         </div>
       </div>
@@ -521,14 +526,14 @@
         <div class="batch-info" id="selectedCountText">Вибрано позицій: 0</div>
 
         <div class="mode-switch">
-          <span class="mode-label">Ctrl+P друкує:</span>
-          <button class="mode-btn active" id="modeBtn1" onclick="setPrintMode('1')">1 · Стандарт 100×78</button>
-          <button class="mode-btn" id="modeBtn2" onclick="setPrintMode('2')">2 · Новий 130×76</button>
+          <span class="mode-label" data-i18n="ctrlp_prints">Ctrl+P друкує:</span>
+          <button class="mode-btn active" id="modeBtn1" onclick="setPrintMode('1')" data-i18n="mode1">1 · Стандарт 100×78</button>
+          <button class="mode-btn" id="modeBtn2" onclick="setPrintMode('2')" data-i18n="mode2">2 · Новий 130×76</button>
         </div>
 
         <div class="batch-buttons">
-          <button class="btn btn-secondary" id="batchPrintNormalBtn" disabled onclick="printBatch(false)">🖨️ Друк вибраних</button>
-          <button class="btn btn-brand" id="batchPrintBrandBtn" disabled onclick="printBatch(true)">🖨️ Друк вибраних з Brand</button>
+          <button class="btn btn-secondary" id="batchPrintNormalBtn" disabled onclick="printBatch(false)" data-i18n="btn_batch">🖨️ Друк вибраних</button>
+          <button class="btn btn-brand" id="batchPrintBrandBtn" disabled onclick="printBatch(true)" data-i18n="btn_batch_brand">🖨️ Друк вибраних з Brand</button>
         </div>
       </div>
 
@@ -542,11 +547,11 @@
                 <th>Serial Number (SN)</th>
                 <th>Part Number (PN)</th>
                 <th>Brand</th>
-                <th style="width: 260px; text-align: right;">Друк</th>
+                <th style="width: 260px; text-align: right;" data-i18n="th_print">Друк</th>
               </tr>
             </thead>
             <tbody id="productsTableBody">
-              <tr><td colspan="6" style="text-align: center; padding: 30px;">Завантаження даних...</td></tr>
+              <tr><td colspan="6" style="text-align: center; padding: 30px;" data-i18n="loading">Завантаження даних...</td></tr>
             </tbody>
           </table>
         </div>
@@ -555,59 +560,59 @@
 
     <div id="customLabelsSection" style="display: none;">
       <div class="manual-input-card">
-        <div class="manual-input-title">🔠 Друк тексту на всю етикетку (OK, WAITING, SCRAP)</div>
+        <div class="manual-input-title" data-i18n="bigtext_title">🔠 Друк тексту на всю етикетку (OK, WAITING, SCRAP)</div>
         <div class="manual-form-grid" style="grid-template-columns: 1fr auto auto;">
           <div class="form-group">
-            <label>Слово або статус</label>
-            <input type="text" id="bigTextInput" class="form-input code-text" placeholder="Наприклад: OK, WAITING, SCRAP" value="OK">
+            <label data-i18n="word_status">Слово або статус</label>
+            <input type="text" id="bigTextInput" class="form-input code-text" placeholder="Наприклад: OK, WAITING, SCRAP" data-i18n-ph="ph_word" value="OK">
           </div>
           <div class="form-group">
-            <label for="bigTextSize">Розмір етикетки</label>
+            <label for="bigTextSize" data-i18n="label_size">Розмір етикетки</label>
             <select id="bigTextSize" class="form-input">
-              <option value="100x78">100 × 78 мм</option>
-              <option value="80x68">80 × 68 мм</option>
-              <option value="50x25">50 × 25 мм</option>
+              <option value="100x78" data-i18n="opt_100x78">100 × 78 мм</option>
+              <option value="80x68" data-i18n="opt_80x68">80 × 68 мм</option>
+              <option value="50x25" data-i18n="opt_50x25">50 × 25 мм</option>
             </select>
           </div>
           <div class="form-group" style="justify-content: flex-end;">
             <label>&nbsp;</label>
-            <button class="btn btn-brand" onclick="printBigText()">🖨️ Друк тексту</button>
+            <button class="btn btn-brand" onclick="printBigText()" data-i18n="btn_print_text">🖨️ Друк тексту</button>
           </div>
         </div>
       </div>
 
       <div class="manual-input-card">
-        <div class="manual-input-title">🔂 Друк рамки / повторюваного тексту (11 рядків)</div>
+        <div class="manual-input-title" data-i18n="repeat_title">🔂 Друк рамки / повторюваного тексту (11 рядків)</div>
         <div class="manual-form-grid" style="grid-template-columns: 1fr auto;">
           <div class="form-group">
-            <label>Текст для дублювання</label>
-            <input type="text" id="repeatTextInput" class="form-input code-text" placeholder="Наприклад: TRANSPORTATION FRAME" value="TRANSPORTATION FRAME">
+            <label data-i18n="repeat_label">Текст для дублювання</label>
+            <input type="text" id="repeatTextInput" class="form-input code-text" placeholder="Наприклад: TRANSPORTATION FRAME" data-i18n-ph="ph_repeat" value="TRANSPORTATION FRAME">
           </div>
           <div class="form-group" style="justify-content: flex-end;">
             <label>&nbsp;</label>
-            <button class="btn btn-brand" onclick="printRepeatText()">🖨️ Друк 11 рядків</button>
+            <button class="btn btn-brand" onclick="printRepeatText()" data-i18n="btn_print_11">🖨️ Друк 11 рядків</button>
           </div>
         </div>
       </div>
 
       <div class="manual-input-card">
-        <div class="manual-input-title">🏷️ Друк етикеток SCC (50x30мм)</div>
+        <div class="manual-input-title" data-i18n="scc_title">🏷️ Друк етикеток SCC (50x30мм)</div>
         <div style="display: flex; flex-direction: column; gap: 12px;">
           <div style="display: flex; align-items: center; gap: 12px;">
             <input type="checkbox" class="custom-checkbox" id="sccCheck1">
             <label for="sccInput1" style="min-width: 50px; font-size: 13px; font-weight: 600; color: #E5E7EB;">SCC 1</label>
-            <input type="text" id="sccInput1" class="form-input code-text" style="flex: 1;" placeholder="Введіть значення SCC 1">
+            <input type="text" id="sccInput1" class="form-input code-text" style="flex: 1;" placeholder="Введіть значення SCC 1" data-i18n-ph="ph_scc1">
           </div>
           <div style="display: flex; align-items: center; gap: 12px;">
             <input type="checkbox" class="custom-checkbox" id="sccCheck2">
             <label for="sccInput2" style="min-width: 50px; font-size: 13px; font-weight: 600; color: #E5E7EB;">SCC 2</label>
-            <input type="text" id="sccInput2" class="form-input code-text" style="flex: 1;" placeholder="Введіть значення SCC 2">
+            <input type="text" id="sccInput2" class="form-input code-text" style="flex: 1;" placeholder="Введіть значення SCC 2" data-i18n-ph="ph_scc2">
           </div>
         </div>
         <div style="margin-top: 14px; display: flex; align-items: center; justify-content: flex-end; gap: 12px;">
-          <label for="sccCopies" style="font-size: 12px; font-weight: 500; color: var(--text-muted);">Кількість комплектів</label>
+          <label for="sccCopies" style="font-size: 12px; font-weight: 500; color: var(--text-muted);" data-i18n="scc_copies">Кількість комплектів</label>
           <input type="number" id="sccCopies" class="form-input" style="width: 90px; text-align: center;" min="1" value="1">
-          <button class="btn btn-brand" onclick="printSCC()">🖨️ Друк SCC</button>
+          <button class="btn btn-brand" onclick="printSCC()" data-i18n="btn_print_scc">🖨️ Друк SCC</button>
         </div>
       </div>
     </div>
@@ -618,23 +623,23 @@
   <button id="chatToggle" onclick="toggleChat()">💬<span id="chatBadge"></span></button>
   <div id="chatBox">
     <div class="chat-head">
-      <span>💬 Чат операторів</span>
+      <span data-i18n="chat_title">💬 Чат операторів</span>
       <div class="chat-head-btns">
-        <button onclick="chatLogout()" id="chatLogoutBtn" style="display:none;">Вийти</button>
-        <button class="chat-min" onclick="toggleChat()" title="Згорнути">—</button>
+        <button onclick="chatLogout()" id="chatLogoutBtn" style="display:none;" data-i18n="chat_logout">Вийти</button>
+        <button class="chat-min" onclick="toggleChat()" data-i18n-title="chat_min" title="Згорнути">—</button>
       </div>
     </div>
     <div id="chatLogin">
-      <input type="text" id="chatName" class="form-input" placeholder="Ваше ім'я" maxlength="40">
-      <input type="password" id="chatPass" class="form-input" placeholder="Пароль чату">
-      <button class="btn btn-brand" onclick="chatLogin()">Увійти</button>
+      <input type="text" id="chatName" class="form-input" placeholder="Ваше ім'я" data-i18n-ph="chat_name_ph" maxlength="40">
+      <input type="password" id="chatPass" class="form-input" placeholder="Пароль чату" data-i18n-ph="chat_pass_ph">
+      <button class="btn btn-brand" onclick="chatLogin()" data-i18n="chat_login">Увійти</button>
       <div id="chatErr" style="color:#F87171;font-size:12px;"></div>
     </div>
     <div id="chatMain">
       <div class="chat-lang">
-        <span>🌐 Переклад:</span>
+        <span data-i18n="chat_tr">🌐 Переклад:</span>
         <select id="chatLang" class="form-input">
-          <option value="off">Оригінал (без перекладу)</option>
+          <option value="off" data-i18n="chat_orig">Оригінал (без перекладу)</option>
           <option value="uk">Українська</option>
           <option value="pl">Polski</option>
           <option value="en">English</option>
@@ -642,7 +647,7 @@
       </div>
       <div id="chatList"></div>
       <div class="chat-form">
-        <input type="text" id="chatInput" class="form-input" placeholder="Повідомлення..." maxlength="1000">
+        <input type="text" id="chatInput" class="form-input" placeholder="Повідомлення..." data-i18n-ph="chat_msg_ph" maxlength="1000">
         <button class="btn" onclick="sendChat()">➤</button>
       </div>
     </div>
@@ -689,6 +694,112 @@
     const tableBody = document.getElementById('productsTableBody');
     const printContainer = document.getElementById('printContainer');
     const syncIndicator = document.getElementById('syncIndicator');
+
+    // ===== Мова інтерфейсу (uk / pl / en) =====
+    const I18N = {
+      uk: {
+        title: "🖨️ Друк етикеток (TSC DA220)", btn_test: "⬛ Тестовий друк", btn_refresh: "🔄 Оновити зараз",
+        tab_custom: "🔠 Спец. Етикетки", syncing: "Синхронізація...",
+        manual_title: "✍️ Ручне / Масове введення та друк (вставка з Google Таблиць)",
+        btn_print: "🖨️ Друк", btn_with_brand: "🖨️ З Brand", ctrlp_prints: "Ctrl+P друкує:",
+        mode1: "1 · Стандарт 100×78", mode2: "2 · Новий 130×76",
+        btn_batch: "🖨️ Друк вибраних", btn_batch_brand: "🖨️ Друк вибраних з Brand",
+        selected: "Вибрано позицій: ", th_print: "Друк", loading: "Завантаження даних...",
+        no_records: "Записів із таблиці не завантажено. Скористайтеся ручним введенням вище.",
+        title_new: "Друк новий формат 130x76мм", title_2: "Друк 2 копії", title_2b: "Друк 2 копії з Brand",
+        bigtext_title: "🔠 Друк тексту на всю етикетку (OK, WAITING, SCRAP)", word_status: "Слово або статус",
+        ph_word: "Наприклад: OK, WAITING, SCRAP", label_size: "Розмір етикетки",
+        opt_100x78: "100 × 78 мм", opt_80x68: "80 × 68 мм", opt_50x25: "50 × 25 мм", btn_print_text: "🖨️ Друк тексту",
+        repeat_title: "🔂 Друк рамки / повторюваного тексту (11 рядків)", repeat_label: "Текст для дублювання",
+        ph_repeat: "Наприклад: TRANSPORTATION FRAME", btn_print_11: "🖨️ Друк 11 рядків",
+        scc_title: "🏷️ Друк етикеток SCC (50x30мм)", ph_scc1: "Введіть значення SCC 1", ph_scc2: "Введіть значення SCC 2",
+        scc_copies: "Кількість комплектів", btn_print_scc: "🖨️ Друк SCC",
+        chat_title: "💬 Чат операторів", chat_logout: "Вийти", chat_min: "Згорнути", chat_name_ph: "Ваше ім'я",
+        chat_pass_ph: "Пароль чату", chat_login: "Увійти", chat_tr: "🌐 Переклад:", chat_orig: "Оригінал (без перекладу)",
+        chat_msg_ph: "Повідомлення...", chat_need_name: "Введіть ім'я", chat_bad_pass: "Невірний пароль", orig_prefix: "Оригінал: ",
+        alert_text: "Введіть текст!", alert_fill: "Будь ласка, заповніть хоча б Serial Number або Part Number!",
+        alert_nodata: "Не знайдено даних для друку!", alert_scc: "Позначте галочкою хоча б одне поле SCC та заповніть значення!",
+        toast_sel: "🖍️ Виділено {n} — Ctrl+C щоб скопіювати", toast_copied: "✅ Скопійовано {n} значень",
+        toast_pn: "⏳ PN ще не знайдено в базі", toast_fail: "❌ Не вдалося надіслати"
+      },
+      pl: {
+        title: "🖨️ Drukowanie etykiet (TSC DA220)", btn_test: "⬛ Wydruk testowy", btn_refresh: "🔄 Odśwież teraz",
+        tab_custom: "🔠 Etykiety specjalne", syncing: "Synchronizacja...",
+        manual_title: "✍️ Ręczne / masowe wprowadzanie i druk (wklejanie z Arkuszy Google)",
+        btn_print: "🖨️ Drukuj", btn_with_brand: "🖨️ Z Brand", ctrlp_prints: "Ctrl+P drukuje:",
+        mode1: "1 · Standard 100×78", mode2: "2 · Nowy 130×76",
+        btn_batch: "🖨️ Drukuj wybrane", btn_batch_brand: "🖨️ Drukuj wybrane z Brand",
+        selected: "Wybrano pozycji: ", th_print: "Druk", loading: "Ładowanie danych...",
+        no_records: "Nie załadowano rekordów z arkusza. Użyj ręcznego wprowadzania powyżej.",
+        title_new: "Drukuj nowy format 130x76 mm", title_2: "Drukuj 2 kopie", title_2b: "Drukuj 2 kopie z Brand",
+        bigtext_title: "🔠 Druk tekstu na całej etykiecie (OK, WAITING, SCRAP)", word_status: "Słowo lub status",
+        ph_word: "Na przykład: OK, WAITING, SCRAP", label_size: "Rozmiar etykiety",
+        opt_100x78: "100 × 78 mm", opt_80x68: "80 × 68 mm", opt_50x25: "50 × 25 mm", btn_print_text: "🖨️ Drukuj tekst",
+        repeat_title: "🔂 Druk ramki / powtarzanego tekstu (11 wierszy)", repeat_label: "Tekst do powielenia",
+        ph_repeat: "Na przykład: TRANSPORTATION FRAME", btn_print_11: "🖨️ Drukuj 11 wierszy",
+        scc_title: "🏷️ Druk etykiet SCC (50x30 mm)", ph_scc1: "Wpisz wartość SCC 1", ph_scc2: "Wpisz wartość SCC 2",
+        scc_copies: "Liczba kompletów", btn_print_scc: "🖨️ Drukuj SCC",
+        chat_title: "💬 Czat operatorów", chat_logout: "Wyloguj", chat_min: "Zwiń", chat_name_ph: "Twoje imię",
+        chat_pass_ph: "Hasło czatu", chat_login: "Zaloguj", chat_tr: "🌐 Tłumaczenie:", chat_orig: "Oryginał (bez tłumaczenia)",
+        chat_msg_ph: "Wiadomość...", chat_need_name: "Wpisz imię", chat_bad_pass: "Nieprawidłowe hasło", orig_prefix: "Oryginał: ",
+        alert_text: "Wpisz tekst!", alert_fill: "Wypełnij co najmniej Serial Number lub Part Number!",
+        alert_nodata: "Nie znaleziono danych do druku!", alert_scc: "Zaznacz co najmniej jedno pole SCC i wpisz wartość!",
+        toast_sel: "🖍️ Zaznaczono {n} — Ctrl+C, aby skopiować", toast_copied: "✅ Skopiowano wartości: {n}",
+        toast_pn: "⏳ PN nie został jeszcze znaleziony w bazie", toast_fail: "❌ Nie udało się wysłać"
+      },
+      en: {
+        title: "🖨️ Label Printing (TSC DA220)", btn_test: "⬛ Test print", btn_refresh: "🔄 Refresh now",
+        tab_custom: "🔠 Special labels", syncing: "Syncing...",
+        manual_title: "✍️ Manual / bulk entry and print (paste from Google Sheets)",
+        btn_print: "🖨️ Print", btn_with_brand: "🖨️ With Brand", ctrlp_prints: "Ctrl+P prints:",
+        mode1: "1 · Standard 100×78", mode2: "2 · New 130×76",
+        btn_batch: "🖨️ Print selected", btn_batch_brand: "🖨️ Print selected with Brand",
+        selected: "Selected items: ", th_print: "Print", loading: "Loading data...",
+        no_records: "No records loaded from the sheet. Use manual entry above.",
+        title_new: "Print new format 130x76 mm", title_2: "Print 2 copies", title_2b: "Print 2 copies with Brand",
+        bigtext_title: "🔠 Print text across the whole label (OK, WAITING, SCRAP)", word_status: "Word or status",
+        ph_word: "For example: OK, WAITING, SCRAP", label_size: "Label size",
+        opt_100x78: "100 × 78 mm", opt_80x68: "80 × 68 mm", opt_50x25: "50 × 25 mm", btn_print_text: "🖨️ Print text",
+        repeat_title: "🔂 Print frame / repeated text (11 lines)", repeat_label: "Text to repeat",
+        ph_repeat: "For example: TRANSPORTATION FRAME", btn_print_11: "🖨️ Print 11 lines",
+        scc_title: "🏷️ Print SCC labels (50x30 mm)", ph_scc1: "Enter SCC 1 value", ph_scc2: "Enter SCC 2 value",
+        scc_copies: "Number of sets", btn_print_scc: "🖨️ Print SCC",
+        chat_title: "💬 Operators chat", chat_logout: "Log out", chat_min: "Minimize", chat_name_ph: "Your name",
+        chat_pass_ph: "Chat password", chat_login: "Log in", chat_tr: "🌐 Translation:", chat_orig: "Original (no translation)",
+        chat_msg_ph: "Message...", chat_need_name: "Enter your name", chat_bad_pass: "Wrong password", orig_prefix: "Original: ",
+        alert_text: "Enter text!", alert_fill: "Please fill in at least Serial Number or Part Number!",
+        alert_nodata: "No data found to print!", alert_scc: "Check at least one SCC field and fill in its value!",
+        toast_sel: "🖍️ Selected {n} — Ctrl+C to copy", toast_copied: "✅ Copied {n} values",
+        toast_pn: "⏳ PN not found in the database yet", toast_fail: "❌ Failed to send"
+      }
+    };
+
+    let uiLang = 'uk';
+    try { const l = localStorage.getItem('uiLang'); if (['uk', 'pl', 'en'].includes(l)) uiLang = l; } catch (e) {}
+
+    function t(key, vars) {
+      const dict = I18N[uiLang] || I18N.uk;
+      let str = dict[key] !== undefined ? dict[key] : (I18N.uk[key] !== undefined ? I18N.uk[key] : key);
+      if (vars) for (const k in vars) str = str.split('{' + k + '}').join(vars[k]);
+      return str;
+    }
+
+    function applyI18n() {
+      document.documentElement.lang = uiLang;
+      document.querySelectorAll('[data-i18n]').forEach(el => { el.textContent = t(el.dataset.i18n); });
+      document.querySelectorAll('[data-i18n-ph]').forEach(el => { el.placeholder = t(el.dataset.i18nPh); });
+      document.querySelectorAll('[data-i18n-title]').forEach(el => { el.title = t(el.dataset.i18nTitle); });
+      updateBatchBar();
+    }
+
+    document.getElementById('uiLang').value = uiLang;
+    document.getElementById('uiLang').addEventListener('change', (e) => {
+      uiLang = e.target.value;
+      try { localStorage.setItem('uiLang', uiLang); } catch (err) {}
+      applyI18n();
+      if (products.length > 0 && currentGid !== 'custom') renderTable();
+    });
+    applyI18n();
 
     function parseCSV(str) {
       const arr = [];
@@ -773,7 +884,7 @@
       }
 
       if (products.length === 0) {
-        tableBody.innerHTML = `<tr><td colspan="6" style="text-align: center; padding: 30px;">Завантаження даних...</td></tr>`;
+        tableBody.innerHTML = `<tr><td colspan="6" style="text-align: center; padding: 30px;">${t('loading')}</td></tr>`;
       } else {
         renderTable();
       }
@@ -914,7 +1025,7 @@
       if (!colSelectActive) return;
       colSelectActive = false;
       if (colSelectCells.length > 0) {
-        showToast(`🖍️ Виділено ${colSelectCells.length} — Ctrl+C щоб скопіювати`);
+        showToast(t('toast_sel', { n: colSelectCells.length }));
       }
     });
 
@@ -927,14 +1038,14 @@
       if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'c' && colSelectCells.length > 0) {
         const text = colSelectCells.map(td => td.textContent.trim()).join('\n');
         if (navigator.clipboard && navigator.clipboard.writeText) {
-          navigator.clipboard.writeText(text).then(() => showToast(`✅ Скопійовано ${colSelectCells.length} значень`));
+          navigator.clipboard.writeText(text).then(() => showToast(t('toast_copied', { n: colSelectCells.length })));
         }
       }
     });
 
     function renderTable() {
       if (products.length === 0) {
-        tableBody.innerHTML = `<tr><td colspan="6" style="text-align: center; padding: 20px;">Записів із таблиці не завантажено. Скористайтеся ручним введенням вище.</td></tr>`;
+        tableBody.innerHTML = `<tr><td colspan="6" style="text-align: center; padding: 20px;">${t('no_records')}</td></tr>`;
         return;
       }
       tableBody.innerHTML = '';
@@ -949,9 +1060,9 @@
           <td class="code-text" data-col="pn">${renderedPn}</td>
           <td data-col="brand"><span style="background: #374151; padding: 3px 8px; border-radius: 4px; font-size: 12px; font-weight: 600;">${escapeHtml(product.brand)}</span></td>
           <td class="actions-cell">
-            <button class="btn btn-new" onclick="printSingleNew(${index})" title="Друк новий формат 130x76мм">🆕</button>
-            <button class="btn" onclick="printSingle(${index}, false)" title="Друк 2 копії">🖨️</button>
-            <button class="btn btn-brand" onclick="printSingle(${index}, true)" title="Друк 2 копії з Brand">🖨️ Brand</button>
+            <button class="btn btn-new" onclick="printSingleNew(${index})" title="${t('title_new')}">🆕</button>
+            <button class="btn" onclick="printSingle(${index}, false)" title="${t('title_2')}">🖨️</button>
+            <button class="btn btn-brand" onclick="printSingle(${index}, true)" title="${t('title_2b')}">🖨️ Brand</button>
           </td>
         `;
         tableBody.appendChild(row);
@@ -980,7 +1091,7 @@
     function updateBatchBar() {
       const count = selectedSerials.size;
       const countElem = document.getElementById('selectedCountText');
-      if (countElem) countElem.innerText = `Вибрано позицій: ${count}`;
+      if (countElem) countElem.innerText = `${t('selected')}${count}`;
       const btnNorm = document.getElementById('batchPrintNormalBtn');
       const btnBrand = document.getElementById('batchPrintBrandBtn');
       if (btnNorm && btnBrand) {
@@ -1049,7 +1160,7 @@
 
     function printBigText() {
       const text = document.getElementById('bigTextInput').value.trim().toUpperCase();
-      if (!text) { alert('Введіть текст!'); return; }
+      if (!text) { alert(t('alert_text')); return; }
 
       const svgNS = "http://www.w3.org/2000/svg";
       const tempSvg = document.createElementNS(svgNS, "svg");
@@ -1093,7 +1204,7 @@
 
     function printRepeatText() {
       const text = document.getElementById('repeatTextInput').value.trim().toUpperCase();
-      if (!text) { alert('Введіть текст!'); return; }
+      if (!text) { alert(t('alert_text')); return; }
 
       let divs = '';
       for (let i = 0; i < 11; i++) {
@@ -1136,7 +1247,7 @@
       const brandRaw = document.getElementById('manualBrand').value.trim();
 
       if (!snRaw && !pnRaw) {
-        alert('Будь ласка, заповніть хоча б Serial Number або Part Number!');
+        alert(t('alert_fill'));
         return;
       }
 
@@ -1179,7 +1290,7 @@
       }
 
       if (itemsList.length === 0) {
-        alert('Не знайдено даних для друку!');
+        alert(t('alert_nodata'));
         return;
       }
 
@@ -1397,7 +1508,7 @@ function printBatchNew(includeBrand = false) {
       if (check2 && val2) setPattern.push(val2);
 
       if (setPattern.length === 0) {
-        alert('Позначте галочкою хоча б одне поле SCC та заповніть значення!');
+        alert(t('alert_scc'));
         return;
       }
 
@@ -1460,7 +1571,7 @@ function printBatchNew(includeBrand = false) {
 
         // не друкуємо рядок, де PN ще не знайдено (спіннер)
         if (selectedSerials.size === 0 && products[0].pn.includes('table-spinner')) {
-          showToast('⏳ PN ще не знайдено в базі');
+          showToast(t('toast_pn'));
           return;
         }
 
@@ -1570,7 +1681,7 @@ function printBatchNew(includeBrand = false) {
 
       const nearBottom = list.scrollHeight - list.scrollTop - list.clientHeight < 80;
       bodyEl.textContent = tr.text;
-      origEl.textContent = 'Оригінал: ' + m.body;
+      origEl.textContent = t('orig_prefix') + m.body;
       origEl.style.display = 'block';
       if (nearBottom) list.scrollTop = list.scrollHeight;
     }
@@ -1623,10 +1734,10 @@ function printBatchNew(includeBrand = false) {
     async function chatLogin() {
       const name = document.getElementById('chatName').value.trim();
       const pass = document.getElementById('chatPass').value.trim();
-      if (!name) { document.getElementById('chatErr').textContent = "Введіть ім'я"; return; }
+      if (!name) { document.getElementById('chatErr').textContent = t('chat_need_name'); return; }
       const hash = await sha256Hex(pass);
       if (!CHAT_PASS_HASHES.includes(hash)) {
-        document.getElementById('chatErr').textContent = 'Невірний пароль'; return;
+        document.getElementById('chatErr').textContent = t('chat_bad_pass'); return;
       }
       document.getElementById('chatErr').textContent = '';
       chatName = name;
@@ -1688,7 +1799,7 @@ function printBatchNew(includeBrand = false) {
       if (!body) return;
       input.value = '';
       const { error } = await supabaseClient.from('chat_messages').insert({ author: chatName, body });
-      if (error) { input.value = body; showToast('❌ Не вдалося надіслати'); }
+      if (error) { input.value = body; showToast(t('toast_fail')); }
     }
 
     // stopPropagation, щоб Alt+1/2/3 і Ctrl+P не спрацьовували під час набору в чаті
