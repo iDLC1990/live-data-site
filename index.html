@@ -614,6 +614,14 @@
             <label for="sccInput2" style="min-width: 50px; font-size: 13px; font-weight: 600; color: #E5E7EB;">SCC 2</label>
             <input type="text" id="sccInput2" class="form-input code-text" style="flex: 1;" placeholder="Введіть значення SCC 2" data-i18n-ph="ph_scc2">
           </div>
+          <!-- NEW: рядок з картинкою для SCC-етикетки -->
+          <div style="display: flex; align-items: center; gap: 12px;">
+            <input type="checkbox" class="custom-checkbox" id="sccCheckImg">
+            <label for="sccCheckImg" style="min-width: 50px; font-size: 13px; font-weight: 600; color: #E5E7EB;">IMG</label>
+            <input type="file" id="sccImageFile" accept="image/*" class="form-input" style="flex: 1; padding: 7px 10px; font-size: 12px;" onchange="onSccImageChange(this)">
+            <img id="sccImgPreview" alt="" style="height: 40px; background: #FFFFFF; border-radius: 4px; display: none;">
+            <button class="btn btn-secondary" style="padding: 6px 10px;" onclick="clearSccImage()" title="Очистити зображення">✕</button>
+          </div>
         </div>
         <div style="margin-top: 14px; display: flex; align-items: center; justify-content: flex-end; gap: 12px;">
           <label for="sccCopies" style="font-size: 12px; font-weight: 500; color: var(--text-muted);" data-i18n="scc_copies">Кількість комплектів</label>
@@ -738,7 +746,7 @@
         chat_pass_ph: "Пароль чату", chat_login: "Увійти", chat_tr: "🌐 Переклад:", chat_orig: "Оригінал (без перекладу)",
         chat_msg_ph: "Повідомлення...", chat_font: "🔠 Розмір шрифту:", chat_need_name: "Введіть ім'я", chat_bad_pass: "Невірний пароль", orig_prefix: "Оригінал: ",
         alert_text: "Введіть текст!", alert_fill: "Будь ласка, заповніть хоча б Serial Number або Part Number!",
-        alert_nodata: "Не знайдено даних для друку!", alert_scc: "Позначте галочкою хоча б одне поле SCC та заповніть значення!",
+        alert_nodata: "Не знайдено даних для друку!", alert_scc: "Позначте галочкою хоча б одне поле SCC або зображення та заповніть значення!",
         toast_sel: "🖍️ Виділено {n} — Ctrl+C щоб скопіювати", toast_copied: "✅ Скопійовано {n} значень",
         toast_pn: "⏳ PN ще не знайдено в базі", toast_fail: "❌ Не вдалося надіслати"
       },
@@ -763,7 +771,7 @@
         chat_pass_ph: "Hasło czatu", chat_login: "Zaloguj", chat_tr: "🌐 Tłumaczenie:", chat_orig: "Oryginał (bez tłumaczenia)",
         chat_msg_ph: "Wiadomość...", chat_font: "🔠 Rozmiar czcionki:", chat_need_name: "Wpisz imię", chat_bad_pass: "Nieprawidłowe hasło", orig_prefix: "Oryginał: ",
         alert_text: "Wpisz tekst!", alert_fill: "Wypełnij co najmniej Serial Number lub Part Number!",
-        alert_nodata: "Nie znaleziono danych do druku!", alert_scc: "Zaznacz co najmniej jedno pole SCC i wpisz wartość!",
+        alert_nodata: "Nie znaleziono danych do druku!", alert_scc: "Zaznacz co najmniej jedno pole SCC lub obraz i wpisz wartość!",
         toast_sel: "🖍️ Zaznaczono {n} — Ctrl+C, aby skopiować", toast_copied: "✅ Skopiowano wartości: {n}",
         toast_pn: "⏳ PN nie został jeszcze znaleziony w bazie", toast_fail: "❌ Nie udało się wysłać"
       },
@@ -788,7 +796,7 @@
         chat_pass_ph: "Chat password", chat_login: "Log in", chat_tr: "🌐 Translation:", chat_orig: "Original (no translation)",
         chat_msg_ph: "Message...", chat_font: "🔠 Font size:", chat_need_name: "Enter your name", chat_bad_pass: "Wrong password", orig_prefix: "Original: ",
         alert_text: "Enter text!", alert_fill: "Please fill in at least Serial Number or Part Number!",
-        alert_nodata: "No data found to print!", alert_scc: "Check at least one SCC field and fill in its value!",
+        alert_nodata: "No data found to print!", alert_scc: "Check at least one SCC field or the image and fill in its value!",
         toast_sel: "🖍️ Selected {n} — Ctrl+C to copy", toast_copied: "✅ Copied {n} values",
         toast_pn: "⏳ PN not found in the database yet", toast_fail: "❌ Failed to send"
       }
@@ -1534,21 +1542,96 @@ function printBatchNew(includeBrand = false) {
       return `<div class="txt" style="font-size:${pt}pt">${escapeHtml(text)}</div>`;
     }
 
+    // ===== Зображення (піктограма) для SCC-етикетки =====
+    let sccImageDataUrl = '';
+    try { sccImageDataUrl = localStorage.getItem('sccImageDataUrl') || ''; } catch (e) {}
+
+    function setSccImagePreview() {
+      const prev = document.getElementById('sccImgPreview');
+      const chk = document.getElementById('sccCheckImg');
+      if (sccImageDataUrl) {
+        prev.src = sccImageDataUrl;
+        prev.style.display = 'block';
+        chk.checked = true;
+      } else {
+        prev.removeAttribute('src');
+        prev.style.display = 'none';
+        chk.checked = false;
+      }
+    }
+
+    // Перетворює картинку на чорно-білу з різкою межею (для термодруку)
+    function processSccImage(file) {
+      return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onerror = reject;
+        reader.onload = () => {
+          const img = new Image();
+          img.onerror = reject;
+          img.onload = () => {
+            const scale = 4; // підвищена роздільна здатність
+            const c = document.createElement('canvas');
+            c.width = img.naturalWidth * scale;
+            c.height = img.naturalHeight * scale;
+            const ctx = c.getContext('2d');
+            ctx.fillStyle = '#FFFFFF';
+            ctx.fillRect(0, 0, c.width, c.height);
+            ctx.drawImage(img, 0, 0, c.width, c.height);
+
+            const imgData = ctx.getImageData(0, 0, c.width, c.height);
+            const px = imgData.data;
+            for (let i = 0; i < px.length; i += 4) {
+              const gray = 0.299 * px[i] + 0.587 * px[i + 1] + 0.114 * px[i + 2];
+              const v = gray < 160 ? 0 : 255;
+              px[i] = v; px[i + 1] = v; px[i + 2] = v; px[i + 3] = 255;
+            }
+            ctx.putImageData(imgData, 0, 0);
+            resolve(c.toDataURL('image/png'));
+          };
+          img.src = reader.result;
+        };
+        reader.readAsDataURL(file);
+      });
+    }
+
+    async function onSccImageChange(input) {
+      const file = input.files && input.files[0];
+      if (!file) return;
+      try {
+        sccImageDataUrl = await processSccImage(file);
+        try { localStorage.setItem('sccImageDataUrl', sccImageDataUrl); } catch (e) {}
+        setSccImagePreview();
+      } catch (e) {
+        alert('Не вдалося завантажити зображення');
+      }
+    }
+
+    function clearSccImage() {
+      sccImageDataUrl = '';
+      try { localStorage.removeItem('sccImageDataUrl'); } catch (e) {}
+      document.getElementById('sccImageFile').value = '';
+      setSccImagePreview();
+    }
+
     // Логіка кількості:
-    //   1 поле  × N комплектів = N етикеток
-    //   2 поля  × N комплектів = 2N етикеток у порядку SCC1, SCC2, SCC1, SCC2, ...
+    //   Порядок в одному комплекті: SCC 1 -> SCC 2 -> зображення (кожне позначене поле = окрема етикетка)
+    //   N комплектів = N разів весь набір
     // Друк іде через ізольований iframe зі статичним @page 50x30мм.
     function printSCC() {
       const check1 = document.getElementById('sccCheck1').checked;
       const check2 = document.getElementById('sccCheck2').checked;
+      const checkImg = document.getElementById('sccCheckImg').checked;
       const val1 = document.getElementById('sccInput1').value.trim();
       const val2 = document.getElementById('sccInput2').value.trim();
 
-      const setPattern = [];
-      if (check1 && val1) setPattern.push(val1);
-      if (check2 && val2) setPattern.push(val2);
+      const blocks = [];
+      if (check1 && val1) blocks.push(buildWrappedText(val1));
+      if (check2 && val2) blocks.push(buildWrappedText(val2));
+      if (checkImg && sccImageDataUrl) {
+        blocks.push(`<img class="pic" src="${sccImageDataUrl}" alt="">`);
+      }
 
-      if (setPattern.length === 0) {
+      if (blocks.length === 0) {
         alert(t('alert_scc'));
         return;
       }
@@ -1557,13 +1640,9 @@ function printBatchNew(includeBrand = false) {
       if (!copiesCount || copiesCount < 1) copiesCount = 1;
       if (copiesCount > 500) copiesCount = 500;
 
-      // Повна послідовність етикеток формується наперед, тому не залежимо від "Copies"/collate
-      // у діалозі друку чи драйвері принтера.
-      // Автопідбір розміру робимо один раз для кожного тексту, а не для кожної копії
-      const textBlocks = setPattern.map((text) => buildWrappedText(text));
       let labelsHtml = '';
       for (let i = 0; i < copiesCount; i++) {
-        textBlocks.forEach((block) => {
+        blocks.forEach((block) => {
           labelsHtml += `<div class="lbl">${block}</div>`;
         });
       }
@@ -1573,10 +1652,6 @@ function printBatchNew(includeBrand = false) {
 <style>
   @page { size: 50mm 30mm; margin: 0; }
   html, body { margin: 0; padding: 0; background: #fff; }
-  /* display:grid + place-items:center центрує вміст етикетки одразу і по горизонталі,
-     і по вертикалі, незалежно від кількості рядків тексту чи розриву слів.
-     Це надійніше за flex/table-cell у контексті друку з розривами сторінок
-     (break-after: page) у різних браузерах. */
   .lbl {
     display: grid;
     place-items: center;
@@ -1591,7 +1666,12 @@ function printBatchNew(includeBrand = false) {
     line-height: 1.1; overflow-wrap: anywhere;
     text-align: center;
   }
-  /* розрив сторінки лише МІЖ етикетками — після останньої порожньої сторінки немає */
+  /* Зображення: вписується в робочу область 46x25.5мм зі збереженням пропорцій */
+  .pic {
+    width: 46mm; height: 25.5mm;
+    object-fit: contain; display: block;
+    image-rendering: pixelated;
+  }
   .lbl:not(:last-child) { break-after: page; page-break-after: always; }
 </style></head>
 <body>${labelsHtml}</body></html>`;
@@ -1628,6 +1708,7 @@ function printBatchNew(includeBrand = false) {
 
     document.addEventListener('DOMContentLoaded', () => {
       setPrintMode(ctrlPMode);
+      setSccImagePreview(); // NEW: відновлюємо збережену картинку
       fetchDataFromGoogleSheet(true);
       setInterval(() => fetchDataFromGoogleSheet(false), 2000);
 
