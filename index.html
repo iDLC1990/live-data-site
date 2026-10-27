@@ -336,10 +336,7 @@
     .val-pn { font-size: 18pt; font-family: Arial, Helvetica, sans-serif; }
     .val-sn { font-size: 13pt; font-family: Arial, Helvetica, sans-serif; transform: scale(1, 1.8); transform-origin: center top; margin-top: 3.5mm; }
 
-    /* ===== Новий формат етикетки 130x76мм (для FI2) =====
-       Етикетка займає всю сторінку 130x76 мм (поля @page = 0), а відступи 0.75" (верх) / 0.1" (боки) / 0.25" (низ)
-       задані через padding: 19.05 / 2.54 / 6.35 / 2.54 мм. Робоча область = 124.92 x 50.6 мм.
-       Чорна рамка малюється по краю етикетки через ::after. */
+    /* ===== Новий формат етикетки 130x76мм (для FI2) ===== */
     .label-new {
       width: 130mm; height: 76mm; position: relative; background: #FFFFFF; color: #000000;
       padding: 19.05mm 2.54mm 6.35mm 2.54mm; box-sizing: border-box; font-family: Arial, Helvetica, sans-serif;
@@ -347,7 +344,6 @@
       overflow: hidden; border: 1px solid #D1D5DB; box-shadow: 0 10px 25px rgba(0, 0, 0, 0.5);
       background-clip: padding-box;
     }
-    /* Чорна рамка по краю етикетки (відступ 1.5мм від краю, товщина 0.5мм) */
     .label-new::after {
       content: ''; position: absolute; top: 1.5mm; left: 1.5mm; right: 1.5mm; bottom: 1.5mm;
       border: 0.5mm solid #000000; pointer-events: none; box-sizing: border-box;
@@ -366,74 +362,14 @@
     .label-new .value {
       font-size: 17pt; font-weight: 900; text-align: center; line-height: 1; white-space: nowrap; width: 100%; margin: 0 0 0.4mm 0;
     }
-.label-new .brand-tag-new {
-  position: absolute; top: 3mm; left: 4mm; right: 4mm; height: 16mm;
-  display: flex; align-items: center; justify-content: center;
-  font-size: 28pt; font-weight: 900; text-transform: uppercase; line-height: 1;
-  white-space: nowrap; overflow: hidden;
-}
+    .label-new .brand-tag-new {
+      position: absolute; top: 3mm; left: 4mm; right: 4mm; height: 16mm;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 28pt; font-weight: 900; text-transform: uppercase; line-height: 1;
+      white-space: nowrap; overflow: hidden;
+    }
 
-    /* ===== Чат операторів ===== */
-    #chatToggle {
-      position: fixed; right: 20px; bottom: 20px; z-index: 9000;
-      width: 56px; height: 56px; border-radius: 50%; border: none; cursor: pointer;
-      background: var(--accent-color); color: #fff; font-size: 24px; box-shadow: var(--shadow-lg);
-    }
-    #chatBadge {
-      position: absolute; top: -4px; right: -4px; min-width: 20px; height: 20px; padding: 0 5px;
-      border-radius: 10px; background: #DC2626; color: #fff; font-size: 12px; font-weight: 700;
-      line-height: 20px; display: none;
-    }
-    #chatBox {
-      position: fixed; right: 20px; bottom: 88px; z-index: 9000; width: 340px; height: 460px;
-      background: var(--card-bg); border: 1px solid var(--border-color); border-radius: var(--radius);
-      box-shadow: var(--shadow-lg); display: none; flex-direction: column; overflow: hidden;
-    }
-    #chatBox.open { display: flex; }
-    .chat-head { padding: 12px 14px; font-weight: 600; border-bottom: 1px solid var(--border-color);
-      display: flex; justify-content: space-between; align-items: center; }
-    .chat-head button { background: none; border: none; color: var(--text-muted); cursor: pointer; font-size: 13px; }
-    #chatLogin { padding: 16px; display: flex; flex-direction: column; gap: 10px; }
-    #chatMain { display: none; flex: 1; flex-direction: column; min-height: 0; }
-    #chatList { flex: 1; overflow-y: auto; padding: 12px; display: flex; flex-direction: column; gap: 8px; }
-    .chat-msg { background: #111827; border-radius: 8px; padding: 6px 10px; font-size: var(--chat-fs, 13px); word-break: break-word; }
-    .chat-msg.mine { background: rgba(37, 99, 235, 0.35); align-self: flex-end; }
-    .chat-msg .meta { font-size: calc(var(--chat-fs, 13px) * 0.85); color: var(--text-muted); margin-bottom: 2px; }
-    .chat-form { display: flex; gap: 8px; padding: 10px; border-top: 1px solid var(--border-color); }
-    .chat-form input { flex: 1; font-size: var(--chat-fs, 13px); }
-    #chatResize {
-      position: absolute; top: 0; left: 0; width: 18px; height: 18px; z-index: 2; cursor: nwse-resize; touch-action: none;
-      background: linear-gradient(135deg, var(--text-muted) 0 2px, transparent 2px 5px, var(--text-muted) 5px 7px, transparent 7px);
-      opacity: 0.7; border-top-left-radius: 12px;
-    }
-    #chatResize:hover { opacity: 1; }
-    .chat-lang { display: flex; align-items: center; gap: 8px; padding: 8px 12px; border-bottom: 1px solid var(--border-color); font-size: 12px; color: var(--text-muted); }
-    .chat-lang select { flex: 1; padding: 5px 8px; font-size: 12px; }
-    .chat-msg .orig { font-size: calc(var(--chat-fs, 13px) * 0.85); color: var(--text-muted); margin-top: 4px; padding-top: 3px; border-top: 1px dashed var(--border-color); }
-    .chat-head-btns { display: flex; gap: 10px; align-items: center; }
-    .chat-head .chat-min { font-size: 18px; line-height: 1; padding: 0 4px; color: var(--text-main); }
-
-    /* Мигання при новому повідомленні, коли чат згорнутий */
-    #chatToggle.blink { animation: chatBtnBlink 1s ease-in-out infinite; }
-    @keyframes chatBtnBlink {
-      0%, 100% { background: var(--accent-color); transform: scale(1); }
-      50% { background: #DC2626; transform: scale(1.12); }
-    }
-    #chatNewLabel {
-      position: fixed; right: 86px; bottom: 32px; z-index: 9000; display: none; cursor: pointer;
-      background: #DC2626; color: #fff; font-weight: 800; font-size: 14px; letter-spacing: 0.5px;
-      padding: 10px 16px; border-radius: 8px; box-shadow: var(--shadow-lg);
-      animation: chatLabelBlink 1s ease-in-out infinite;
-    }
-    @keyframes chatLabelBlink { 0%, 100% { opacity: 1; } 50% { opacity: 0.2; } }
-
-    /* ===== ДРУК (стандартна та FI2 етикетки) =====
-       SCC-етикетки (50x30мм) друкуються окремо, через ізольований iframe (див. printSCC / printInFrame),
-       тому тут CSS для них не потрібен.
-       Виправлення порожніх етикеток:
-       1) html/body/#printContainer БЕЗ фіксованої ширини;
-       2) розрив сторінки лише МІЖ етикетками, після останньої розриву немає;
-       3) висота етикетки трохи менша за сторінку, щоб не переповнювати її при округленні. */
+    /* ===== ДРУК (стандартна та FI2 етикетки) ===== */
     @page { size: 100mm 78mm; margin: 0; }
     @media print {
       html, body {
@@ -442,7 +378,7 @@
         margin: 0 !important; padding: 0 !important;
         background: #ffffff !important; display: block !important; overflow: visible !important;
       }
-      .app-container, #copyToast, #chatToggle, #chatBox, #chatNewLabel { display: none !important; }
+      .app-container, #copyToast { display: none !important; }
 
       #printContainer {
         display: block !important; position: static !important;
@@ -458,7 +394,6 @@
         break-inside: avoid !important; page-break-inside: avoid !important;
       }
 
-      /* розрив лише між етикетками */
       #printContainer > :not(:last-child) {
         break-after: page !important; page-break-after: always !important;
       }
@@ -467,7 +402,6 @@
       }
 
       #printContainer > .industrial-label { width: 100mm !important; height: 77.6mm !important; }
-      /* 130x76, висота трохи менша за сторінку, щоб не виникало порожньої сторінки */
       #printContainer > .label-new        { width: 130mm !important; height: 75.6mm !important; }
     }
   </style>
@@ -624,55 +558,6 @@
     </div>
   </div>
 
-  <!-- ===== Чат операторів ===== -->
-  <div id="chatNewLabel" onclick="toggleChat()">🔔 NEW MESSAGE</div>
-  <button id="chatToggle" onclick="toggleChat()">💬<span id="chatBadge"></span></button>
-  <div id="chatBox">
-    <div id="chatResize" title="↖ Resize"></div>
-    <div class="chat-head">
-      <span data-i18n="chat_title">💬 Чат операторів</span>
-      <div class="chat-head-btns">
-        <button onclick="chatLogout()" id="chatLogoutBtn" style="display:none;" data-i18n="chat_logout">Вийти</button>
-        <button class="chat-min" onclick="toggleChat()" data-i18n-title="chat_min" title="Згорнути">—</button>
-      </div>
-    </div>
-    <div id="chatLogin">
-      <input type="text" id="chatName" class="form-input" placeholder="Ваше ім'я" data-i18n-ph="chat_name_ph" maxlength="40">
-      <input type="password" id="chatPass" class="form-input" placeholder="Пароль чату" data-i18n-ph="chat_pass_ph">
-      <button class="btn btn-brand" onclick="chatLogin()" data-i18n="chat_login">Увійти</button>
-      <div id="chatErr" style="color:#F87171;font-size:12px;"></div>
-    </div>
-    <div id="chatMain">
-      <div class="chat-lang">
-        <span data-i18n="chat_tr">🌐 Переклад:</span>
-        <select id="chatLang" class="form-input">
-          <option value="off" data-i18n="chat_orig">Оригінал (без перекладу)</option>
-          <option value="uk">Українська</option>
-          <option value="pl">Polski</option>
-          <option value="en">English</option>
-        </select>
-      </div>
-      <div class="chat-lang">
-        <span data-i18n="chat_font">🔠 Розмір шрифту:</span>
-        <select id="chatFont" class="form-input">
-          <option value="25">25%</option>
-          <option value="50">50%</option>
-          <option value="75">75%</option>
-          <option value="100">100%</option>
-          <option value="150">150%</option>
-          <option value="200">200%</option>
-          <option value="250">250%</option>
-          <option value="300">300%</option>
-        </select>
-      </div>
-      <div id="chatList"></div>
-      <div class="chat-form">
-        <input type="text" id="chatInput" class="form-input" placeholder="Повідомлення..." data-i18n-ph="chat_msg_ph" maxlength="1000">
-        <button class="btn" onclick="sendChat()">➤</button>
-      </div>
-    </div>
-  </div>
-
   <div id="printContainer" style="display: none;"></div>
 
   <script>
@@ -688,8 +573,6 @@
     const SHEET_ID = '10W03bvKlVFlIUcxsHkzP_v_13gtnYRBmnrrO0ujB1bU';
     const FI2_GID = '193025884';
 
-    // Поля @page для 130x76мм = 0: відступи 0.75" / 0.1" / 0.25" / 0.1" задані через padding у .label-new,
-    // щоб чорна рамка малювалась по краю самої етикетки.
     const NEW_LABEL_MARGIN = '0';
 
     let currentGid = '0';
@@ -697,7 +580,6 @@
     let selectedSerials = new Set();
     let isInitialLoad = true;
 
-    // Режим Ctrl+P: '1' = стандарт 100x78, '2' = новий 130x76. Запам'ятовується між перезавантаженнями.
     let ctrlPMode = '1';
     try { ctrlPMode = localStorage.getItem('ctrlPMode') === '2' ? '2' : '1'; } catch (e) {}
 
@@ -715,7 +597,6 @@
     const printContainer = document.getElementById('printContainer');
     const syncIndicator = document.getElementById('syncIndicator');
 
-    // ===== Мова інтерфейсу (uk / pl / en) =====
     const I18N = {
       uk: {
         title: "🖨️ Друк етикеток (TSC DA220)", btn_test: "⬛ Тестовий друк", btn_refresh: "🔄 Оновити зараз",
@@ -734,13 +615,10 @@
         ph_repeat: "Наприклад: TRANSPORTATION FRAME", btn_print_11: "🖨️ Друк 11 рядків",
         scc_title: "🏷️ Друк етикеток SCC (50x30мм)", ph_scc1: "Введіть значення SCC 1", ph_scc2: "Введіть значення SCC 2",
         scc_copies: "Кількість комплектів", btn_print_scc: "🖨️ Друк SCC",
-        chat_title: "💬 Чат операторів", chat_logout: "Вийти", chat_min: "Згорнути", chat_name_ph: "Ваше ім'я",
-        chat_pass_ph: "Пароль чату", chat_login: "Увійти", chat_tr: "🌐 Переклад:", chat_orig: "Оригінал (без перекладу)",
-        chat_msg_ph: "Повідомлення...", chat_font: "🔠 Розмір шрифту:", chat_need_name: "Введіть ім'я", chat_bad_pass: "Невірний пароль", orig_prefix: "Оригінал: ",
         alert_text: "Введіть текст!", alert_fill: "Будь ласка, заповніть хоча б Serial Number або Part Number!",
         alert_nodata: "Не знайдено даних для друку!", alert_scc: "Позначте галочкою хоча б одне поле SCC та заповніть значення!",
         toast_sel: "🖍️ Виділено {n} — Ctrl+C щоб скопіювати", toast_copied: "✅ Скопійовано {n} значень",
-        toast_pn: "⏳ PN ще не знайдено в базі", toast_fail: "❌ Не вдалося надіслати"
+        toast_pn: "⏳ PN ще не знайдено в базі"
       },
       pl: {
         title: "🖨️ Drukowanie etykiet (TSC DA220)", btn_test: "⬛ Wydruk testowy", btn_refresh: "🔄 Odśwież teraz",
@@ -759,13 +637,10 @@
         ph_repeat: "Na przykład: TRANSPORTATION FRAME", btn_print_11: "🖨️ Drukuj 11 wierszy",
         scc_title: "🏷️ Druk etykiet SCC (50x30 mm)", ph_scc1: "Wpisz wartość SCC 1", ph_scc2: "Wpisz wartość SCC 2",
         scc_copies: "Liczba kompletów", btn_print_scc: "🖨️ Drukuj SCC",
-        chat_title: "💬 Czat operatorów", chat_logout: "Wyloguj", chat_min: "Zwiń", chat_name_ph: "Twoje imię",
-        chat_pass_ph: "Hasło czatu", chat_login: "Zaloguj", chat_tr: "🌐 Tłumaczenie:", chat_orig: "Oryginał (bez tłumaczenia)",
-        chat_msg_ph: "Wiadomość...", chat_font: "🔠 Rozmiar czcionki:", chat_need_name: "Wpisz imię", chat_bad_pass: "Nieprawidłowe hasło", orig_prefix: "Oryginał: ",
         alert_text: "Wpisz tekst!", alert_fill: "Wypełnij co najmniej Serial Number lub Part Number!",
         alert_nodata: "Nie znaleziono danych do druku!", alert_scc: "Zaznacz co najmniej jedno pole SCC i wpisz wartość!",
         toast_sel: "🖍️ Zaznaczono {n} — Ctrl+C, aby skopiować", toast_copied: "✅ Skopiowano wartości: {n}",
-        toast_pn: "⏳ PN nie został jeszcze znaleziony w bazie", toast_fail: "❌ Nie udało się wysłać"
+        toast_pn: "⏳ PN nie został jeszcze znaleziony w bazie"
       },
       en: {
         title: "🖨️ Label Printing (TSC DA220)", btn_test: "⬛ Test print", btn_refresh: "🔄 Refresh now",
@@ -784,13 +659,10 @@
         ph_repeat: "For example: TRANSPORTATION FRAME", btn_print_11: "🖨️ Print 11 lines",
         scc_title: "🏷️ Print SCC labels (50x30 mm)", ph_scc1: "Enter SCC 1 value", ph_scc2: "Enter SCC 2 value",
         scc_copies: "Number of sets", btn_print_scc: "🖨️ Print SCC",
-        chat_title: "💬 Operators chat", chat_logout: "Log out", chat_min: "Minimize", chat_name_ph: "Your name",
-        chat_pass_ph: "Chat password", chat_login: "Log in", chat_tr: "🌐 Translation:", chat_orig: "Original (no translation)",
-        chat_msg_ph: "Message...", chat_font: "🔠 Font size:", chat_need_name: "Enter your name", chat_bad_pass: "Wrong password", orig_prefix: "Original: ",
         alert_text: "Enter text!", alert_fill: "Please fill in at least Serial Number or Part Number!",
         alert_nodata: "No data found to print!", alert_scc: "Check at least one SCC field and fill in its value!",
         toast_sel: "🖍️ Selected {n} — Ctrl+C to copy", toast_copied: "✅ Copied {n} values",
-        toast_pn: "⏳ PN not found in the database yet", toast_fail: "❌ Failed to send"
+        toast_pn: "⏳ PN not found in the database yet"
       }
     };
 
@@ -958,8 +830,6 @@
       }
     }
 
-    // Перевіряє, чи є зараз активне (непорожнє) виділення тексту саме всередині таблиці,
-    // щоб не скидати його автооновленням даних кожні 2 секунди.
     function hasActiveTableSelection() {
       if (colSelectCells.length > 0) return true;
       const sel = window.getSelection();
@@ -973,8 +843,6 @@
       return false;
     }
 
-    // ===== Виділення стовпця перетягуванням миші при затиснутому Ctrl =====
-    // Працює однаково і в Firefox, і в Chrome (нативне множинне виділення є лише у Firefox).
     let colSelectActive = false;
     let colSelectColumn = null;
     let colSelectStartRow = null;
@@ -1130,7 +998,6 @@
       return div.innerHTML;
     }
 
-    // ===== Динамічний розмір сторінки друку (з полями) =====
     function setPageSize(widthMm, heightMm, margin = '0') {
       let styleEl = document.getElementById('dynamicPageSize');
       if (!styleEl) {
@@ -1154,9 +1021,6 @@
       });
     }
 
-    // ===== Друк в ізольованому iframe =====
-    // Окремий документ зі СВОЇМ статичним @page — жодного впливу CSS основної сторінки
-    // і жодної залежності від динамічної зміни @page. Це прибирає порожні етикетки.
     function printInFrame(html) {
       const old = document.getElementById('printFrame');
       if (old) old.remove();
@@ -1206,12 +1070,9 @@
       const vbW = bbox.width + (paddingX * 2);
       const vbH = bbox.height + (paddingY * 2);
 
-      // Вибраний розмір етикетки
       const [labelW, labelH] = document.getElementById('bigTextSize').value.split('x').map(Number);
-      // Висота трохи менша за сторінку (як і в print-CSS), щоб не було порожньої сторінки
       const labelHPrint = (labelH - 0.4).toFixed(1);
 
-      // Inline !important перебиває !important з print-CSS (100mm x 77.6mm)
       printContainer.innerHTML = `
         <div class="industrial-label" style="width: ${labelW}mm !important; height: ${labelHPrint}mm !important; padding: 0 !important; display: block !important; background: #ffffff !important; border: none !important; overflow: hidden;">
           <svg width="100%" height="100%" viewBox="${vbX} ${vbY} ${vbW} ${vbH}" preserveAspectRatio="none" style="display: block; width: 100%; height: 100%;">
@@ -1231,7 +1092,6 @@
         divs += `<div style="font-family: Arial, Helvetica, sans-serif; font-weight: normal; font-size: 16pt; text-align: center; text-transform: uppercase; color: #000000; line-height: 1;">${escapeHtml(text)}</div>`;
       }
 
-      // Висота не задається inline — її встановлює print-CSS (77.6mm), щоб не виникало порожньої сторінки
       printContainer.innerHTML = `
         <div class="industrial-label" style="padding: 2mm 2mm !important; display: flex !important; flex-direction: column !important; justify-content: space-between !important; align-items: stretch !important; background: #ffffff !important; border: none !important;">
           ${divs}
@@ -1261,15 +1121,10 @@
       prepareAndPrint(100, 78);
     }
 
-    // ===== Розбір рядка, скопійованого з сайту/таблиці (колонки розділені Tab) =====
-    // Формат сайту (10+ колонок): Repair number | RID | Process | Business Model | Brand | Panel SN | OC SN | TPV PN | WO Type | Panel Status ...
-    //   -> SN = Panel SN (колонка 6), PN = TPV PN (колонка 8), Brand = Brand (колонка 5)
-    // Старий формат Google Таблиці (3 колонки): SN | PN | Brand
-    // Повертає null для заголовків та службових рядків ("Total: 2").
     function parseSheetRow(parts) {
       if (!parts || parts.length === 0) return null;
       if (parts.length >= 8) {
-        if ((parts[5] || '').toLowerCase() === 'panel sn') return null; // рядок заголовків
+        if ((parts[5] || '').toLowerCase() === 'panel sn') return null;
         if (!parts[5] && !parts[7]) return null;
         return { sn: parts[5] || '', pn: parts[7] || '', brand: parts[4] || '' };
       }
@@ -1340,7 +1195,6 @@
       prepareAndPrint(100, 78);
     }
 
-    // ===== Стандартний формат (100x78мм) =====
     function buildLabelsHTML(itemsList, includeBrand) {
       let html = '';
       itemsList.forEach((product, idx) => {
@@ -1404,27 +1258,25 @@
       updateBatchBar();
     }
 
-    // ===== Новий формат (130x76мм, лише для FI2) =====
-    // Порядок блоків: штрихкод PN -> підпис "PN" -> значення PN -> підпис "SN" -> штрихкод SN -> значення SN
     function buildNewLabelHTML(itemsList, includeBrand = false) {
-  let html = '';
-  itemsList.forEach((product, idx) => {
-    for (let copy = 0; copy < 2; copy++) {
-      html += `
-        <div class="label-new">
-          ${includeBrand ? `<div class="brand-tag-new">${escapeHtml(product.brand)}</div>` : ''}
-          <div class="barcode-wrap-pn"><svg id="newBarcodePN_${idx}_${copy}"></svg></div>
-          <div class="caption">PN</div>
-          <div class="value new-val-pn">${escapeHtml(product.pn)}</div>
-          <div class="caption">SN</div>
-          <div class="barcode-wrap-sn"><svg id="newBarcodeSN_${idx}_${copy}"></svg></div>
-          <div class="value new-val-sn">${escapeHtml(product.sn)}</div>
-        </div>
-      `;
+      let html = '';
+      itemsList.forEach((product, idx) => {
+        for (let copy = 0; copy < 2; copy++) {
+          html += `
+            <div class="label-new">
+              ${includeBrand ? `<div class="brand-tag-new">${escapeHtml(product.brand)}</div>` : ''}
+              <div class="barcode-wrap-pn"><svg id="newBarcodePN_${idx}_${copy}"></svg></div>
+              <div class="caption">PN</div>
+              <div class="value new-val-pn">${escapeHtml(product.pn)}</div>
+              <div class="caption">SN</div>
+              <div class="barcode-wrap-sn"><svg id="newBarcodeSN_${idx}_${copy}"></svg></div>
+              <div class="value new-val-sn">${escapeHtml(product.sn)}</div>
+            </div>
+          `;
+        }
+      });
+      return html;
     }
-  });
-  return html;
-}
 
     function renderNewBarcodesInContainer(containerSelector) {
       const container = document.querySelector(containerSelector);
@@ -1437,7 +1289,6 @@
           const snVal = label.querySelector('.new-val-sn').innerText;
           JsBarcode(svgPn, pnVal, { format: "CODE128B", displayValue: false, margin: 0, height: 48, width: 1.3, flat: true, lineColor: "#000000" });
           JsBarcode(svgSn, snVal, { format: "CODE128B", displayValue: false, margin: 0, height: 48, width: 1.0, flat: true, lineColor: "#000000" });
-          // Розтягуємо штрихкод на всю ширину контейнера (без збереження пропорцій), щоб він був більшим
           svgPn.setAttribute('preserveAspectRatio', 'none');
           svgSn.setAttribute('preserveAspectRatio', 'none');
         }
@@ -1445,35 +1296,30 @@
     }
 
     function printSingleNew(index, includeBrand = false) {
-  const product = products[index];
-  if (!product) return;
-  printContainer.innerHTML = buildNewLabelHTML([product], includeBrand);
-  renderNewBarcodesInContainer('#printContainer');
-  prepareAndPrint(130, 76, NEW_LABEL_MARGIN);
-}
+      const product = products[index];
+      if (!product) return;
+      printContainer.innerHTML = buildNewLabelHTML([product], includeBrand);
+      renderNewBarcodesInContainer('#printContainer');
+      prepareAndPrint(130, 76, NEW_LABEL_MARGIN);
+    }
 
-function printBatchNew(includeBrand = false) {
-  if (selectedSerials.size === 0) return;
-  const itemsToPrint = products.filter(p => selectedSerials.has(p.sn));
-  if (itemsToPrint.length === 0) return;
-  printContainer.innerHTML = buildNewLabelHTML(itemsToPrint, includeBrand);
-  renderNewBarcodesInContainer('#printContainer');
-  prepareAndPrint(130, 76, NEW_LABEL_MARGIN);
-  selectedSerials.clear();
-  renderTable();
-  updateBatchBar();
-}
+    function printBatchNew(includeBrand = false) {
+      if (selectedSerials.size === 0) return;
+      const itemsToPrint = products.filter(p => selectedSerials.has(p.sn));
+      if (itemsToPrint.length === 0) return;
+      printContainer.innerHTML = buildNewLabelHTML(itemsToPrint, includeBrand);
+      renderNewBarcodesInContainer('#printContainer');
+      prepareAndPrint(130, 76, NEW_LABEL_MARGIN);
+      selectedSerials.clear();
+      renderTable();
+      updateBatchBar();
+    }
 
-    // ===== SCC формат (50x30мм) =====
-    // Параметри автопідбору тексту SCC-етикетки.
-    // Текст переноситься по словах і підбирається до НАЙБІЛЬШОГО розміру, який влазить в етикетку.
-    // Спочатку шукаємо розмір, при якому жодне слово не розривається; якщо навіть при SCC_MIN_PT
-    // слово не влазить у рядок — дозволяємо переносити по символах.
-    const SCC_MAX_PT = 60;            // максимальний розмір шрифту
-    const SCC_MIN_PT = 8;             // мінімальний розмір (щоб було читабельно)
+    const SCC_MAX_PT = 60;
+    const SCC_MIN_PT = 8;
     const SCC_LINE_HEIGHT = 1.1;
-    const SCC_TEXT_WIDTH_MM = 46;     // 50мм мінус padding 2мм з кожного боку
-    const SCC_TEXT_HEIGHT_MM = 25;    // 30мм мінус padding 2мм з кожного боку (з невеликим запасом)
+    const SCC_TEXT_WIDTH_MM = 46;
+    const SCC_TEXT_HEIGHT_MM = 25;
 
     function buildWrappedText(text) {
       const MM_PX = 96 / 25.4;
@@ -1481,20 +1327,13 @@ function printBatchNew(includeBrand = false) {
       const maxH = SCC_TEXT_HEIGHT_MM * MM_PX;
 
       const words = text.split(/\s+/).filter(Boolean);
-      // Найширше слово (по кількості символів — достатньо як стартовий кандидат,
-      // але для надійності перевіряємо ширину КОЖНОГО слова нижче).
       const longestWord = words.reduce((a, b) => (b.length >= a.length ? b : a), '');
 
-      // Окремий "однорядковий" вимірювач — показує РЕАЛЬНУ ширину найдовшого слова
-      // без переносу (white-space: nowrap). Це і є справжнє обмеження розміру шрифту,
-      // бо саме найширше слово не повинно вилазити за межі етикетки.
       const wordProbe = document.createElement('div');
       wordProbe.style.cssText = 'position:absolute;visibility:hidden;left:-9999px;top:0;white-space:nowrap;' +
         'font-family:Arial,Helvetica,sans-serif;font-weight:900;';
       document.body.appendChild(wordProbe);
 
-      // Вимірювач повного тексту з переносом по словах — для перевірки, що весь
-      // блок влазить по висоті етикетки.
       const probe = document.createElement('div');
       probe.style.cssText = `position:absolute;visibility:hidden;left:-9999px;top:0;width:${SCC_TEXT_WIDTH_MM}mm;` +
         `font-family:Arial,Helvetica,sans-serif;font-weight:900;text-align:center;line-height:${SCC_LINE_HEIGHT};`;
@@ -1502,19 +1341,16 @@ function printBatchNew(includeBrand = false) {
       document.body.appendChild(probe);
 
       function fitsAtSize(pt, breakAnywhere) {
-        // 1) перевірка ширини: жодне слово (насамперед найширше) не повинно вилазити за maxW
         if (!breakAnywhere) {
           wordProbe.style.fontSize = pt + 'pt';
           wordProbe.textContent = longestWord;
           if (wordProbe.scrollWidth > maxW + 1) return false;
         }
-        // 2) перевірка висоти: весь текст з переносом має влізти по висоті етикетки
         probe.style.fontSize = pt + 'pt';
         probe.style.overflowWrap = breakAnywhere ? 'anywhere' : 'normal';
         return probe.scrollHeight <= maxH + 1 && probe.scrollWidth <= probe.clientWidth + 1;
       }
 
-      // Найбільший розмір (крок 0.5pt), при якому текст влазить; бінарний пошук.
       function findFit(breakAnywhere) {
         let lo = SCC_MIN_PT * 2, hi = SCC_MAX_PT * 2, best = null;
         while (lo <= hi) {
@@ -1525,19 +1361,15 @@ function printBatchNew(includeBrand = false) {
         return best;
       }
 
-      let pt = findFit(false);            // без розриву слів — найширше слово ціле в один рядок
-      if (pt === null) pt = findFit(true); // якщо навіть на SCC_MIN_PT слово задовге — дозволяємо розрив по символах
-      if (pt === null) pt = SCC_MIN_PT;    // зовсім довгий текст — мінімальний розмір
+      let pt = findFit(false);
+      if (pt === null) pt = findFit(true);
+      if (pt === null) pt = SCC_MIN_PT;
 
       document.body.removeChild(wordProbe);
       document.body.removeChild(probe);
       return `<div class="txt" style="font-size:${pt}pt">${escapeHtml(text)}</div>`;
     }
 
-    // Логіка кількості:
-    //   1 поле  × N комплектів = N етикеток
-    //   2 поля  × N комплектів = 2N етикеток у порядку SCC1, SCC2, SCC1, SCC2, ...
-    // Друк іде через ізольований iframe зі статичним @page 50x30мм.
     function printSCC() {
       const check1 = document.getElementById('sccCheck1').checked;
       const check2 = document.getElementById('sccCheck2').checked;
@@ -1557,9 +1389,6 @@ function printBatchNew(includeBrand = false) {
       if (!copiesCount || copiesCount < 1) copiesCount = 1;
       if (copiesCount > 500) copiesCount = 500;
 
-      // Повна послідовність етикеток формується наперед, тому не залежимо від "Copies"/collate
-      // у діалозі друку чи драйвері принтера.
-      // Автопідбір розміру робимо один раз для кожного тексту, а не для кожної копії
       const textBlocks = setPattern.map((text) => buildWrappedText(text));
       let labelsHtml = '';
       for (let i = 0; i < copiesCount; i++) {
@@ -1573,10 +1402,6 @@ function printBatchNew(includeBrand = false) {
 <style>
   @page { size: 50mm 30mm; margin: 0; }
   html, body { margin: 0; padding: 0; background: #fff; }
-  /* display:grid + place-items:center центрує вміст етикетки одразу і по горизонталі,
-     і по вертикалі, незалежно від кількості рядків тексту чи розриву слів.
-     Це надійніше за flex/table-cell у контексті друку з розривами сторінок
-     (break-after: page) у різних браузерах. */
   .lbl {
     display: grid;
     place-items: center;
@@ -1591,7 +1416,6 @@ function printBatchNew(includeBrand = false) {
     line-height: 1.1; overflow-wrap: anywhere;
     text-align: center;
   }
-  /* розрив сторінки лише МІЖ етикетками — після останньої порожньої сторінки немає */
   .lbl:not(:last-child) { break-after: page; page-break-after: always; }
 </style></head>
 <body>${labelsHtml}</body></html>`;
@@ -1610,7 +1434,6 @@ function printBatchNew(includeBrand = false) {
         e.preventDefault();
         if (currentGid === 'custom' || products.length === 0) return;
 
-        // не друкуємо рядок, де PN ще не знайдено (спіннер)
         if (selectedSerials.size === 0 && products[0].pn.includes('table-spinner')) {
           showToast(t('toast_pn'));
           return;
@@ -1631,7 +1454,6 @@ function printBatchNew(includeBrand = false) {
       fetchDataFromGoogleSheet(true);
       setInterval(() => fetchDataFromGoogleSheet(false), 2000);
 
-      // Автоматичне розбиття скопійованого тексту з Google Таблиць
       const manualSnElem = document.getElementById('manualSn');
       if (manualSnElem) {
         manualSnElem.addEventListener('paste', (e) => {
@@ -1648,7 +1470,6 @@ function printBatchNew(includeBrand = false) {
               if (row) rows.push(row);
             });
 
-            // Один вставлений блок заповнює одразу SN, PN та Brand (по одному значенню на рядок)
             manualSnElem.value = rows.map(r => r.sn).join('\n');
             document.getElementById('manualPn').value = rows.some(r => r.pn) ? rows.map(r => r.pn).join('\n') : '';
             document.getElementById('manualBrand').value = rows.some(r => r.brand) ? rows.map(r => r.brand).join('\n') : '';
@@ -1656,291 +1477,6 @@ function printBatchNew(includeBrand = false) {
         });
       }
     });
-
-    // ===== Чат операторів =====
-    // SQL для Supabase (виконати один раз у SQL Editor):
-    //   create table if not exists public.chat_messages (
-    //     id bigint generated always as identity primary key,
-    //     author text not null check (char_length(author) between 1 and 40),
-    //     body text not null check (char_length(body) between 1 and 1000),
-    //     created_at timestamptz not null default now()
-    //   );
-    //   alter table public.chat_messages enable row level security;
-    //   create policy "chat read"  on public.chat_messages for select to anon using (true);
-    //   create policy "chat write" on public.chat_messages for insert to anon with check (true);
-    //   alter publication supabase_realtime add table public.chat_messages;
-    // SHA-256 пароля: TPVD12345 і TPVD12345! (обидва варіанти приймаються)
-    const CHAT_PASS_HASHES = [
-      '57cf6e789df44e5346075c98d67b679bd1b2ba4afc2e494b589bcfe8452423e6',
-      '70ab44f84354547fc73a8ea174ce9ae8d5c4830f29a4a9474f6b41ff1754abc2'
-    ];
-    let chatName = '', chatChannel = null, chatUnread = 0;
-    const chatSeen = new Set();
-
-    // ----- Переклад повідомлень -----
-    // Кожен оператор обирає свою мову; чужі повідомлення (будь-якою мовою, мова визначається автоматично)
-    // перекладаються на його мову, оригінал показується дрібним текстом під перекладом.
-    const CHAT_TR_LIMIT = 30; // скільки останніх повідомлень перекладати при відкритті/зміні мови
-    let chatLang = 'off';
-    try { const l = localStorage.getItem('chatLang'); if (['off', 'uk', 'pl', 'en'].includes(l)) chatLang = l; } catch (e) {}
-    const chatEntries = [];          // { el, m } у порядку появи
-    const trCache = new Map();       // "мова|текст" -> { text, src }
-    let trChain = Promise.resolve(); // черга запитів, щоб не засипати сервіс паралельними запитами
-
-    async function translateText(text, target) {
-      const key = target + '|' + text;
-      if (trCache.has(key)) return trCache.get(key);
-      try {
-        const url = 'https://translate.googleapis.com/translate_a/single?client=gtx&sl=auto&tl=' + target +
-                    '&dt=t&q=' + encodeURIComponent(text);
-        const r = await fetch(url);
-        if (!r.ok) return null;
-        const j = await r.json();
-        const result = { text: j[0].map(x => x[0]).join(''), src: j[2] };
-        trCache.set(key, result);
-        return result;
-      } catch (e) { return null; }
-    }
-
-    async function applyTranslation(entry) {
-      const { el, m } = entry;
-      const target = chatLang;
-      const bodyEl = el.querySelector('.body');
-      const origEl = el.querySelector('.orig');
-      const list = document.getElementById('chatList');
-
-      bodyEl.textContent = m.body;
-      origEl.style.display = 'none';
-      if (target === 'off' || m.author === chatName) return;
-
-      const tr = await translateText(m.body, target);
-      if (!tr || chatLang !== target) return; // не вдалося або мову вже змінили
-      if (tr.src === target || tr.text.trim() === m.body.trim()) return; // вже потрібною мовою
-
-      const nearBottom = list.scrollHeight - list.scrollTop - list.clientHeight < 80;
-      bodyEl.textContent = tr.text;
-      origEl.textContent = t('orig_prefix') + m.body;
-      origEl.style.display = 'block';
-      if (nearBottom) list.scrollTop = list.scrollHeight;
-    }
-
-    function queueTranslation(entry) {
-      trChain = trChain.then(() => applyTranslation(entry)).catch(() => {});
-    }
-
-    function retranslateAll() {
-      const lastStart = Math.max(0, chatEntries.length - CHAT_TR_LIMIT);
-      chatEntries.forEach((entry, i) => {
-        if (i >= lastStart) queueTranslation(entry);
-        else { // старі повідомлення показуємо в оригіналі
-          entry.el.querySelector('.body').textContent = entry.m.body;
-          entry.el.querySelector('.orig').style.display = 'none';
-        }
-      });
-    }
-
-    document.getElementById('chatLang').value = chatLang;
-    document.getElementById('chatLang').addEventListener('change', (e) => {
-      chatLang = e.target.value;
-      try { localStorage.setItem('chatLang', chatLang); } catch (err) {}
-      retranslateAll();
-    });
-
-    async function sha256Hex(s) {
-      const buf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(s));
-      return Array.from(new Uint8Array(buf)).map(b => b.toString(16).padStart(2, '0')).join('');
-    }
-
-    function toggleChat() {
-      const box = document.getElementById('chatBox');
-      box.classList.toggle('open');
-      if (box.classList.contains('open')) {
-        chatUnread = 0; updateChatBadge();
-        const l = document.getElementById('chatList'); l.scrollTop = l.scrollHeight;
-      }
-    }
-
-    function updateChatBadge() {
-      const b = document.getElementById('chatBadge');
-      const show = chatUnread > 0;
-      b.style.display = show ? 'block' : 'none';
-      b.textContent = chatUnread > 99 ? '99+' : chatUnread;
-      document.getElementById('chatNewLabel').style.display = show ? 'block' : 'none';
-      document.getElementById('chatToggle').classList.toggle('blink', show);
-    }
-
-    async function chatLogin() {
-      const name = document.getElementById('chatName').value.trim();
-      const pass = document.getElementById('chatPass').value.trim();
-      if (!name) { document.getElementById('chatErr').textContent = t('chat_need_name'); return; }
-      const hash = await sha256Hex(pass);
-      if (!CHAT_PASS_HASHES.includes(hash)) {
-        document.getElementById('chatErr').textContent = t('chat_bad_pass'); return;
-      }
-      document.getElementById('chatErr').textContent = '';
-      chatName = name;
-      try { localStorage.setItem('chatAuth', JSON.stringify({ name, hash })); } catch (e) {}
-      startChat();
-    }
-
-    function chatLogout() {
-      try { localStorage.removeItem('chatAuth'); } catch (e) {}
-      if (chatChannel) { supabaseClient.removeChannel(chatChannel); chatChannel = null; }
-      chatSeen.clear();
-      chatEntries.length = 0;
-      document.getElementById('chatList').innerHTML = '';
-      document.getElementById('chatMain').style.display = 'none';
-      document.getElementById('chatLogin').style.display = 'flex';
-      document.getElementById('chatLogoutBtn').style.display = 'none';
-      document.getElementById('chatPass').value = '';
-    }
-
-    async function startChat() {
-      document.getElementById('chatLogin').style.display = 'none';
-      document.getElementById('chatMain').style.display = 'flex';
-      document.getElementById('chatLogoutBtn').style.display = 'inline';
-
-      const { data } = await supabaseClient.from('chat_messages')
-        .select('*').gte('created_at', new Date(Date.now() - CHAT_TTL_MS).toISOString())
-        .order('created_at', { ascending: false }).limit(100);
-      (data || []).reverse().forEach(m => addChatMessage(m, true));
-      retranslateAll();
-
-      chatChannel = supabaseClient.channel('chat-room')
-        .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'chat_messages' },
-            payload => addChatMessage(payload.new, false))
-        .subscribe();
-    }
-
-    function addChatMessage(m, silent) {
-      if (chatSeen.has(m.id)) return;
-      chatSeen.add(m.id);
-      const list = document.getElementById('chatList');
-      const nearBottom = list.scrollHeight - list.scrollTop - list.clientHeight < 60;
-      const mine = m.author === chatName;
-      const t = new Date(m.created_at).toLocaleTimeString('uk-UA', { hour: '2-digit', minute: '2-digit' });
-      const el = document.createElement('div');
-      el.className = 'chat-msg' + (mine ? ' mine' : '');
-      el.innerHTML = `<div class="meta">${escapeHtml(m.author)} · ${t}</div><div class="body">${escapeHtml(m.body)}</div><div class="orig" style="display:none"></div>`;
-      list.appendChild(el);
-      if (nearBottom || mine) list.scrollTop = list.scrollHeight;
-      const entry = { el, m };
-      chatEntries.push(entry);
-      if (!silent && !mine && chatLang !== 'off') queueTranslation(entry);
-      if (!silent && !mine && !document.getElementById('chatBox').classList.contains('open')) {
-        chatUnread++; updateChatBadge();
-      }
-    }
-
-    async function sendChat() {
-      const input = document.getElementById('chatInput');
-      const body = input.value.trim();
-      if (!body) return;
-      input.value = '';
-      const { error } = await supabaseClient.from('chat_messages').insert({ author: chatName, body });
-      if (error) { input.value = body; showToast(t('toast_fail')); }
-    }
-
-    // ----- Розмір вікна чату (тягнути за лівий верхній кут) і розмір шрифту -----
-    const CHAT_MIN_W = 300, CHAT_MIN_H = 300, CHAT_BOTTOM_GAP = 98;
-    const CHAT_FONT_BASE_PX = 13;                         // 100% = 13px
-    const CHAT_FONT_STEPS = [25, 50, 75, 100, 150, 200, 250, 300];
-    const chatBoxEl = document.getElementById('chatBox');
-
-    function setChatSize(w, h) {
-      w = Math.max(CHAT_MIN_W, Math.min(w, window.innerWidth - 40));
-      h = Math.max(CHAT_MIN_H, Math.min(h, window.innerHeight - CHAT_BOTTOM_GAP));
-      chatBoxEl.style.width = w + 'px';
-      chatBoxEl.style.height = h + 'px';
-    }
-
-    (function initChatSize() {
-      try {
-        const sz = JSON.parse(localStorage.getItem('chatSize') || 'null');
-        if (sz && sz.w && sz.h) setChatSize(sz.w, sz.h);
-      } catch (e) {}
-    })();
-
-    (function initChatResize() {
-      const handle = document.getElementById('chatResize');
-      let start = null;
-      handle.addEventListener('pointerdown', (e) => {
-        e.preventDefault();
-        const r = chatBoxEl.getBoundingClientRect();
-        start = { x: e.clientX, y: e.clientY, w: r.width, h: r.height };
-        handle.setPointerCapture(e.pointerId);
-      });
-      handle.addEventListener('pointermove', (e) => {
-        if (!start) return;
-        // box прикріплений правим/нижнім краєм, тому тягнемо вліво/вгору = збільшуємо
-        setChatSize(start.w + (start.x - e.clientX), start.h + (start.y - e.clientY));
-        const l = document.getElementById('chatList');
-        l.scrollTop = l.scrollHeight;
-      });
-      const stop = () => {
-        if (!start) return;
-        start = null;
-        const r = chatBoxEl.getBoundingClientRect();
-        try { localStorage.setItem('chatSize', JSON.stringify({ w: Math.round(r.width), h: Math.round(r.height) })); } catch (e) {}
-      };
-      handle.addEventListener('pointerup', stop);
-      handle.addEventListener('pointercancel', stop);
-      window.addEventListener('resize', () => {
-        const r = chatBoxEl.getBoundingClientRect();
-        if (r.width) setChatSize(r.width, r.height);
-      });
-    })();
-
-    let chatFont = 100; // у відсотках
-    try { const f = parseInt(localStorage.getItem('chatFont'), 10); if (CHAT_FONT_STEPS.includes(f)) chatFont = f; } catch (e) {}
-    function applyChatFont() {
-      chatBoxEl.style.setProperty('--chat-fs', (CHAT_FONT_BASE_PX * chatFont / 100).toFixed(2) + 'px');
-      document.getElementById('chatFont').value = String(chatFont);
-    }
-    applyChatFont();
-    document.getElementById('chatFont').addEventListener('change', (e) => {
-      chatFont = parseInt(e.target.value, 10);
-      try { localStorage.setItem('chatFont', chatFont); } catch (err) {}
-      applyChatFont();
-      const l = document.getElementById('chatList');
-      l.scrollTop = l.scrollHeight;
-    });
-
-    // ----- Автоочищення чату: повідомлення живуть 30 хвилин -----
-    // Видалення з бази робить Supabase (pg_cron, див. SQL); тут ховаємо прострочене в інтерфейсі.
-    const CHAT_TTL_MS = 30 * 60 * 1000;
-    function sweepChat() {
-      const cutoff = Date.now() - CHAT_TTL_MS;
-      for (let i = chatEntries.length - 1; i >= 0; i--) {
-        if (new Date(chatEntries[i].m.created_at).getTime() < cutoff) {
-          chatEntries[i].el.remove();
-          chatEntries.splice(i, 1);
-        }
-      }
-    }
-    setInterval(sweepChat, 15000);
-
-    // stopPropagation, щоб Alt+1/2/3 і Ctrl+P не спрацьовували під час набору в чаті
-    document.getElementById('chatInput').addEventListener('keydown', e => {
-      if (e.key === 'Enter') { e.preventDefault(); sendChat(); }
-      e.stopPropagation();
-    });
-    document.getElementById('chatPass').addEventListener('keydown', e => {
-      if (e.key === 'Enter') chatLogin();
-      e.stopPropagation();
-    });
-    document.getElementById('chatName').addEventListener('keydown', e => {
-      if (e.key === 'Enter') document.getElementById('chatPass').focus();
-      e.stopPropagation();
-    });
-
-    // автовхід, якщо вже входили на цьому пристрої
-    (function () {
-      try {
-        const s = JSON.parse(localStorage.getItem('chatAuth') || 'null');
-        if (s && CHAT_PASS_HASHES.includes(s.hash) && s.name) { chatName = s.name; startChat(); }
-      } catch (e) {}
-    })();
   </script>
 </body>
 </html>
