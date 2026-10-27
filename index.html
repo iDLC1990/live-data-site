@@ -614,18 +614,6 @@
             <label for="sccInput2" style="min-width: 50px; font-size: 13px; font-weight: 600; color: #E5E7EB;">SCC 2</label>
             <input type="text" id="sccInput2" class="form-input code-text" style="flex: 1;" placeholder="Введіть значення SCC 2" data-i18n-ph="ph_scc2">
           </div>
-          <div style="display: flex; align-items: center; gap: 12px;">
-            <input type="checkbox" class="custom-checkbox" id="sccCheckImg">
-            <label for="sccCheckImg" style="min-width: 50px; font-size: 13px; font-weight: 600; color: #E5E7EB;">IMG</label>
-            <input type="file" id="sccImageFile" accept="image/*" class="form-input" style="flex: 1; padding: 7px 10px; font-size: 12px;" onchange="onSccImageChange(this)">
-            <img id="sccImgPreview" alt="" style="height: 40px; background: #FFFFFF; border-radius: 4px; display: none;">
-            <button class="btn btn-secondary" style="padding: 6px 10px;" onclick="clearSccImage()" title="Очистити зображення">✕</button>
-          </div>
-          <div style="display: flex; align-items: center; gap: 12px;">
-            <input type="checkbox" class="custom-checkbox" id="sccCheckSvg">
-            <label for="sccCheckSvg" style="min-width: 50px; font-size: 13px; font-weight: 600; color: #E5E7EB;">ICON</label>
-            <span style="font-size: 12px; color: var(--text-muted);">Інструкція: зняття захисної плівки (вбудована)</span>
-          </div>
         </div>
         <div style="margin-top: 14px; display: flex; align-items: center; justify-content: flex-end; gap: 12px;">
           <label for="sccCopies" style="font-size: 12px; font-weight: 500; color: var(--text-muted);" data-i18n="scc_copies">Кількість комплектів</label>
@@ -689,7 +677,7 @@
 
   <script>
     const SUPABASE_URL = 'https://wtqvaeongxncufvpvvge.supabase.co';
-    const SUPABASE_KEY = 'sb_publishable_9Jfx167Q8LCF1746d1apwA_eWNb_qNb';
+    const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Ind0cXZhZW9uZ3huY3VmdnB2dmdlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODY1NDM5MjIsImV4cCI6MjEwMjExOTkyMn0.tRsrb29_b9ev3K75npD5zt_Dz9FMltzaRkdK0RPDn-U';
     const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
     const TABLE_NAME = 'televisions';
@@ -750,10 +738,9 @@
         chat_pass_ph: "Пароль чату", chat_login: "Увійти", chat_tr: "🌐 Переклад:", chat_orig: "Оригінал (без перекладу)",
         chat_msg_ph: "Повідомлення...", chat_font: "🔠 Розмір шрифту:", chat_need_name: "Введіть ім'я", chat_bad_pass: "Невірний пароль", orig_prefix: "Оригінал: ",
         alert_text: "Введіть текст!", alert_fill: "Будь ласка, заповніть хоча б Serial Number або Part Number!",
-        alert_nodata: "Не знайдено даних для друку!", alert_scc: "Позначте галочкою хоча б одне поле SCC, IMG або ICON та заповніть значення!",
+        alert_nodata: "Не знайдено даних для друку!", alert_scc: "Позначте галочкою хоча б одне поле SCC та заповніть значення!",
         toast_sel: "🖍️ Виділено {n} — Ctrl+C щоб скопіювати", toast_copied: "✅ Скопійовано {n} значень",
-        toast_pn: "⏳ PN ще не знайдено в базі", toast_fail: "❌ Не вдалося надіслати",
-        alert_img_fail: "Не вдалося завантажити зображення"
+        toast_pn: "⏳ PN ще не знайдено в базі", toast_fail: "❌ Не вдалося надіслати"
       },
       pl: {
         title: "🖨️ Drukowanie etykiet (TSC DA220)", btn_test: "⬛ Wydruk testowy", btn_refresh: "🔄 Odśwież teraz",
@@ -776,10 +763,9 @@
         chat_pass_ph: "Hasło czatu", chat_login: "Zaloguj", chat_tr: "🌐 Tłumaczenie:", chat_orig: "Oryginał (bez tłumaczenia)",
         chat_msg_ph: "Wiadomość...", chat_font: "🔠 Rozmiar czcionki:", chat_need_name: "Wpisz imię", chat_bad_pass: "Nieprawidłowe hasło", orig_prefix: "Oryginał: ",
         alert_text: "Wpisz tekst!", alert_fill: "Wypełnij co najmniej Serial Number lub Part Number!",
-        alert_nodata: "Nie znaleziono danych do druku!", alert_scc: "Zaznacz co najmniej jedno pole SCC, IMG lub ICON i wpisz wartość!",
+        alert_nodata: "Nie znaleziono danych do druku!", alert_scc: "Zaznacz co najmniej jedno pole SCC i wpisz wartość!",
         toast_sel: "🖍️ Zaznaczono {n} — Ctrl+C, aby skopiować", toast_copied: "✅ Skopiowano wartości: {n}",
-        toast_pn: "⏳ PN nie został jeszcze znaleziony w bazie", toast_fail: "❌ Nie udało się wysłać",
-        alert_img_fail: "Nie udało się wczytać obrazu"
+        toast_pn: "⏳ PN nie został jeszcze znaleziony w bazie", toast_fail: "❌ Nie udało się wysłać"
       },
       en: {
         title: "🖨️ Label Printing (TSC DA220)", btn_test: "⬛ Test print", btn_refresh: "🔄 Refresh now",
@@ -802,10 +788,9 @@
         chat_pass_ph: "Chat password", chat_login: "Log in", chat_tr: "🌐 Translation:", chat_orig: "Original (no translation)",
         chat_msg_ph: "Message...", chat_font: "🔠 Font size:", chat_need_name: "Enter your name", chat_bad_pass: "Wrong password", orig_prefix: "Original: ",
         alert_text: "Enter text!", alert_fill: "Please fill in at least Serial Number or Part Number!",
-        alert_nodata: "No data found to print!", alert_scc: "Check at least one SCC, IMG or ICON field and fill in its value!",
+        alert_nodata: "No data found to print!", alert_scc: "Check at least one SCC field and fill in its value!",
         toast_sel: "🖍️ Selected {n} — Ctrl+C to copy", toast_copied: "✅ Copied {n} values",
-        toast_pn: "⏳ PN not found in the database yet", toast_fail: "❌ Failed to send",
-        alert_img_fail: "Failed to load the image"
+        toast_pn: "⏳ PN not found in the database yet", toast_fail: "❌ Failed to send"
       }
     };
 
@@ -1549,115 +1534,21 @@ function printBatchNew(includeBrand = false) {
       return `<div class="txt" style="font-size:${pt}pt">${escapeHtml(text)}</div>`;
     }
 
-    // ===== Зображення (піктограма) для SCC-етикетки =====
-    // Картинка зберігається вже у вигляді чорно-білого PNG з роздільною здатністю,
-    // близькою до термопринтера (≈203 dpi, ширина 46 мм ≈ 368 px).
-    const SCC_IMG_TARGET_PX = 368;
-    const SCC_IMG_THRESHOLD = 160;   // поріг бінаризації (менше = темніше; для тонких ліній ~180, для товстих ~130–140)
-
-    let sccImageDataUrl = '';
-    try { sccImageDataUrl = localStorage.getItem('sccImageDataUrl') || ''; } catch (e) {}
-
-    function setSccImagePreview() {
-      const prev = document.getElementById('sccImgPreview');
-      const chk = document.getElementById('sccCheckImg');
-      if (sccImageDataUrl) {
-        prev.src = sccImageDataUrl;
-        prev.style.display = 'block';
-        chk.checked = true;
-      } else {
-        prev.removeAttribute('src');
-        prev.style.display = 'none';
-        chk.checked = false;
-      }
-    }
-
-    // Перетворює картинку на чорно-білу з різкою межею (для термодруку)
-    function processSccImage(file) {
-      return new Promise((resolve, reject) => {
-        const reader = new FileReader();
-        reader.onerror = reject;
-        reader.onload = () => {
-          const img = new Image();
-          img.onerror = reject;
-          img.onload = () => {
-            const w = SCC_IMG_TARGET_PX;
-            const h = Math.max(1, Math.round(img.naturalHeight * (w / img.naturalWidth)));
-            const c = document.createElement('canvas');
-            c.width = w;
-            c.height = h;
-            const ctx = c.getContext('2d');
-            ctx.fillStyle = '#FFFFFF';
-            ctx.fillRect(0, 0, w, h);
-            ctx.imageSmoothingEnabled = true;
-            ctx.imageSmoothingQuality = 'high';
-            ctx.drawImage(img, 0, 0, w, h);
-
-            const imgData = ctx.getImageData(0, 0, w, h);
-            const px = imgData.data;
-            for (let i = 0; i < px.length; i += 4) {
-              const gray = 0.299 * px[i] + 0.587 * px[i + 1] + 0.114 * px[i + 2];
-              const v = gray < SCC_IMG_THRESHOLD ? 0 : 255;
-              px[i] = v; px[i + 1] = v; px[i + 2] = v; px[i + 3] = 255;
-            }
-            ctx.putImageData(imgData, 0, 0);
-            resolve(c.toDataURL('image/png'));
-          };
-          img.src = reader.result;
-        };
-        reader.readAsDataURL(file);
-      });
-    }
-
-    async function onSccImageChange(input) {
-      const file = input.files && input.files[0];
-      if (!file) return;
-      try {
-        sccImageDataUrl = await processSccImage(file);
-        try { localStorage.setItem('sccImageDataUrl', sccImageDataUrl); } catch (e) {}
-        setSccImagePreview();
-      } catch (e) {
-        alert(t('alert_img_fail'));
-      }
-    }
-
-    function clearSccImage() {
-      sccImageDataUrl = '';
-      try { localStorage.removeItem('sccImageDataUrl'); } catch (e) {}
-      document.getElementById('sccImageFile').value = '';
-      setSccImagePreview();
-    }
-
-    setSccImagePreview();
-
-    // ===== Вбудована піктограма ICON: зняття захисної плівки (чорно-біла, 368 px ≈ 46 мм) =====
-    // Картинка вбудована у код як PNG (data URI), тому не потребує завантаження файлу і не блокується CORS.
-    const ICON_IMG_DATA_URL = 'data:image/png;base64,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';
-
     // Логіка кількості:
-    //   Обрані SCC 1, SCC 2, IMG та ICON йдуть у порядку: SCC 1 -> SCC 2 -> IMG -> ICON.
-    //   Кількість комплектів задає, скільки разів повторюється весь набір.
+    //   1 поле  × N комплектів = N етикеток
+    //   2 поля  × N комплектів = 2N етикеток у порядку SCC1, SCC2, SCC1, SCC2, ...
     // Друк іде через ізольований iframe зі статичним @page 50x30мм.
     function printSCC() {
       const check1 = document.getElementById('sccCheck1').checked;
       const check2 = document.getElementById('sccCheck2').checked;
-      const checkImg = document.getElementById('sccCheckImg').checked;
-      const checkIcon = document.getElementById('sccCheckSvg').checked;
       const val1 = document.getElementById('sccInput1').value.trim();
       const val2 = document.getElementById('sccInput2').value.trim();
 
-      // Повний порядок блоків одного комплекту
-      const blocks = [];
-      if (check1 && val1) blocks.push(buildWrappedText(val1));
-      if (check2 && val2) blocks.push(buildWrappedText(val2));
-      if (checkImg && sccImageDataUrl) {
-        blocks.push(`<img class="pic" src="${sccImageDataUrl}" alt="">`);
-      }
-      if (checkIcon) {
-        blocks.push(`<img class="pic" src="${ICON_IMG_DATA_URL}" alt="">`);
-      }
+      const setPattern = [];
+      if (check1 && val1) setPattern.push(val1);
+      if (check2 && val2) setPattern.push(val2);
 
-      if (blocks.length === 0) {
+      if (setPattern.length === 0) {
         alert(t('alert_scc'));
         return;
       }
@@ -1668,9 +1559,11 @@ function printBatchNew(includeBrand = false) {
 
       // Повна послідовність етикеток формується наперед, тому не залежимо від "Copies"/collate
       // у діалозі друку чи драйвері принтера.
+      // Автопідбір розміру робимо один раз для кожного тексту, а не для кожної копії
+      const textBlocks = setPattern.map((text) => buildWrappedText(text));
       let labelsHtml = '';
       for (let i = 0; i < copiesCount; i++) {
-        blocks.forEach((block) => {
+        textBlocks.forEach((block) => {
           labelsHtml += `<div class="lbl">${block}</div>`;
         });
       }
@@ -1681,7 +1574,9 @@ function printBatchNew(includeBrand = false) {
   @page { size: 50mm 30mm; margin: 0; }
   html, body { margin: 0; padding: 0; background: #fff; }
   /* display:grid + place-items:center центрує вміст етикетки одразу і по горизонталі,
-     і по вертикалі, незалежно від кількості рядків тексту чи розриву слів. */
+     і по вертикалі, незалежно від кількості рядків тексту чи розриву слів.
+     Це надійніше за flex/table-cell у контексті друку з розривами сторінок
+     (break-after: page) у різних браузерах. */
   .lbl {
     display: grid;
     place-items: center;
@@ -1695,12 +1590,6 @@ function printBatchNew(includeBrand = false) {
     font-family: Arial, Helvetica, sans-serif; font-weight: 900;
     line-height: 1.1; overflow-wrap: anywhere;
     text-align: center;
-  }
-  /* Зображення (файл або вбудована піктограма): вписується в робочу область 46x25.5мм зі збереженням пропорцій */
-  .pic {
-    width: 46mm; height: 25.5mm;
-    object-fit: contain; display: block;
-    image-rendering: pixelated;
   }
   /* розрив сторінки лише МІЖ етикетками — після останньої порожньої сторінки немає */
   .lbl:not(:last-child) { break-after: page; page-break-after: always; }
