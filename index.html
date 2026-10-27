@@ -1424,17 +1424,20 @@
     }
 
     document.addEventListener('keydown', (e) => {
-      const keyUpper = e.key.toUpperCase();
-
-      // Перемикання вкладок: Alt + 1, Alt + 2, Alt + 3
-      if (e.altKey && !e.ctrlKey && !e.metaKey) {
-        if (keyUpper === '1') { e.preventDefault(); switchSheet('0'); return; }
-        if (keyUpper === '2') { e.preventDefault(); switchSheet('193025884'); return; }
-        if (keyUpper === '3') { e.preventDefault(); switchSheet('custom'); return; }
+      // Игнорируем нажатия, если пользователь печатает в поле ввода
+      if (['INPUT', 'TEXTAREA', 'SELECT'].includes(e.target.tagName)) {
+        return;
       }
 
-      // Друк без бренду: Ctrl + P
-      if ((e.ctrlKey || e.metaKey) && !e.altKey && keyUpper === 'P') {
+      // Переключение вкладок: Alt + 1, Alt + 2, Alt + 3 (через e.code для любой раскладки)
+      if (e.altKey && !e.ctrlKey && !e.metaKey) {
+        if (e.code === 'Digit1' || e.code === 'Numpad1') { e.preventDefault(); switchSheet('0'); return; }
+        if (e.code === 'Digit2' || e.code === 'Numpad2') { e.preventDefault(); switchSheet('193025884'); return; }
+        if (e.code === 'Digit3' || e.code === 'Numpad3') { e.preventDefault(); switchSheet('custom'); return; }
+      }
+
+      // Печать без бренда: Ctrl + P (физическая клавиша KeyP)
+      if ((e.ctrlKey || e.metaKey) && !e.altKey && e.code === 'KeyP') {
         e.preventDefault();
         if (currentGid === 'custom' || products.length === 0) return;
 
@@ -1453,8 +1456,8 @@
         return;
       }
 
-      // Друк З БРЕНДОМ: Alt + P
-      if (e.altKey && !e.ctrlKey && !e.metaKey && keyUpper === 'P') {
+      // Печать С БРЕНДОМ: Alt + P (физическая клавиша KeyP)
+      if (e.altKey && !e.ctrlKey && !e.metaKey && e.code === 'KeyP') {
         e.preventDefault();
         if (currentGid === 'custom' || products.length === 0) return;
 
