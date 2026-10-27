@@ -466,7 +466,7 @@
         <div class="batch-info" id="selectedCountText">Вибрано позицій: 0</div>
 
         <div class="mode-switch">
-          <span class="mode-label" data-i18n="ctrlp_prints">Ctrl+P друкує:</span>
+          <span class="mode-label" data-i18n="ctrlp_prints">Ctrl+P / Alt+P друкує:</span>
           <button class="mode-btn active" id="modeBtn1" onclick="setPrintMode('1')" data-i18n="mode1">1 · Стандарт 100×78</button>
           <button class="mode-btn" id="modeBtn2" onclick="setPrintMode('2')" data-i18n="mode2">2 · Новий 130×76</button>
         </div>
@@ -602,7 +602,7 @@
         title: "🖨️ Друк етикеток (TSC DA220)", btn_test: "⬛ Тестовий друк", btn_refresh: "🔄 Оновити зараз",
         tab_custom: "🔠 Спец. Етикетки", syncing: "Синхронізація...",
         manual_title: "✍️ Ручне / Масове введення та друк (вставка з Google Таблиць)",
-        btn_print: "🖨️ Друк", btn_with_brand: "🖨️ З Brand", ctrlp_prints: "Ctrl+P друкує:",
+        btn_print: "🖨️ Друк", btn_with_brand: "🖨️ З Brand", ctrlp_prints: "Ctrl+P / Alt+P друкує:",
         mode1: "1 · Стандарт 100×78", mode2: "2 · Новий 130×76",
         btn_batch: "🖨️ Друк вибраних", btn_batch_brand: "🖨️ Друк вибраних з Brand",
         selected: "Вибрано позицій: ", th_print: "Друк", loading: "Завантаження даних...",
@@ -624,7 +624,7 @@
         title: "🖨️ Drukowanie etykiet (TSC DA220)", btn_test: "⬛ Wydruk testowy", btn_refresh: "🔄 Odśwież teraz",
         tab_custom: "🔠 Etykiety specjalne", syncing: "Synchronizacja...",
         manual_title: "✍️ Ręczne / masowe wprowadzanie i druk (wklejanie z Arkuszy Google)",
-        btn_print: "🖨️ Drukuj", btn_with_brand: "🖨️ Z Brand", ctrlp_prints: "Ctrl+P drukuje:",
+        btn_print: "🖨️ Drukuj", btn_with_brand: "🖨️ Z Brand", ctrlp_prints: "Ctrl+P / Alt+P drukuje:",
         mode1: "1 · Standard 100×78", mode2: "2 · Nowy 130×76",
         btn_batch: "🖨️ Drukuj wybrane", btn_batch_brand: "🖨️ Drukuj wybrane z Brand",
         selected: "Wybrano pozycji: ", th_print: "Druk", loading: "Ładowanie danych...",
@@ -646,7 +646,7 @@
         title: "🖨️ Label Printing (TSC DA220)", btn_test: "⬛ Test print", btn_refresh: "🔄 Refresh now",
         tab_custom: "🔠 Special labels", syncing: "Syncing...",
         manual_title: "✍️ Manual / bulk entry and print (paste from Google Sheets)",
-        btn_print: "🖨️ Print", btn_with_brand: "🖨️ With Brand", ctrlp_prints: "Ctrl+P prints:",
+        btn_print: "🖨️ Print", btn_with_brand: "🖨️ With Brand", ctrlp_prints: "Ctrl+P / Alt+P prints:",
         mode1: "1 · Standard 100×78", mode2: "2 · New 130×76",
         btn_batch: "🖨️ Print selected", btn_batch_brand: "🖨️ Print selected with Brand",
         selected: "Selected items: ", th_print: "Print", loading: "Loading data...",
@@ -1424,13 +1424,17 @@
     }
 
     document.addEventListener('keydown', (e) => {
-      if (e.altKey) {
-        if (e.key === '1') { e.preventDefault(); switchSheet('0'); }
-        else if (e.key === '2') { e.preventDefault(); switchSheet('193025884'); }
-        else if (e.key === '3') { e.preventDefault(); switchSheet('custom'); }
+      const keyUpper = e.key.toUpperCase();
+
+      // Перемикання вкладок: Alt + 1, Alt + 2, Alt + 3
+      if (e.altKey && !e.ctrlKey && !e.metaKey) {
+        if (keyUpper === '1') { e.preventDefault(); switchSheet('0'); return; }
+        if (keyUpper === '2') { e.preventDefault(); switchSheet('193025884'); return; }
+        if (keyUpper === '3') { e.preventDefault(); switchSheet('custom'); return; }
       }
 
-      if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'p') {
+      // Друк без бренду: Ctrl + P
+      if ((e.ctrlKey || e.metaKey) && !e.altKey && keyUpper === 'P') {
         e.preventDefault();
         if (currentGid === 'custom' || products.length === 0) return;
 
@@ -1440,12 +1444,33 @@
         }
 
         if (ctrlPMode === '2') {
-          if (selectedSerials.size > 0) printBatchNew();
-          else printSingleNew(0);
+          if (selectedSerials.size > 0) printBatchNew(false);
+          else printSingleNew(0, false);
         } else {
           if (selectedSerials.size > 0) printBatch(false);
           else printSingle(0, false);
         }
+        return;
+      }
+
+      // Друк З БРЕНДОМ: Alt + P
+      if (e.altKey && !e.ctrlKey && !e.metaKey && keyUpper === 'P') {
+        e.preventDefault();
+        if (currentGid === 'custom' || products.length === 0) return;
+
+        if (selectedSerials.size === 0 && products[0].pn.includes('table-spinner')) {
+          showToast(t('toast_pn'));
+          return;
+        }
+
+        if (ctrlPMode === '2') {
+          if (selectedSerials.size > 0) printBatchNew(true);
+          else printSingleNew(0, true);
+        } else {
+          if (selectedSerials.size > 0) printBatch(true);
+          else printSingle(0, true);
+        }
+        return;
       }
     });
 
