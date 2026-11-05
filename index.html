@@ -441,22 +441,24 @@
         <div class="manual-form-grid">
           <div class="form-group">
             <label for="manualSn">Serial Number (SN)</label>
-            <textarea id="manualSn" class="form-input code-text" rows="3" placeholder="SN12345678&#10;SN87654321"></textarea>
+            <textarea id="manualSn" class="form-input code-text" rows="3" placeholder="SN12345678
+SN87654321"></textarea>
           </div>
           <div class="form-group">
             <label for="manualPn">Part Number (PN)</label>
-            <textarea id="manualPn" class="form-input code-text" rows="3" placeholder="PN98765432&#10;PN12345678"></textarea>
+            <textarea id="manualPn" class="form-input code-text" rows="3" placeholder="PN98765432
+PN12345678"></textarea>
           </div>
           <div class="form-group">
             <label for="manualBrand">Brand</label>
             <textarea id="manualBrand" class="form-input" rows="3" placeholder="TPV"></textarea>
           </div>
           <div class="form-group" style="justify-content: flex-end;">
-            <label>&nbsp;</label>
+            <label> </label>
             <button class="btn btn-secondary" onclick="printManual(false)" data-i18n="btn_print">🖨️ Друк</button>
           </div>
           <div class="form-group" style="justify-content: flex-end;">
-            <label>&nbsp;</label>
+            <label> </label>
             <button class="btn btn-brand" onclick="printManual(true)" data-i18n="btn_with_brand">🖨️ З Brand</button>
           </div>
         </div>
@@ -515,7 +517,7 @@
             </select>
           </div>
           <div class="form-group" style="justify-content: flex-end;">
-            <label>&nbsp;</label>
+            <label> </label>
             <button class="btn btn-brand" onclick="printBigText()" data-i18n="btn_print_text">🖨️ Друк тексту</button>
           </div>
         </div>
@@ -529,7 +531,7 @@
             <input type="text" id="repeatTextInput" class="form-input code-text" placeholder="Наприклад: TRANSPORTATION FRAME" data-i18n-ph="ph_repeat" value="TRANSPORTATION FRAME">
           </div>
           <div class="form-group" style="justify-content: flex-end;">
-            <label>&nbsp;</label>
+            <label> </label>
             <button class="btn btn-brand" onclick="printRepeatText()" data-i18n="btn_print_11">🖨️ Друк 11 рядків</button>
           </div>
         </div>
@@ -922,90 +924,15 @@
       if (colSelectCells.length > 0) clearColumnSelection();
     });
 
-document.addEventListener('keydown', (e) => {
-      // Ігноруємо натискання, якщо користувач друкує в полі введення
-      if (['INPUT', 'TEXTAREA', 'SELECT'].includes(e.target.tagName)) {
-        return;
-      }
-
-      // Переключення вкладок: Alt + 1, Alt + 2, Alt + 3
-      if (e.altKey && !e.ctrlKey && !e.metaKey && e.location !== 2) { // або просто загальний Alt для вкладок
-        if (e.code === 'Digit1' || e.code === 'Numpad1') { e.preventDefault(); switchSheet('0'); return; }
-        if (e.code === 'Digit2' || e.code === 'Numpad2') { e.preventDefault(); switchSheet('193025884'); return; }
-        if (e.code === 'Digit3' || e.code === 'Numpad3') { e.preventDefault(); switchSheet('custom'); return; }
-      }
-
-      // Друк без бренда: Ctrl + P
-      if ((e.ctrlKey || e.metaKey) && !e.altKey && e.code === 'KeyP') {
-        e.preventDefault();
-        if (currentGid === 'custom' || products.length === 0) return;
-
-        if (selectedSerials.size === 0 && products[0].pn.includes('table-spinner')) {
-          showToast(t('toast_pn'));
-          return;
+    document.addEventListener('keydown', (e) => {
+      if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'c' && colSelectCells.length > 0) {
+        const text = colSelectCells.map(td => td.textContent.trim()).join('\n');
+        if (navigator.clipboard && navigator.clipboard.writeText) {
+          navigator.clipboard.writeText(text).then(() => showToast(t('toast_copied', { n: colSelectCells.length })));
         }
-
-        if (ctrlPMode === '2') {
-          if (selectedSerials.size > 0) printBatchNew(false);
-          else printSingleNew(0, false);
-        } else {
-          if (selectedSerials.size > 0) printBatch(false);
-          else printSingle(0, false);
-        }
-        return;
-      }
-
-      // ЛІВИЙ Alt + P (або загальний Alt + P без явища location === 2) — Друк З БРЕНДОМ (як і раніше, 2 копії)
-      if (e.altKey && !e.ctrlKey && !e.metaKey && e.code === 'KeyP' && e.location !== 2) {
-        e.preventDefault();
-        if (currentGid === 'custom' || products.length === 0) return;
-
-        if (selectedSerials.size === 0 && products[0].pn.includes('table-spinner')) {
-          showToast(t('toast_pn'));
-          return;
-        }
-
-        if (ctrlPMode === '2') {
-          if (selectedSerials.size > 0) printBatchNew(true);
-          else printSingleNew(0, true);
-        } else {
-          if (selectedSerials.size > 0) printBatch(true);
-          else printSingle(0, true);
-        }
-        return;
-      }
-
-      // ПРАВИЙ Alt + P (e.location === 2) — Друк З БРЕНДОМ ТІЛЬКИ ДЛЯ ОДНІЄЇ КОПІЇ (1 сторінка)
-      if (e.altKey && !e.ctrlKey && !e.metaKey && e.code === 'KeyP' && e.location === 2) {
-        e.preventDefault();
-        if (currentGid === 'custom' || products.length === 0) return;
-
-        if (selectedSerials.size === 0 && products[0].pn.includes('table-spinner')) {
-          showToast(t('toast_pn'));
-          return;
-        }
-
-        // Генеруємо тільки 1 копію для кожного вибраного товару (або для першого, якщо нічого не вибрано)
-        const itemsToPrint = selectedSerials.size > 0 ? products.filter(p => selectedSerials.has(p.sn)) : [products[0]];
-
-        if (ctrlPMode === '2') {
-          printContainer.innerHTML = buildNewLabelHTML(itemsToPrint, true, 1);
-          renderNewBarcodesInContainer('#printContainer');
-          prepareAndPrint(130, 76, NEW_LABEL_MARGIN);
-        } else {
-          printContainer.innerHTML = buildLabelsHTML(itemsToPrint, true, 1);
-          renderBarcodesInContainer('#printContainer');
-          prepareAndPrint(100, 78);
-        }
-
-        if (selectedSerials.size > 0) {
-          selectedSerials.clear();
-          renderTable();
-          updateBatchBar();
-        }
-        return;
       }
     });
+
     function renderTable() {
       if (products.length === 0) {
         tableBody.innerHTML = `<tr><td colspan="6" style="text-align: center; padding: 20px;">${t('no_records')}</td></tr>`;
@@ -1270,10 +1197,10 @@ document.addEventListener('keydown', (e) => {
       prepareAndPrint(100, 78);
     }
 
-    function buildLabelsHTML(itemsList, includeBrand) {
+    function buildLabelsHTML(itemsList, includeBrand, copiesCount = 2) {
       let html = '';
       itemsList.forEach((product, idx) => {
-        for (let copy = 0; copy < 2; copy++) {
+        for (let copy = 0; copy < copiesCount; copy++) {
           html += `
             <div class="industrial-label">
               <div class="top-divider"></div>
@@ -1333,10 +1260,10 @@ document.addEventListener('keydown', (e) => {
       updateBatchBar();
     }
 
-    function buildNewLabelHTML(itemsList, includeBrand = false) {
+    function buildNewLabelHTML(itemsList, includeBrand = false, copiesCount = 2) {
       let html = '';
       itemsList.forEach((product, idx) => {
-        for (let copy = 0; copy < 2; copy++) {
+        for (let copy = 0; copy < copiesCount; copy++) {
           html += `
             <div class="label-new">
               ${includeBrand ? `<div class="brand-tag-new">${escapeHtml(product.brand)}</div>` : ''}
@@ -1531,7 +1458,7 @@ document.addEventListener('keydown', (e) => {
         return;
       }
 
-      // Печать С БРЕНДОМ: Alt + P (физическая клавиша KeyP)
+      // Печать С БРЕНДОМ: Лівий Alt + P (як зазвичай) або Правий Alt + P (тільки 1 копія)
       if (e.altKey && !e.ctrlKey && !e.metaKey && e.code === 'KeyP') {
         e.preventDefault();
         if (currentGid === 'custom' || products.length === 0) return;
@@ -1541,12 +1468,29 @@ document.addEventListener('keydown', (e) => {
           return;
         }
 
+        // Якщо це правий Alt (e.location === 2), робимо 1 копію, якщо лівий (e.location === 1) — 2 копії
+        const copies = (e.location === 2) ? 1 : 2;
+
         if (ctrlPMode === '2') {
-          if (selectedSerials.size > 0) printBatchNew(true);
-          else printSingleNew(0, true);
+          const itemsToPrint = selectedSerials.size > 0 ? products.filter(p => selectedSerials.has(p.sn)) : [products[0]];
+          printContainer.innerHTML = buildNewLabelHTML(itemsToPrint, true, copies);
+          renderNewBarcodesInContainer('#printContainer');
+          prepareAndPrint(130, 76, NEW_LABEL_MARGIN);
+          if (selectedSerials.size > 0 && copies === 2) {
+            selectedSerials.clear();
+            renderTable();
+            updateBatchBar();
+          }
         } else {
-          if (selectedSerials.size > 0) printBatch(true);
-          else printSingle(0, true);
+          const itemsToPrint = selectedSerials.size > 0 ? products.filter(p => selectedSerials.has(p.sn)) : [products[0]];
+          printContainer.innerHTML = buildLabelsHTML(itemsToPrint, true, copies);
+          renderBarcodesInContainer('#printContainer');
+          prepareAndPrint(100, 78);
+          if (selectedSerials.size > 0 && copies === 2) {
+            selectedSerials.clear();
+            renderTable();
+            updateBatchBar();
+          }
         }
         return;
       }
