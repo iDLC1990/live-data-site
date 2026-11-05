@@ -923,20 +923,8 @@
     });
 
 document.addEventListener('keydown', (e) => {
-      // Ігноруємо натискання, якщо користувач друкує в полі введення
-      if (['INPUT', 'TEXTAREA', 'SELECT'].includes(e.target.tagName)) {
-        return;
-      }
-
-      // Переключення вкладок: Alt + 1, Alt + 2, Alt + 3
-      if (e.altKey && !e.ctrlKey && !e.metaKey && e.location !== 2) { // або просто загальний Alt для вкладок
-        if (e.code === 'Digit1' || e.code === 'Numpad1') { e.preventDefault(); switchSheet('0'); return; }
-        if (e.code === 'Digit2' || e.code === 'Numpad2') { e.preventDefault(); switchSheet('193025884'); return; }
-        if (e.code === 'Digit3' || e.code === 'Numpad3') { e.preventDefault(); switchSheet('custom'); return; }
-      }
-
-      // Друк без бренда: Ctrl + P
-      if ((e.ctrlKey || e.metaKey) && !e.altKey && e.code === 'KeyP') {
+// Друк з брендом: Лівий Alt + P (як зазвичай) або Правий Alt + P (тільки 1 копія)
+      if (e.altKey && !e.ctrlKey && !e.metaKey && e.code === 'KeyP') {
         e.preventDefault();
         if (currentGid === 'custom' || products.length === 0) return;
 
@@ -945,63 +933,29 @@ document.addEventListener('keydown', (e) => {
           return;
         }
 
-        if (ctrlPMode === '2') {
-          if (selectedSerials.size > 0) printBatchNew(false);
-          else printSingleNew(0, false);
-        } else {
-          if (selectedSerials.size > 0) printBatch(false);
-          else printSingle(0, false);
-        }
-        return;
-      }
-
-      // ЛІВИЙ Alt + P (або загальний Alt + P без явища location === 2) — Друк З БРЕНДОМ (як і раніше, 2 копії)
-      if (e.altKey && !e.ctrlKey && !e.metaKey && e.code === 'KeyP' && e.location !== 2) {
-        e.preventDefault();
-        if (currentGid === 'custom' || products.length === 0) return;
-
-        if (selectedSerials.size === 0 && products[0].pn.includes('table-spinner')) {
-          showToast(t('toast_pn'));
-          return;
-        }
+        // Перевірка: якщо це ПРАВИЙ Alt (e.location === 2), ставимо 1 копію, інакше звичайну кількість (2)
+        const copies = (e.location === 2) ? 1 : 2;
 
         if (ctrlPMode === '2') {
-          if (selectedSerials.size > 0) printBatchNew(true);
-          else printSingleNew(0, true);
-        } else {
-          if (selectedSerials.size > 0) printBatch(true);
-          else printSingle(0, true);
-        }
-        return;
-      }
-
-      // ПРАВИЙ Alt + P (e.location === 2) — Друк З БРЕНДОМ ТІЛЬКИ ДЛЯ ОДНІЄЇ КОПІЇ (1 сторінка)
-      if (e.altKey && !e.ctrlKey && !e.metaKey && e.code === 'KeyP' && e.location === 2) {
-        e.preventDefault();
-        if (currentGid === 'custom' || products.length === 0) return;
-
-        if (selectedSerials.size === 0 && products[0].pn.includes('table-spinner')) {
-          showToast(t('toast_pn'));
-          return;
-        }
-
-        // Генеруємо тільки 1 копію для кожного вибраного товару (або для першого, якщо нічого не вибрано)
-        const itemsToPrint = selectedSerials.size > 0 ? products.filter(p => selectedSerials.has(p.sn)) : [products[0]];
-
-        if (ctrlPMode === '2') {
-          printContainer.innerHTML = buildNewLabelHTML(itemsToPrint, true, 1);
+          const itemsToPrint = selectedSerials.size > 0 ? products.filter(p => selectedSerials.has(p.sn)) : [products[0]];
+          printContainer.innerHTML = buildNewLabelHTML(itemsToPrint, true, copies);
           renderNewBarcodesInContainer('#printContainer');
           prepareAndPrint(130, 76, NEW_LABEL_MARGIN);
+          if (selectedSerials.size > 0 && copies === 2) { // Очищаємо виділення за потреби або залишаємо
+            selectedSerials.clear();
+            renderTable();
+            updateBatchBar();
+          }
         } else {
-          printContainer.innerHTML = buildLabelsHTML(itemsToPrint, true, 1);
+          const itemsToPrint = selectedSerials.size > 0 ? products.filter(p => selectedSerials.size > 0 ? products.filter(p => selectedSerials.has(p.sn)) : [products[0]] : [products[0]];
+          printContainer.innerHTML = buildLabelsHTML(itemsToPrint, true, copies);
           renderBarcodesInContainer('#printContainer');
           prepareAndPrint(100, 78);
-        }
-
-        if (selectedSerials.size > 0) {
-          selectedSerials.clear();
-          renderTable();
-          updateBatchBar();
+          if (selectedSerials.size > 0 && copies === 2) {
+            selectedSerials.clear();
+            renderTable();
+            updateBatchBar();
+          }
         }
         return;
       }
