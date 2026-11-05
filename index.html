@@ -441,24 +441,22 @@
         <div class="manual-form-grid">
           <div class="form-group">
             <label for="manualSn">Serial Number (SN)</label>
-            <textarea id="manualSn" class="form-input code-text" rows="3" placeholder="SN12345678
-SN87654321"></textarea>
+            <textarea id="manualSn" class="form-input code-text" rows="3" placeholder="SN12345678&#10;SN87654321"></textarea>
           </div>
           <div class="form-group">
             <label for="manualPn">Part Number (PN)</label>
-            <textarea id="manualPn" class="form-input code-text" rows="3" placeholder="PN98765432
-PN12345678"></textarea>
+            <textarea id="manualPn" class="form-input code-text" rows="3" placeholder="PN98765432&#10;PN12345678"></textarea>
           </div>
           <div class="form-group">
             <label for="manualBrand">Brand</label>
             <textarea id="manualBrand" class="form-input" rows="3" placeholder="TPV"></textarea>
           </div>
           <div class="form-group" style="justify-content: flex-end;">
-            <label> </label>
+            <label>&nbsp;</label>
             <button class="btn btn-secondary" onclick="printManual(false)" data-i18n="btn_print">🖨️ Друк</button>
           </div>
           <div class="form-group" style="justify-content: flex-end;">
-            <label> </label>
+            <label>&nbsp;</label>
             <button class="btn btn-brand" onclick="printManual(true)" data-i18n="btn_with_brand">🖨️ З Brand</button>
           </div>
         </div>
@@ -468,7 +466,7 @@ PN12345678"></textarea>
         <div class="batch-info" id="selectedCountText">Вибрано позицій: 0</div>
 
         <div class="mode-switch">
-          <span class="mode-label" data-i18n="ctrlp_prints">Ctrl+P / Alt+P друкує:</span>
+          <span class="mode-label" data-i18n="ctrlp_prints">Ctrl+P / Alt+P prints: (Right Alt + P = 1 copy)</span>
           <button class="mode-btn active" id="modeBtn1" onclick="setPrintMode('1')" data-i18n="mode1">1 · Стандарт 100×78</button>
           <button class="mode-btn" id="modeBtn2" onclick="setPrintMode('2')" data-i18n="mode2">2 · Новий 130×76</button>
         </div>
@@ -517,7 +515,7 @@ PN12345678"></textarea>
             </select>
           </div>
           <div class="form-group" style="justify-content: flex-end;">
-            <label> </label>
+            <label>&nbsp;</label>
             <button class="btn btn-brand" onclick="printBigText()" data-i18n="btn_print_text">🖨️ Друк тексту</button>
           </div>
         </div>
@@ -531,7 +529,7 @@ PN12345678"></textarea>
             <input type="text" id="repeatTextInput" class="form-input code-text" placeholder="Наприклад: TRANSPORTATION FRAME" data-i18n-ph="ph_repeat" value="TRANSPORTATION FRAME">
           </div>
           <div class="form-group" style="justify-content: flex-end;">
-            <label> </label>
+            <label>&nbsp;</label>
             <button class="btn btn-brand" onclick="printRepeatText()" data-i18n="btn_print_11">🖨️ Друк 11 рядків</button>
           </div>
         </div>
@@ -1197,10 +1195,10 @@ PN12345678"></textarea>
       prepareAndPrint(100, 78);
     }
 
-    function buildLabelsHTML(itemsList, includeBrand, copiesCount = 2) {
+    function buildLabelsHTML(itemsList, includeBrand, copies = 2) {
       let html = '';
       itemsList.forEach((product, idx) => {
-        for (let copy = 0; copy < copiesCount; copy++) {
+        for (let copy = 0; copy < copies; copy++) {
           html += `
             <div class="industrial-label">
               <div class="top-divider"></div>
@@ -1239,20 +1237,20 @@ PN12345678"></textarea>
       });
     }
 
-    function printSingle(index, includeBrand) {
+    function printSingle(index, includeBrand, copies = 2) {
       const product = products[index];
       if (!product) return;
-      printContainer.innerHTML = buildLabelsHTML([product], includeBrand);
+      printContainer.innerHTML = buildLabelsHTML([product], includeBrand, copies);
       renderBarcodesInContainer('#printContainer');
       prepareAndPrint(100, 78);
     }
 
-    function printBatch(includeBrand) {
+    function printBatch(includeBrand, copies = 2) {
       if (selectedSerials.size === 0) return;
       if (ctrlPMode === '2') { printBatchNew(includeBrand); return; }
       const itemsToPrint = products.filter(p => selectedSerials.has(p.sn));
       if (itemsToPrint.length === 0) return;
-      printContainer.innerHTML = buildLabelsHTML(itemsToPrint, includeBrand);
+      printContainer.innerHTML = buildLabelsHTML(itemsToPrint, includeBrand, copies);
       renderBarcodesInContainer('#printContainer');
       prepareAndPrint(100, 78);
       selectedSerials.clear();
@@ -1260,10 +1258,10 @@ PN12345678"></textarea>
       updateBatchBar();
     }
 
-    function buildNewLabelHTML(itemsList, includeBrand = false, copiesCount = 2) {
+    function buildNewLabelHTML(itemsList, includeBrand = false, copies = 2) {
       let html = '';
       itemsList.forEach((product, idx) => {
-        for (let copy = 0; copy < copiesCount; copy++) {
+        for (let copy = 0; copy < copies; copy++) {
           html += `
             <div class="label-new">
               ${includeBrand ? `<div class="brand-tag-new">${escapeHtml(product.brand)}</div>` : ''}
@@ -1297,19 +1295,19 @@ PN12345678"></textarea>
       });
     }
 
-    function printSingleNew(index, includeBrand = false) {
+    function printSingleNew(index, includeBrand = false, copies = 2) {
       const product = products[index];
       if (!product) return;
-      printContainer.innerHTML = buildNewLabelHTML([product], includeBrand);
+      printContainer.innerHTML = buildNewLabelHTML([product], includeBrand, copies);
       renderNewBarcodesInContainer('#printContainer');
       prepareAndPrint(130, 76, NEW_LABEL_MARGIN);
     }
 
-    function printBatchNew(includeBrand = false) {
+    function printBatchNew(includeBrand = false, copies = 2) {
       if (selectedSerials.size === 0) return;
       const itemsToPrint = products.filter(p => selectedSerials.has(p.sn));
       if (itemsToPrint.length === 0) return;
-      printContainer.innerHTML = buildNewLabelHTML(itemsToPrint, includeBrand);
+      printContainer.innerHTML = buildNewLabelHTML(itemsToPrint, includeBrand, copies);
       renderNewBarcodesInContainer('#printContainer');
       prepareAndPrint(130, 76, NEW_LABEL_MARGIN);
       selectedSerials.clear();
@@ -1425,9 +1423,49 @@ PN12345678"></textarea>
       printInFrame(docHtml);
     }
 
+    let rightAltPressed = false;
+
+    document.addEventListener('keyup', (e) => {
+      if (e.code === 'AltRight') rightAltPressed = false;
+    });
+
+    window.addEventListener('blur', () => {
+      rightAltPressed = false;
+    });
+
     document.addEventListener('keydown', (e) => {
+      if (e.code === 'AltRight') {
+        rightAltPressed = true;
+        return;
+      }
+
       // Игнорируем нажатия, если пользователь печатает в поле ввода
       if (['INPUT', 'TEXTAREA', 'SELECT'].includes(e.target.tagName)) {
+        return;
+      }
+
+      // Right Alt + P: print exactly one label per selected item, with Brand.
+      // AltGraph is included because some keyboard layouts report Right Alt this way.
+      const isRightAltP = e.code === 'KeyP' && !e.metaKey &&
+        (rightAltPressed || (typeof e.getModifierState === 'function' && e.getModifierState('AltGraph')));
+
+      if (isRightAltP) {
+        e.preventDefault();
+        e.stopPropagation();
+        if (currentGid === 'custom' || products.length === 0) return;
+
+        if (selectedSerials.size === 0 && products[0].pn.includes('table-spinner')) {
+          showToast(t('toast_pn'));
+          return;
+        }
+
+        if (ctrlPMode === '2') {
+          if (selectedSerials.size > 0) printBatchNew(true, 1);
+          else printSingleNew(0, true, 1);
+        } else {
+          if (selectedSerials.size > 0) printBatch(true, 1);
+          else printSingle(0, true, 1);
+        }
         return;
       }
 
@@ -1458,7 +1496,7 @@ PN12345678"></textarea>
         return;
       }
 
-      // Печать С БРЕНДОМ: Лівий Alt + P (як зазвичай) або Правий Alt + P (тільки 1 копія)
+      // Печать С БРЕНДОМ: Alt + P (физическая клавиша KeyP)
       if (e.altKey && !e.ctrlKey && !e.metaKey && e.code === 'KeyP') {
         e.preventDefault();
         if (currentGid === 'custom' || products.length === 0) return;
@@ -1468,29 +1506,12 @@ PN12345678"></textarea>
           return;
         }
 
-        // Якщо це правий Alt (e.location === 2), робимо 1 копію, якщо лівий (e.location === 1) — 2 копії
-        const copies = (e.location === 2) ? 1 : 2;
-
         if (ctrlPMode === '2') {
-          const itemsToPrint = selectedSerials.size > 0 ? products.filter(p => selectedSerials.has(p.sn)) : [products[0]];
-          printContainer.innerHTML = buildNewLabelHTML(itemsToPrint, true, copies);
-          renderNewBarcodesInContainer('#printContainer');
-          prepareAndPrint(130, 76, NEW_LABEL_MARGIN);
-          if (selectedSerials.size > 0 && copies === 2) {
-            selectedSerials.clear();
-            renderTable();
-            updateBatchBar();
-          }
+          if (selectedSerials.size > 0) printBatchNew(true);
+          else printSingleNew(0, true);
         } else {
-          const itemsToPrint = selectedSerials.size > 0 ? products.filter(p => selectedSerials.has(p.sn)) : [products[0]];
-          printContainer.innerHTML = buildLabelsHTML(itemsToPrint, true, copies);
-          renderBarcodesInContainer('#printContainer');
-          prepareAndPrint(100, 78);
-          if (selectedSerials.size > 0 && copies === 2) {
-            selectedSerials.clear();
-            renderTable();
-            updateBatchBar();
-          }
+          if (selectedSerials.size > 0) printBatch(true);
+          else printSingle(0, true);
         }
         return;
       }
