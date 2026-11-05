@@ -466,7 +466,7 @@
         <div class="batch-info" id="selectedCountText">Вибрано позицій: 0</div>
 
         <div class="mode-switch">
-          <span class="mode-label" data-i18n="ctrlp_prints">Ctrl+P / Alt+P prints: (Right Alt + P = 1 copy)</span>
+          <span class="mode-label" data-i18n="ctrlp_prints">Ctrl+P / Alt+P друкує:</span>
           <button class="mode-btn active" id="modeBtn1" onclick="setPrintMode('1')" data-i18n="mode1">1 · Стандарт 100×78</button>
           <button class="mode-btn" id="modeBtn2" onclick="setPrintMode('2')" data-i18n="mode2">2 · Новий 130×76</button>
         </div>
@@ -1247,7 +1247,7 @@
 
     function printBatch(includeBrand, copies = 2) {
       if (selectedSerials.size === 0) return;
-      if (ctrlPMode === '2') { printBatchNew(includeBrand); return; }
+      if (ctrlPMode === '2') { printBatchNew(includeBrand, copies); return; }
       const itemsToPrint = products.filter(p => selectedSerials.has(p.sn));
       if (itemsToPrint.length === 0) return;
       printContainer.innerHTML = buildLabelsHTML(itemsToPrint, includeBrand, copies);
@@ -1423,35 +1423,30 @@
       printInFrame(docHtml);
     }
 
-    let rightAltPressed = false;
-
+    // Відстеження правого Alt (e.altKey не розрізняє лівий і правий)
+    let rightAltDown = false;
+    let leftAltDown = false;
+    document.addEventListener('keydown', (e) => {
+      if (e.code === 'AltRight') rightAltDown = true;
+      if (e.code === 'AltLeft') leftAltDown = true;
+    }, true);
     document.addEventListener('keyup', (e) => {
-      if (e.code === 'AltRight') rightAltPressed = false;
-    });
-
-    window.addEventListener('blur', () => {
-      rightAltPressed = false;
-    });
+      if (e.code === 'AltRight') rightAltDown = false;
+      if (e.code === 'AltLeft') leftAltDown = false;
+    }, true);
+    window.addEventListener('blur', () => { rightAltDown = false; leftAltDown = false; });
 
     document.addEventListener('keydown', (e) => {
-      if (e.code === 'AltRight') {
-        rightAltPressed = true;
-        return;
-      }
-
       // Игнорируем нажатия, если пользователь печатает в поле ввода
       if (['INPUT', 'TEXTAREA', 'SELECT'].includes(e.target.tagName)) {
         return;
       }
 
-      // Right Alt + P: print exactly one label per selected item, with Brand.
-      // AltGraph is included because some keyboard layouts report Right Alt this way.
-      const isRightAltP = e.code === 'KeyP' && !e.metaKey &&
-        (rightAltPressed || (typeof e.getModifierState === 'function' && e.getModifierState('AltGraph')));
-
-      if (isRightAltP) {
+      // Правий Alt + P: друк ОДНІЄЇ сторінки (1 етикетка замість 2), без бренду — як Ctrl + P
+      // (на розкладках з AltGr браузер додатково ставить ctrlKey, тому ctrlKey не перевіряємо)
+      if (rightAltDown && !leftAltDown && !e.metaKey && e.code === 'KeyP') {
         e.preventDefault();
-        e.stopPropagation();
+        if (e.repeat) return;
         if (currentGid === 'custom' || products.length === 0) return;
 
         if (selectedSerials.size === 0 && products[0].pn.includes('table-spinner')) {
@@ -1460,11 +1455,11 @@
         }
 
         if (ctrlPMode === '2') {
-          if (selectedSerials.size > 0) printBatchNew(true, 1);
-          else printSingleNew(0, true, 1);
+          if (selectedSerials.size > 0) printBatchNew(false, 1);
+          else printSingleNew(0, false, 1);
         } else {
-          if (selectedSerials.size > 0) printBatch(true, 1);
-          else printSingle(0, true, 1);
+          if (selectedSerials.size > 0) printBatch(false, 1);
+          else printSingle(0, false, 1);
         }
         return;
       }
@@ -1477,7 +1472,7 @@
       }
 
       // Печать без бренда: Ctrl + P (физическая клавиша KeyP)
-      if ((e.ctrlKey || e.metaKey) && !e.altKey && e.code === 'KeyP') {
+      if ((e.ctrlKey || e.metaKey) && !e.altKey && !rightAltDown && e.code === 'KeyP') {
         e.preventDefault();
         if (currentGid === 'custom' || products.length === 0) return;
 
@@ -1497,7 +1492,7 @@
       }
 
       // Печать С БРЕНДОМ: Alt + P (физическая клавиша KeyP)
-      if (e.altKey && !e.ctrlKey && !e.metaKey && e.code === 'KeyP') {
+      if (e.altKey && !rightAltDown && !e.ctrlKey && !e.metaKey && e.code === 'KeyP') {
         e.preventDefault();
         if (currentGid === 'custom' || products.length === 0) return;
 
